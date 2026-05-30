@@ -6,20 +6,16 @@
     <title>StreamFlix</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Paleta Premium Disney+ */
         :root { 
             --bg-top: #1a1d29; --bg-bottom: #040714; --accent: #00e5ff; 
             --glass: rgba(26, 29, 41, 0.85); --text: #f9f9f9; --text-muted: #8f98b0;
         }
-
         * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-
         body { 
             margin: 0; padding: 0; background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
             background-attachment: fixed; color: var(--text); font-family: 'Segoe UI', sans-serif; 
             overflow-x: hidden; padding-bottom: 90px; 
         }
-        
         .header { position: absolute; top: 0; width: 100%; padding: 15px; z-index: 10; text-align: center; background: linear-gradient(to bottom, rgba(4,7,20,0.8), transparent); }
         .header-logo { font-size: 22px; font-weight: 900; color: #fff; margin: 0; }
         .header-logo span { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.6); }
@@ -96,9 +92,10 @@
         </div>
     </div>
 
-    <div id="view-filmes" class="view" style="padding-top: 80px; text-align: center;"><h2 style="color: var(--accent);">Filmes VIP</h2><p class="loading-text">Grade em breve.</p></div>
-    <div id="view-series" class="view" style="padding-top: 80px; text-align: center;"><h2 style="color: var(--accent);">Séries Premium</h2><p class="loading-text">Grade em breve.</p></div>
-    <div id="view-tv" class="view" style="padding-top: 80px; text-align: center;"><h2 style="color: var(--accent);">TV Ao Vivo</h2><p class="loading-text">Grade em breve.</p></div>
+    <!-- Telas Vazias -->
+    <div id="view-filmes" class="view" style="padding-top: 80px; text-align: center;"><h2 style="color: var(--accent);">Filmes VIP</h2><p class="loading-text">Em breve listagem infinita aqui.</p></div>
+    <div id="view-series" class="view" style="padding-top: 80px; text-align: center;"><h2 style="color: var(--accent);">Séries Premium</h2><p class="loading-text">Em breve listagem infinita aqui.</p></div>
+    <div id="view-tv" class="view" style="padding-top: 80px; text-align: center;"><h2 style="color: var(--accent);">TV Ao Vivo</h2><p class="loading-text">Em breve listagem infinita aqui.</p></div>
 
     <div class="bottom-nav" id="bottomNav">
         <div class="nav-item active" onclick="mudarAba('view-home', this)"><i class="fas fa-home"></i><span>Início</span></div>
@@ -107,6 +104,7 @@
         <div class="nav-item" onclick="mudarAba('view-tv', this)"><i class="fas fa-broadcast-tower"></i><span>TV</span></div>
     </div>
 
+    <!-- Módulos Extras -->
     <div class="bottom-sheet-overlay" id="sheetOverlay" onclick="fecharSheetTV()"></div>
     <div class="bottom-sheet" id="bottomSheet">
         <div class="sheet-handle"></div>
@@ -124,7 +122,7 @@
             <h1 class="dp-title" id="dpTitle">Título</h1>
             <div class="dp-meta" id="dpMeta">Categoria</div>
             <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
-            <p class="dp-synopsis" id="dpSynopsis">Aguardando TMDB (Próxima Fase)...</p>
+            <p class="dp-synopsis" id="dpSynopsis">Aguardando integração com TMDB (Próxima Fase) para exibir a história completa e o elenco do filme.</p>
         </div>
     </div>
 
@@ -133,10 +131,7 @@
         let heroIndex = 0;
         let heroInterval = null;
 
-        // ==========================================
-        // 1. O NOVO FILTRO E LIMPADOR INTELIGENTE
-        // ==========================================
-        
+        // FILTRO DE PASTAS
         function pastaValida(nome) {
             if (!nome) return false;
             const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO'];
@@ -144,6 +139,7 @@
             return !proibidos.some(p => n.includes(p));
         }
 
+        // LIMPADOR DE TÍTULOS (REGEX)
         function formatarTituloIPTV(nomeBruto, nomePasta) {
             let nomeLimpo = nomeBruto || "Sem Título";
             let badgesHTML = '';
@@ -173,20 +169,18 @@
             return { tituloLimpo: nomeLimpo, htmlBadges: badgesHTML };
         }
 
-        // NOVO: Limpador de Símbolos da TV (> [HD] Globo...)
+        // LIMPADOR DE SÍMBOLOS PARA TV
         function formatarTV(nomeBruto) {
             let nomeLimpo = nomeBruto || "Canal";
             let badgesHTML = '';
             const etiquetas = [];
             
-            // Procura Estados
             const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF)\b/i);
             if(estado) {
                 etiquetas.push({ l: estado[0].toUpperCase(), c: '#fff', b: '#ff9100' });
                 nomeLimpo = nomeLimpo.replace(estado[0], '');
             }
             
-            // Procura Qualidade
             if(/FHD/i.test(nomeLimpo)) { etiquetas.push({ l: 'FHD', c: '#000', b: '#00e5ff' }); }
             else if(/HD/i.test(nomeLimpo)) { etiquetas.push({ l: 'HD', c: '#000', b: '#76ff03' }); }
             else if(/4K/i.test(nomeLimpo)) { etiquetas.push({ l: '4K', c: '#fff', b: '#ff1744' }); }
@@ -195,7 +189,6 @@
                 badgesHTML += `<span style="background:${e.b}; color:${e.c}; font-size:8px; font-weight:900; padding:3px 5px; border-radius:4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">${e.l}</span>`;
             });
 
-            // Remove todos os lixos (Setas, Colchetes, Parênteses e as letras das qualidades)
             nomeLimpo = nomeLimpo.replace(/(FHD|HD|4K|SD)/ig, '');
             nomeLimpo = nomeLimpo.replace(/[>|\[\]\(\)*]/g, ''); 
             nomeLimpo = nomeLimpo.replace(/\s+/g, ' ').trim();
@@ -210,45 +203,54 @@
             document.getElementById(idView).classList.add('active');
         }
 
+        // MOTOR DE DADOS: AGORA PUXA MÚLTIPLAS PASTAS!
         async function initApp() {
             try {
                 const containerDinamico = document.getElementById('conteudo-dinamico');
                 let htmlConstruido = "";
                 
-                // FILMES
+                // 1. FILMES (Puxa 4 pastas diferentes!)
                 try {
                     const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
                     const vodCats = await resVodCats.json();
-                    const pastaFilmeValida = vodCats.find(c => pastaValida(c.category_name));
                     
-                    if(pastaFilmeValida) {
-                        const resFilmes = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastaFilmeValida.category_id}`);
+                    const pastasFilmesValidas = vodCats.filter(c => pastaValida(c.category_name)).slice(0, 4);
+                    
+                    for(let i = 0; i < pastasFilmesValidas.length; i++) {
+                        const cat = pastasFilmesValidas[i];
+                        const resFilmes = await fetch(`/api/iptv?action=get_vod_streams&category_id=${cat.category_id}`);
                         const filmes = await resFilmes.json();
                         
                         if(filmes && filmes.length > 0) {
-                            heroFilmes = filmes.slice(0, 5);
-                            iniciarHeroSlider(pastaFilmeValida.category_name);
-                            htmlConstruido += gerarCarrosselHTML(pastaFilmeValida.category_name, 'filmes', 'film', filmes.slice(5, 20));
+                            if(i === 0) {
+                                heroFilmes = filmes.slice(0, 5);
+                                iniciarHeroSlider(cat.category_name);
+                                htmlConstruido += gerarCarrosselHTML(cat.category_name, 'filmes', 'film', filmes.slice(5, 20));
+                            } else {
+                                htmlConstruido += gerarCarrosselHTML(cat.category_name, 'filmes', 'film', filmes.slice(0, 15));
+                            }
                         }
                     }
                 } catch(e) { console.log("Erro Filmes", e); }
 
-                // SÉRIES
+                // 2. SÉRIES (Puxa 2 pastas)
                 try {
                     const resSerieCats = await fetch('/api/iptv?action=get_series_categories');
                     const serieCats = await resSerieCats.json();
-                    const pastaSerieValida = serieCats.find(c => pastaValida(c.category_name));
                     
-                    if(pastaSerieValida) {
-                        const resSeries = await fetch(`/api/iptv?action=get_series&category_id=${pastaSerieValida.category_id}`);
+                    const pastasSerieValidas = serieCats.filter(c => pastaValida(c.category_name)).slice(0, 2);
+                    
+                    for(let i = 0; i < pastasSerieValidas.length; i++) {
+                        const cat = pastasSerieValidas[i];
+                        const resSeries = await fetch(`/api/iptv?action=get_series&category_id=${cat.category_id}`);
                         const series = await resSeries.json();
                         if(series && series.length > 0) {
-                            htmlConstruido += gerarCarrosselHTML(pastaSerieValida.category_name, 'series', 'tv', series.slice(0, 15));
+                            htmlConstruido += gerarCarrosselHTML(cat.category_name, 'series', 'tv', series.slice(0, 15));
                         }
                     }
                 } catch(e) { console.log("Erro Séries", e); }
 
-                // TV AO VIVO
+                // 3. TV AO VIVO (Puxa 3 pastas)
                 try {
                     const resTvCats = await fetch('/api/iptv?action=get_live_categories');
                     const tvCats = await resTvCats.json();
@@ -357,7 +359,10 @@
             document.getElementById('bottomSheet').classList.remove('active');
         }
 
-        async function dispararPlayer(id, tipo, ext, titulo) {
+        // ==========================================
+        // 6. GERAÇÃO DE LINK DIRETO (100% NATIVO, SEM VERCEL)
+        // ==========================================
+        function dispararPlayer(id, tipo, ext, titulo) {
             if(tipo === 'series') {
                 alert(`Série: ${titulo}\n(Em breve: Lista de Episódios)`);
                 return;
@@ -365,31 +370,25 @@
 
             const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
             const textoOriginal = btn.innerHTML;
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Gerando...`;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Abrindo...`;
 
-            try {
-                let urlFinal = "";
-                if(tipo === 'vod') {
-                    const res = await fetch(`/api/iptv?action=get_movie_url&stream_id=${id}&extension=${ext}`);
-                    const data = await res.json();
-                    if(data.url) { urlFinal = data.url; }
-                } else if (tipo === 'live') {
-                    urlFinal = `http://kavru.com:80/558396043519/64537505/${id}.ts`;
-                }
+            // CONSTRUÇÃO DO LINK DIRETAMENTE NO CELULAR (Nunca falha!)
+            let urlFinal = "";
+            const usuario = "558396043519";
+            const senha = "64537505";
+            const dominio = "http://kavru.com:80";
 
-                if (urlFinal && window.AndroidApp) {
-                    btn.innerHTML = `<i class="fas fa-check"></i> Abrindo...`;
-                    window.AndroidApp.abrirVideoNativo(urlFinal);
-                } else if (urlFinal) {
-                    // SE ESTIVER NO NAVEGADOR (TESTE), MOSTRA O LINK
-                    alert(`O link final que o Android vai receber é:\n${urlFinal}`);
-                    btn.innerHTML = textoOriginal;
-                } else {
-                    alert("O servidor não devolveu o link do vídeo.");
-                    btn.innerHTML = textoOriginal;
-                }
-            } catch (e) {
-                alert("Erro ao buscar link no servidor.");
+            if(tipo === 'vod') {
+                urlFinal = `${dominio}/movie/${usuario}/${senha}/${id}.${ext || 'mp4'}`;
+            } else if (tipo === 'live') {
+                urlFinal = `${dominio}/${usuario}/${senha}/${id}.ts`;
+            }
+
+            if (window.AndroidApp) {
+                window.AndroidApp.abrirVideoNativo(urlFinal);
+                setTimeout(() => { btn.innerHTML = textoOriginal; }, 2000);
+            } else {
+                alert(`O link final que o Android vai receber é:\n${urlFinal}`);
                 btn.innerHTML = textoOriginal;
             }
         }
