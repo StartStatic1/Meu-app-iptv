@@ -126,7 +126,7 @@
             <h1 class="dp-title" id="dpTitle">Título</h1>
             <div class="dp-meta" id="dpMeta">Categoria</div>
             <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
-            <p class="dp-synopsis" id="dpSynopsis">Aguardando TMDB (Próxima Fase)...</p>
+            <p class="dp-synopsis" id="dpSynopsis">Aguardando integração com TMDB (Próxima Fase)...</p>
         </div>
     </div>
 
@@ -135,7 +135,12 @@
         let heroIndex = 0;
         let heroInterval = null;
 
-        // FILTRO INTELIGENTE
+        // PROTEÇÃO CONTRA CÓDIGO QUEBRADO NOS NOMES
+        function esc(str) {
+            return (str || '').toString().replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+
+        // FILTRO DE PASTAS VÁLIDAS
         function pastaValida(nome) {
             if (!nome) return false;
             const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR'];
@@ -143,7 +148,6 @@
             return !proibidos.some(p => n.includes(p));
         }
 
-        // LIMPEZA E EXTRAÇÃO DE ETIQUETAS
         function processarTitulo(nomeBruto, nomePasta) {
             let nomeLimpo = nomeBruto || "Sem Título";
             const pastaU = nomePasta ? nomePasta.toUpperCase() : '';
@@ -172,9 +176,8 @@
             const tags = [];
             
             const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/i);
-            if(estado) {
-                tags.push(estado[0].toUpperCase());
-            }
+            if(estado) tags.push(estado[0].toUpperCase());
+            
             if(/FHD/i.test(nomeLimpo)) tags.push('FHD');
             else if(/HD/i.test(nomeLimpo)) tags.push('HD');
             else if(/4K/i.test(nomeLimpo)) tags.push('4K');
@@ -207,13 +210,19 @@
             return html;
         }
 
-        // MOTOR PRINCIPAL DE BUSCA NAS PASTAS
+        function mudarAba(idView, btn) {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(idView).classList.add('active');
+        }
+
         async function initApp() {
             try {
                 const containerDinamico = document.getElementById('conteudo-dinamico');
                 let htmlConstruido = "";
                 
-                // 1. FILMES
+                // 1. FILMES (COM O TIPO CORRIGIDO PARA 'vod')
                 try {
                     const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
                     const vodCats = await resVodCats.json();
@@ -233,9 +242,10 @@
                             if(i === 0) {
                                 heroFilmes = filmes.slice(0, 5);
                                 iniciarHeroSlider(cat.category_name);
-                                htmlConstruido += gerarCarrosselHTML(cat.category_name, 'filmes', 'film', filmes.slice(5, 20));
+                                // O SEGREDO ESTÁ AQUI: O TIPO É 'vod' E NÃO 'filmes'
+                                htmlConstruido += gerarCarrosselHTML(cat.category_name, 'vod', 'film', filmes.slice(5, 20));
                             } else {
-                                htmlConstruido += gerarCarrosselHTML(cat.category_name, 'filmes', 'film', filmes.slice(0, 15));
+                                htmlConstruido += gerarCarrosselHTML(cat.category_name, 'vod', 'film', filmes.slice(0, 15));
                             }
                         }
                     }
@@ -268,7 +278,7 @@
                         const resTv = await fetch(`/api/iptv?action=get_live_streams&category_id=${cat.category_id}`);
                         const canais = await resTv.json();
                         if(canais && canais.length > 0) {
-                            htmlConstruido += gerarCarrosselHTML(cat.category_name, 'tv', 'broadcast-tower', canais.slice(0, 15));
+                            htmlConstruido += gerarCarrosselHTML(cat.category_name, 'live', 'broadcast-tower', canais.slice(0, 15));
                         }
                     }
                 } catch(e) { console.log("Erro TV"); }
@@ -280,6 +290,7 @@
             }
         }
 
+        // CARROSSEL BLINDADO (Com aspas seguras)
         function gerarCarrosselHTML(nomePasta, tipo, icone, lista) {
             let html = `
             <div class="section-header">
@@ -289,24 +300,24 @@
             <div class="carousel">`;
             
             lista.forEach(item => {
-                if(tipo === 'tv') {
+                if(tipo === 'live') {
                     const fmtd = processarTV(item.name);
                     const capa = item.stream_icon;
                     html += `
-                    <div class="card-tv" onclick="abrirSheetTV('${fmtd.limpo}', '${item.stream_id}', '${fmtd.tagsStr}')">
+                    <div class="card-tv" onclick="abrirSheetTV('${esc(fmtd.limpo)}', '${item.stream_id}', '${esc(fmtd.tagsStr)}')">
                         <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
                         ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : ''}
                         <div class="titulo-tv" style="display:${capa ? 'none' : 'block'}">${fmtd.limpo}</div>
                         <div class="live-badge">AO VIVO</div>
                     </div>`;
-                } else if(tipo === 'filmes' || tipo === 'series') {
+                } else if(tipo === 'vod' || tipo === 'series') {
                     const fmtd = processarTitulo(item.name, nomePasta);
                     const capa = item.stream_icon || item.cover;
-                    const argId = tipo === 'filmes' ? item.stream_id : item.series_id;
+                    const argId = tipo === 'vod' ? item.stream_id : item.series_id;
                     const argExt = item.container_extension || 'mp4';
                     
                     html += `
-                    <div class="card-movie" onclick="abrirDetalhes('${fmtd.limpo}', '${nomePasta}', '${capa}', '${argId}', '${tipo}', '${argExt}', '${fmtd.tagsStr}')">
+                    <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', '${esc(nomePasta)}', '${esc(capa)}', '${argId}', '${tipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
                         <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
                         ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : ''}
                         <div class="titulo-fallback" style="display:${capa ? 'none' : 'block'}">${fmtd.limpo}</div>
@@ -314,14 +325,6 @@
                 }
             });
             return html + `</div>`;
-        }
-
-        // INTERFACE SPA (Abas e Detalhes)
-        function mudarAba(idView, btn) {
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(idView).classList.add('active');
         }
 
         function iniciarHeroSlider(nomeCat) {
@@ -394,7 +397,6 @@
             try {
                 let urlFinal = "";
                 
-                // O HTML bate na Vercel e a Vercel devolve a morada com a senha escondida
                 if(tipo === 'vod') {
                     const res = await fetch(`/api/iptv?action=get_movie_url&stream_id=${id}&extension=${ext}`);
                     const data = await res.json();
@@ -408,11 +410,9 @@
                 if (!urlFinal) throw new Error("A Vercel não retornou o link.");
 
                 if (window.AndroidApp) {
-                    // Dentro da App Nativa
                     window.AndroidApp.abrirVideoNativo(urlFinal);
                     setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
                 } else {
-                    // No Navegador (Chrome/UC): Força o MX Player/VLC via Intent
                     const urlLimpa = urlFinal.replace(/^https?:\/\//, '');
                     const intentUrl = `intent://${urlLimpa}#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end;`;
                     window.location.href = intentUrl;
