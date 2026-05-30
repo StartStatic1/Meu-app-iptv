@@ -32,6 +32,10 @@
         
         .play-btn { background: var(--accent); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4); cursor: pointer; text-transform: uppercase; width: max-content; transition:0.2s;}
         .play-btn:active { transform: scale(0.95); }
+        
+        /* NOVO: Botão Trailer do Banner */
+        .hero-trailer-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-transform: uppercase; transition:0.2s; margin-left:10px; backdrop-filter: blur(5px);}
+        .hero-trailer-btn:active { background: rgba(255,255,255,0.3); }
 
         .view { display: none; animation: fadeIn 0.3s ease; }
         .view.active { display: block; }
@@ -51,6 +55,14 @@
         
         .carousel { display: flex; gap: 12px; padding: 0 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; min-height: 165px; }
         .carousel::-webkit-scrollbar { display: none; }
+        
+        /* NOVO: Top 10 Styling */
+        .top10-container { display: flex; gap: 15px; padding: 0 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; min-height: 180px; align-items: flex-end;}
+        .top10-container::-webkit-scrollbar { display: none; }
+        .top10-card { flex: 0 0 120px; height: 160px; border-radius: 8px; background-color: #2a2d3e; scroll-snap-align: start; cursor: pointer; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.4); display:flex; align-items:center; transition:0.2s;}
+        .top10-card:active { transform:scale(0.95); }
+        .top10-img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position:absolute; z-index:1; opacity:0.8;}
+        .top10-number { position:absolute; left: -10px; bottom: -10px; font-size: 60px; font-weight: 900; color: transparent; -webkit-text-stroke: 2px #fff; z-index:2; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); font-family: Impact, sans-serif;}
         
         .card-movie { flex: 0 0 110px; height: 165px; border-radius: 8px; background-color: #2a2d3e; scroll-snap-align: start; overflow: hidden; cursor: pointer; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
         .card-movie img { width: 100%; height: 100%; object-fit: cover; }
@@ -92,7 +104,6 @@
         .sheet-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto 20px; }
         .sheet-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; text-transform: uppercase; cursor: pointer; }
 
-        /* PÁGINAS DE SOBREPOSIÇÃO E LAYOUT DE BOTÕES AJUSTADO */
         .details-page { position: fixed; top: 0; left: 100%; width: 100%; height: 100vh; background: var(--bg-bottom); z-index: 3000; transition: left 0.3s ease-out; overflow-y: auto; padding-bottom: 30px; }
         .details-page.active { left: 0; }
         .dp-back-btn { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; z-index: 3010; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; cursor: pointer; }
@@ -105,7 +116,6 @@
         .dp-director { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; font-style: italic;}
         .dp-meta { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 20px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;}
         
-        /* BOTÕES DE AÇÃO REFINADOS (Assistir menor) */
         .action-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
         .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(255,255,255,0.2); transition: 0.2s;}
         .dp-play-btn:active { transform: scale(0.97); }
@@ -151,10 +161,6 @@
         .server-btn.bf { border-left: 4px solid #ff0055; }
         .server-warn { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 15px; line-height: 1.4;}
 
-        /* BLINDAGEM IFRAME - Permite popups mas bloqueia redirecionamento geral */
-        .embed-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 4500; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .embed-frame { width: 100%; aspect-ratio: 16/9; background: #000; border: none; z-index: 4501; }
-
         .season-title { font-size: 18px; font-weight: 800; color: #fff; margin: 30px 0 15px 0; border-left: 3px solid var(--accent); padding-left: 8px;}
         .ep-carousel { display: flex; gap: 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 10px; }
         .ep-carousel::-webkit-scrollbar { display: none; }
@@ -192,9 +198,20 @@
                 <div class="hero-gradient">
                     <div class="hero-tags" id="heroTags">Aguarde...</div>
                     <h1 class="hero-title" id="heroTitle">Carregando...</h1><br>
-                    <button class="play-btn"><i class="fas fa-play"></i> Assistir</button>
+                    <div style="display:flex;">
+                        <button class="play-btn"><i class="fas fa-play"></i> Assistir</button>
+                        <button class="hero-trailer-btn" id="heroBtnTrailer" onclick="abrirTrailer(event)" style="display:none;"><i class="fas fa-film"></i> Trailer</button>
+                    </div>
                 </div>
             </div>
+            
+            <div id="top10-section" style="display:none; margin-top:20px;">
+                <div class="section-header">
+                    <div class="section-title"><i class="fas fa-fire" style="color:#ff3d00;"></i> Top 10 Populares</div>
+                </div>
+                <div class="top10-container" id="top10-container"></div>
+            </div>
+            
             <div id="conteudo-dinamico"></div>
         </div>
     </div>
@@ -271,19 +288,19 @@
         <div class="sheet-handle" onclick="fecharMenuServidores()"></div>
         <div class="server-title">Servidores Alternativos (Web)</div>
         <div class="server-btn em" onclick="abrirPlayerWeb('embedmovies')">
-            <div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; Servidor 1 (EmbedMovies)</div>
+            <div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; Servidor 1 (Sem Anúncios)</div>
             <i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
         </div>
         <div class="server-btn ep" onclick="abrirPlayerWeb('embedplayapi')">
             <div><i class="fas fa-play-circle" style="color:#00e676;"></i> &nbsp; Servidor 2 (EmbedPlayApi)</div>
-            <i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
+            <i class="fas fa-external-link-alt" style="font-size:10px; color:#666;"></i>
         </div>
         <div class="server-btn bf" onclick="abrirPlayerWeb('betterflix')">
             <div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; Servidor 3 (BetterFlix)</div>
-            <i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
+            <i class="fas fa-external-link-alt" style="font-size:10px; color:#666;"></i>
         </div>
         <div class="server-warn">
-            * Estes servidores abrem anúncios em popups externos. Feche as abas dos anúncios para voltar para cá.<br>Para uma experiência sem anúncios, utilize o botão principal "Assistir".
+            * O Servidor 2 e 3 abrem em guias externas do seu navegador para proteger o aplicativo. Feche a guia do navegador para voltar.
         </div>
     </div>
 
@@ -304,7 +321,7 @@
                 <div class="secondary-actions" id="boxSecundario" style="display:none;">
                     <div class="sec-btn watched" id="btnWatched" onclick="toggleWatchedGlobal()"><i class="fas fa-check"></i> Visto</div>
                     <div class="sec-btn trailer" id="btnTrailer" onclick="abrirTrailer()" style="display:none;"><i class="fas fa-film"></i> Trailer</div>
-                    <div class="sec-btn web" id="btnAltServer" onclick="abrirMenuServidores()"><i class="fas fa-server"></i> Web Player</div>
+                    <div class="sec-btn web" id="btnAltServer" onclick="abrirMenuServidores()"><i class="fas fa-server"></i> Web</div>
                 </div>
             </div>
             
@@ -349,7 +366,7 @@
 
     <div class="embed-modal" id="embedModal">
         <i class="fas fa-times trailer-close" onclick="history.back()"></i>
-        <iframe id="embedFrame" class="embed-frame" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe>
+        <iframe id="embedFrame" class="embed-frame" allowfullscreen></iframe>
     </div>
 
     <script>
@@ -371,9 +388,11 @@
         let currentItemType = null;
         let currentSeason = 1;
         let currentEpisode = 1;
-        
         let currentStreamData = {}; 
 
+        // ==========================================
+        // SISTEMA DE HISTÓRICO INTELIGENTE
+        // ==========================================
         function getWatchedList() {
             try { return JSON.parse(localStorage.getItem('streamflix_watched_v2')) || {}; } 
             catch(e) { return {}; }
@@ -447,18 +466,8 @@
 
         function esc(str) { return (str || '').toString().replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
         function limparNomePasta(nome) { return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Séries\s*\|\s*/i, '').trim(); }
-
-        function pastaValida(nome) {
-            if (!nome) return false;
-            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR', 'TESTE'];
-            return !proibidos.some(p => nome.toUpperCase().includes(p));
-        }
-
-        function pastaTVValida(nome) {
-            if (!nome) return false;
-            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO', 'CÂMERA'];
-            return !proibidos.some(p => nome.toUpperCase().includes(p));
-        }
+        function pastaValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR', 'TESTE']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
+        function pastaTVValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO', 'CÂMERA']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
 
         function processarTitulo(nomeBruto, nomePasta) {
             let nomeLimpo = nomeBruto || "Sem Título";
@@ -565,6 +574,9 @@
             } catch(e) { document.getElementById(divId).innerHTML = "<div class='loading-text'>Erro ao carregar lista.</div>"; }
         }
 
+        // ==========================================
+        // CÉREBRO PRINCIPAL DA HOME (IPTV + TMDB MÁGICO)
+        // ==========================================
         async function initApp() {
             try {
                 let htmlConstruido = "";
@@ -575,23 +587,62 @@
                     return pri.test(b.category_name) - pri.test(a.category_name);
                 }).slice(0, 5); 
 
-                if(pastasFilmes.length > 0) {
-                    const res1 = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastasFilmes[0].category_id}`);
-                    const filmes1 = await res1.json();
-                    if(filmes1 && filmes1.length > 0) {
-                        heroFilmes = filmes1.slice(0, 5);
-                        iniciarHeroSlider(limparNomePasta(pastasFilmes[0].category_name));
-                        htmlConstruido += gerarCarrosselHTML(limparNomePasta(pastasFilmes[0].category_name), pastasFilmes[0].category_id, 'vod', 'film', filmes1.slice(5, 20));
+                // 1. CARREGA O TOP 1 DO TMDB PARA O BANNER SUPERIOR
+                try {
+                    const tmdbTrendRes = await fetch(`https://api.themoviedb.org/3/trending/movie/week?api_key=${TMDB_API_KEY}&language=pt-BR`);
+                    const tmdbTrend = await tmdbTrendRes.json();
+                    
+                    if(tmdbTrend.results && tmdbTrend.results.length > 0) {
+                        const topFilme = tmdbTrend.results[0];
+                        document.getElementById('heroBanner').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${topFilme.backdrop_path}')`;
+                        document.getElementById('heroTitle').innerText = topFilme.title;
+                        document.getElementById('heroTags').innerHTML = `<span style="background:var(--accent); color:#000; padding:2px 5px; border-radius:3px; font-weight:bold;">ESTREIA MUNDIAL</span> <i class="fas fa-star" style="color:gold;"></i> ${topFilme.vote_average.toFixed(1)}`;
+                        
+                        // Configura o botão do Banner para procurar no catálogo
+                        const btnBanner = document.querySelector('#heroBanner .play-btn');
+                        btnBanner.innerHTML = `<i class="fas fa-search"></i> Buscar no Catálogo`;
+                        btnBanner.onclick = (e) => { e.stopPropagation(); redirecionarPesquisa(topFilme.title); };
+                        
+                        // Botão Trailer do Banner
+                        const btnTrailerBanner = document.getElementById('heroBtnTrailer');
+                        const detailsRes = await fetch(`https://api.themoviedb.org/3/movie/${topFilme.id}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=videos`);
+                        const details = await detailsRes.json();
+                        if(details.videos && details.videos.results) {
+                            const trailer = details.videos.results.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
+                            if(trailer) {
+                                btnTrailerBanner.style.display = 'inline-flex';
+                                btnTrailerBanner.onclick = (e) => { e.stopPropagation(); trailerKeyAtivo = trailer.key; abrirTrailer(); };
+                            }
+                        }
                     }
-                }
+                } catch(e) {}
 
+                // 2. CARREGA O TOP 10 TMDB NA GRELHA INICIAL
+                try {
+                    const tmdbTopRes = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=pt-BR&page=1`);
+                    const tmdbTop = await tmdbTopRes.json();
+                    if(tmdbTop.results && tmdbTop.results.length > 0) {
+                        let htmlTop = "";
+                        tmdbTop.results.slice(0, 10).forEach((filme, index) => {
+                            const img = filme.poster_path ? `https://image.tmdb.org/t/p/w300${filme.poster_path}` : 'https://via.placeholder.com/220x330/111/fff';
+                            htmlTop += `
+                            <div class="top10-card" onclick="redirecionarPesquisa('${esc(filme.title)}')">
+                                <img src="${img}" class="top10-img">
+                                <div class="top10-number">${index + 1}</div>
+                            </div>`;
+                        });
+                        document.getElementById('top10-container').innerHTML = htmlTop;
+                        document.getElementById('top10-section').style.display = 'block';
+                    }
+                } catch(e){}
+
+                // 3. CONTINUA COM O KAVRU
                 document.getElementById('loading-state').style.display = 'none';
                 document.getElementById('conteudo-real').style.display = 'block';
-                document.getElementById('conteudo-dinamico').innerHTML = htmlConstruido;
 
                 setTimeout(async () => {
                     let htmlExtra = "";
-                    for(let i = 1; i < pastasFilmes.length; i++) {
+                    for(let i = 0; i < pastasFilmes.length; i++) {
                         const res = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastasFilmes[i].category_id}`);
                         const filmes = await res.json();
                         if(filmes && filmes.length > 0) htmlExtra += gerarCarrosselHTML(limparNomePasta(pastasFilmes[i].category_name), pastasFilmes[i].category_id, 'vod', 'film', filmes.slice(0, 15));
@@ -748,26 +799,6 @@
             }, 800);
         }
 
-        function iniciarHeroSlider(nomeCat) {
-            atualizarHero(nomeCat);
-            heroInterval = setInterval(() => { heroIndex = (heroIndex + 1) % heroFilmes.length; atualizarHero(nomeCat); }, 5000);
-        }
-        function atualizarHero(nomeCat) {
-            const f = heroFilmes[heroIndex]; if(!f) return;
-            const fmtd = processarTitulo(f.name, nomeCat);
-            document.getElementById('heroBanner').style.backgroundImage = `url('${f.stream_icon}')`;
-            document.getElementById('heroTitle').innerText = fmtd.limpo;
-            document.getElementById('heroTags').innerHTML = gerarHTMLBadges(fmtd.tagsStr) + `<span style="color:#fff; margin-left:5px;">${nomeCat}</span>`;
-        }
-        function abrirHeroDetalhes() {
-            const f = heroFilmes[heroIndex]; if(!f) return;
-            const fmtd = processarTitulo(f.name, ""); 
-            abrirDetalhes(fmtd.limpo, "Destaque VIP", f.stream_icon, f.stream_id, 'vod', f.container_extension || 'mp4', fmtd.tagsStr);
-        }
-
-        // ==========================================
-        // O MAGNÍFICO MOTOR TMDB
-        // ==========================================
         async function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
             document.getElementById('dpTitle').innerText = titulo;
             document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
@@ -1021,29 +1052,35 @@
             document.getElementById('sheetOverlay').classList.remove('active');
         }
 
+        // ==========================================
+        // O CADEADO DE SEGURANÇA FINAL PARA OS IFRAMES (NOVA ABA)
+        // ==========================================
         function abrirPlayerWeb(servidor) {
             if(!currentTmdbId) return;
             fecharMenuServidores();
-            
-            const modal = document.getElementById('embedModal');
-            const frame = document.getElementById('embedFrame');
             
             let finalUrl = "";
             if (servidor === 'betterflix') {
                 if(currentItemType === 'movie') finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=movie`;
                 else finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=tv&season=${currentSeason}&episode=${currentEpisode}`;
             } else if (servidor === 'embedmovies') {
+                // Servidor 1 agora abre no iframe interno (pois ele não bloqueia o Sandbox tão agressivamente e tem menos anúncios pop-under)
                 if(currentItemType === 'movie') finalUrl = `https://myembed.biz/filme/${currentTmdbId}`;
                 else finalUrl = `https://myembed.biz/serie/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
+                
+                const modal = document.getElementById('embedModal');
+                document.getElementById('embedFrame').src = finalUrl;
+                modal.style.display = 'flex';
+                history.replaceState({ view: 'embed' }, null, "");
+                return;
             } else if (servidor === 'embedplayapi') {
                 if(currentItemType === 'movie') finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}`;
                 else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
             }
 
-            frame.src = finalUrl;
-            modal.style.display = 'flex';
-            
-            history.replaceState({ view: 'embed' }, null, "");
+            // Para os Servidores 2 e 3 (Que bloqueiam sandbox): Abrem direto numa aba "Custom Tab" do Chrome no telemóvel. 
+            // É impossível eles quebrarem ou redirecionarem a nossa aplicação principal, pois rodam num processo isolado.
+            window.open(finalUrl, '_blank');
         }
 
         function fecharEmbed() {
