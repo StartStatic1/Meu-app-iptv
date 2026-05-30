@@ -3,147 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV Player Pro</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <title>Cine Mega - VOD Player</title>
     <style>
-        body { margin: 0; padding: 0; background-color: #121212; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { margin: 0; padding: 0; background-color: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Player Fixo no Topo */
-        .player-area { width: 100%; max-height: 40vh; background-color: #000; border-bottom: 2px solid #00ff88; display: flex; justify-content: center; align-items: center; }
+        /* Navegação Superior */
+        .navbar { background-color: #1a1a1a; padding: 10px; display: flex; justify-content: center; gap: 15px; border-bottom: 2px solid #e50914; }
+        .nav-btn { background-color: #333; color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .nav-btn.active { background-color: #e50914; }
+        
+        /* Player Fixo */
+        .player-area { width: 100%; max-height: 35vh; background-color: #000; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid #333; }
         video { max-width: 100%; max-height: 100%; aspect-ratio: 16/9; }
         
-        /* Container Inferior (Menu Lateral + Canais) */
+        /* Área de Conteúdo */
         .bottom-area { display: flex; flex: 1; overflow: hidden; }
         
-        /* Barra Lateral - Categorias */
-        .sidebar { width: 35%; max-width: 250px; background-color: #1a1a1a; border-right: 1px solid #2a2a2a; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 15px; background-color: #00ff88; color: #000; font-weight: bold; text-align: center; font-size: 14px; }
-        .category-list { flex: 1; overflow-y: auto; padding: 5px; }
-        .category-item { padding: 10px; margin-bottom: 5px; background-color: #2a2a2a; border-radius: 5px; cursor: pointer; font-size: 12px; transition: 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .category-item:hover { background-color: #3a3a3a; border-left: 4px solid #00ff88; }
+        /* Categorias (Barra Lateral) */
+        .sidebar { width: 35%; max-width: 200px; background-color: #141414; border-right: 1px solid #2a2a2a; display: flex; flex-direction: column; overflow-y: auto; }
+        .category-item { padding: 12px 10px; border-bottom: 1px solid #222; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .category-item:hover { background-color: #e50914; color: #fff; }
         
-        /* Área Principal - Canais */
-        .main-content { flex: 1; display: flex; flex-direction: column; background-color: #121212; }
-        .top-bar { padding: 10px; background-color: #1a1a1a; border-bottom: 1px solid #2a2a2a; font-size: 12px; color: #aaa; text-align: center; }
-        .channel-grid { flex: 1; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); gap: 10px; align-content: start; }
-        .channel-card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 10px; text-align: center; cursor: pointer; transition: 0.2s; display: flex; flex-direction: column; align-items: center; }
-        .channel-card:hover { border-color: #00ff88; }
-        .channel-logo { width: 40px; height: 40px; object-fit: contain; margin-bottom: 5px; background: #000; border-radius: 4px;}
-        .channel-name { font-size: 10px; font-weight: bold; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+        /* Grid de Filmes/Séries */
+        .main-content { flex: 1; display: flex; flex-direction: column; background-color: #0f0f0f; }
+        .top-bar { padding: 10px; background-color: #141414; font-size: 12px; color: #aaa; text-align: center; border-bottom: 1px solid #2a2a2a; }
+        .grid { flex: 1; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; align-content: start; }
+        
+        /* Cartão estilo Netflix */
+        .card { background-color: #1e1e1e; border-radius: 6px; overflow: hidden; cursor: pointer; transition: 0.2s; position: relative; }
+        .card:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(229, 9, 20, 0.5); }
+        .card-img { width: 100%; aspect-ratio: 2/3; object-fit: cover; background: #222; display: block; }
+        .card-title { font-size: 10px; font-weight: bold; padding: 5px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: rgba(0,0,0,0.8); position: absolute; bottom: 0; width: 100%; box-sizing: border-box; }
     </style>
 </head>
 <body>
 
+    <div class="navbar">
+        <button class="nav-btn active" id="btnFilmes" onclick="setModo('vod')">Filmes</button>
+        <button class="nav-btn" id="btnSeries" onclick="setModo('series')">Séries</button>
+    </div>
+
     <div class="player-area">
-        <video id="videoPlayer" controls></video>
+        <video id="videoPlayer" controls poster="https://via.placeholder.com/800x450?text=CINE+MEGA"></video>
     </div>
 
     <div class="bottom-area">
-        <div class="sidebar">
-            <div class="sidebar-header">Categorias Ao Vivo</div>
-            <div class="category-list" id="categoryList">
-                <div style="text-align:center; margin-top:20px; font-size: 12px;">Carregando...</div>
-            </div>
+        <div class="sidebar" id="categoryList">
+            <div style="text-align:center; padding: 20px; font-size: 12px;">Carregando...</div>
         </div>
 
         <div class="main-content">
             <div class="top-bar" id="loading">Selecione uma categoria</div>
-            <div class="channel-grid" id="channelGrid">
-                </div>
+            <div class="grid" id="contentGrid"></div>
         </div>
     </div>
 
     <script>
-        let hlsInstance = null;
+        let modoAtual = 'vod'; // Pode ser 'vod' (Filmes) ou 'series' (Séries)
+
+        function setModo(modo) {
+            modoAtual = modo;
+            document.getElementById('btnFilmes').classList.toggle('active', modo === 'vod');
+            document.getElementById('btnSeries').classList.toggle('active', modo === 'series');
+            document.getElementById('contentGrid').innerHTML = "";
+            document.getElementById('loading').innerText = "Carregando categorias...";
+            carregarCategorias();
+        }
 
         async function carregarCategorias() {
             const list = document.getElementById('categoryList');
+            list.innerHTML = "<div style='padding:10px; text-align:center;'>Aguarde...</div>";
+            
+            // Define qual rota da API chamar baseado no botão clicado
+            const action = modoAtual === 'vod' ? 'get_vod_categories' : 'get_series_categories';
+
             try {
-                const response = await fetch('/api/iptv?action=get_live_categories');
+                const response = await fetch(`/api/iptv?action=${action}`);
                 const categorias = await response.json();
                 list.innerHTML = ""; 
+                
                 categorias.forEach(cat => {
                     const div = document.createElement('div');
                     div.className = 'category-item';
                     div.innerText = cat.category_name;
-                    div.onclick = () => carregarCanais(cat.category_id, cat.category_name);
+                    div.onclick = () => carregarConteudo(cat.category_id, cat.category_name);
                     list.appendChild(div);
                 });
             } catch (error) {
-                list.innerHTML = "<div style='color:red;'>Erro</div>";
+                list.innerHTML = "<div style='color:red; padding:10px;'>Erro ao carregar</div>";
             }
         }
 
-        async function carregarCanais(id, nomeCategoria) {
-            const grid = document.getElementById('channelGrid');
+        async function carregarConteudo(id, nomeCategoria) {
+            const grid = document.getElementById('contentGrid');
             const loading = document.getElementById('loading');
             grid.innerHTML = "";
-            loading.innerText = `Carregando: ${nomeCategoria}...`;
+            loading.innerText = `Buscando em: ${nomeCategoria}...`;
+
+            const action = modoAtual === 'vod' ? 'get_vod_streams' : 'get_series';
 
             try {
-                const response = await fetch(`/api/iptv?action=get_live_streams&category_id=${id}`);
-                const canais = await response.json();
-                loading.innerText = `${canais.length} canais em: ${nomeCategoria}`;
+                const response = await fetch(`/api/iptv?action=${action}&category_id=${id}`);
+                const itens = await response.json();
+                loading.innerText = `${itens.length} títulos encontrados em: ${nomeCategoria}`;
                 
-                canais.forEach(canal => {
+                itens.forEach(item => {
                     const card = document.createElement('div');
-                    card.className = 'channel-card';
+                    card.className = 'card';
                     
-                    const logoUrl = canal.stream_icon ? canal.stream_icon : 'https://via.placeholder.com/40?text=TV';
+                    // Xtream usa stream_icon para filmes e cover para séries
+                    const coverUrl = item.stream_icon || item.cover || 'https://via.placeholder.com/200x300?text=Sem+Capa';
+                    const titulo = item.name || "Sem Título";
+                    const itemId = item.stream_id || item.series_id;
+                    const ext = item.container_extension || 'mp4';
                     
                     card.innerHTML = `
-                        <img class="channel-logo" src="${logoUrl}" onerror="this.src='https://via.placeholder.com/40?text=TV'">
-                        <div class="channel-name">${canal.name}</div>
+                        <img class="card-img" src="${coverUrl}" onerror="this.src='https://via.placeholder.com/200x300?text=Sem+Capa'">
+                        <div class="card-title">${titulo}</div>
                     `;
-                    // Ao clicar, aciona o player
-                    card.onclick = () => tocarCanal(canal.stream_id, canal.name);
+                    
+                    card.onclick = () => {
+                        if (modoAtual === 'vod') {
+                            tocarFilme(itemId, titulo, ext);
+                        } else {
+                            alert(`Série: ${titulo}\n(Próximo nível: Criar a tela de episódios para o ID ${itemId})`);
+                        }
+                    };
+                    
                     grid.appendChild(card);
                 });
             } catch (error) {
-                loading.innerText = "Erro ao carregar.";
+                loading.innerText = "Erro ao carregar os títulos.";
             }
         }
 
-        async function tocarCanal(streamId, nomeCanal) {
+        async function tocarFilme(streamId, titulo, ext) {
             const video = document.getElementById('videoPlayer');
             const loading = document.getElementById('loading');
-            
-            loading.innerText = `Conectando: ${nomeCanal}...`;
+            loading.innerText = `Preparando filme: ${titulo}...`;
 
             try {
-                // 1. Pede o link secreto para a Vercel
-                const response = await fetch(`/api/iptv?action=get_stream_url&stream_id=${streamId}`);
+                // Pede o link do filme para o nosso backend Vercel
+                const response = await fetch(`/api/iptv?action=get_movie_url&stream_id=${streamId}&extension=${ext}`);
                 const data = await response.json();
-                const streamUrl = data.url;
-
-                // 2. Toca o link no HLS.js
-                if (hlsInstance) {
-                    hlsInstance.destroy();
-                }
-
-                if (Hls.isSupported()) {
-                    hlsInstance = new Hls();
-                    hlsInstance.loadSource(streamUrl);
-                    hlsInstance.attachMedia(video);
-                    hlsInstance.on(Hls.Events.MANIFEST_PARSED, function() {
-                        video.play().catch(e => console.log("Autoplay bloqueado", e));
-                        loading.innerText = `Rodando: ${nomeCanal}`;
-                    });
-                    hlsInstance.on(Hls.Events.ERROR, function(event, data) {
-                        if (data.fatal) loading.innerText = `Erro de CORS ou Link Offline.`;
-                    });
-                } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-                    video.src = streamUrl;
-                    video.addEventListener('loadedmetadata', function() {
-                        video.play();
-                    });
-                }
+                
+                // Toca direto no navegador nativo (HTML5)
+                video.src = data.url;
+                video.play();
+                loading.innerText = `Reproduzindo: ${titulo}`;
+                
             } catch (error) {
-                loading.innerText = "Erro ao puxar vídeo.";
+                loading.innerText = "Erro ao buscar o arquivo de vídeo.";
             }
         }
 
-        window.onload = carregarCategorias;
+        // Inicia carregando os filmes por padrão
+        window.onload = () => setModo('vod');
     </script>
 </body>
 </html>
