@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPTV Player - Passo 1</title>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        body { background-color: #121212; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; }
+        .btn { background-color: #00ff88; color: #000; padding: 12px 24px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        #status { margin: 15px 0; color: #aaa; }
+        .lista-teste { max-width: 500px; margin: 20px auto; text-align: left; background: #1e1e1e; padding: 15px; border-radius: 8px; max-height: 300px; overflow-y: auto; }
+        .item-canal { padding: 8px; border-bottom: 1px solid #333; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+    <h2>IPTV Player - Teste de Proxy Vercel</h2>
+    <p>Validando conexão segura e contorno de CORS no Chrome</p>
+
+    <button class="btn" onclick="testarProxy()">Testar Conexão com a API</button>
+    <div id="status">Clique no botão para iniciar o teste através da Vercel.</div>
+
+    <div class="lista-teste" id="listaCanais" style="display:none;">
+        </div>
+
+    <script>
+        async function testarProxy() {
+            const status = document.getElementById('status');
+            const lista = document.getElementById('listaCanais');
+            
+            status.innerText = "Chamando o Proxy da Vercel...";
+            lista.innerHTML = "";
+            lista.style.display = "none";
+
+            try {
+                // Chamada para a NOSSA API Serverless interna da Vercel
+                const response = await fetch('/api/iptv?action=get_live_streams');
+                const data = await response.json();
+
+                if (data.error) {
+                    status.innerText = "Erro: " + data.error;
+                    return;
+                }
+
+                status.innerText = `Sucesso! Conectado. Total de canais no servidor: ${data.length}. Mostrando os 10 primeiros para teste:`;
+                lista.style.display = "block";
+
+                // Mostra apenas os 10 primeiros para validar que o Chrome leu o JSON com sucesso
+                const amostra = data.slice(0, 10);
+                amostra.forEach(canal => {
+                    const div = document.createElement('div');
+                    div.className = 'item-canal';
+                    div.innerText = `📺 ${canal.name} (ID: ${canal.stream_id})`;
+                    lista.appendChild(div);
+                });
+
+            } catch (error) {
+                status.innerText = "Erro ao rodar o teste. Certifique-se de que o projeto foi publicado na Vercel.";
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
