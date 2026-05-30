@@ -4,91 +4,133 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>StreamFlix</title>
-    <!-- Ícones minimalistas -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Variáveis de Cor - Foco no Preto Absoluto e Violeta Neon */
+        /* Paleta Disney+ (Azul Espacial e Azul Neon) */
         :root { 
-            --bg: #000000; 
-            --accent: #8A2BE2; /* Violeta Neon */
-            --glass: rgba(20, 20, 20, 0.7);
-            --text: #FFFFFF; 
-            --text-muted: #888888;
+            --bg-top: #1a1d29; /* Azul bem escuro */
+            --bg-bottom: #040714; /* Quase preto azulado */
+            --accent: #00e5ff; /* Azul Ciano Neon */
+            --glass: rgba(26, 29, 41, 0.85);
+            --text: #f9f9f9; 
+            --text-muted: #8f98b0;
         }
 
-        body { margin: 0; padding: 0; background-color: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; overflow-x: hidden; padding-bottom: 80px; }
+        body { 
+            margin: 0; padding: 0; 
+            background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
+            background-attachment: fixed;
+            color: var(--text); font-family: 'Segoe UI', sans-serif; 
+            overflow-x: hidden; padding-bottom: 90px; 
+        }
         
-        /* Destaque Principal (Hero) */
-        .hero { position: relative; width: 100%; height: 55vh; background: url('https://image.tmdb.org/t/p/original/8rpDcsfLJypbO6vtecsmREy9O8C.jpg') center/cover; }
-        .hero-gradient { position: absolute; bottom: 0; width: 100%; height: 60%; background: linear-gradient(to top, var(--bg) 0%, transparent 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; box-sizing: border-box; }
-        .hero-title { font-size: 28px; font-weight: 900; margin: 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); }
-        .hero-tags { font-size: 11px; color: var(--accent); font-weight: bold; margin-bottom: 10px; letter-spacing: 1px; text-transform: uppercase; }
-        
-        /* Botão de Play Imersivo */
-        .play-btn { background: var(--accent); color: #fff; border: none; padding: 12px 25px; border-radius: 30px; font-weight: bold; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; width: max-content; box-shadow: 0 0 15px rgba(138, 43, 226, 0.5); cursor: pointer; }
+        /* Logo Flutuante no Topo */
+        .header { position: absolute; top: 0; width: 100%; padding: 15px; z-index: 10; text-align: center; background: linear-gradient(to bottom, rgba(4,7,20,0.8), transparent); box-sizing: border-box; }
+        .header-logo { font-size: 22px; font-weight: 900; color: #fff; letter-spacing: 1px; margin: 0; }
+        .header-logo span { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.6); }
 
-        /* Fileiras de Filmes (Carrossel Horizontal) */
-        .section-title { font-size: 14px; font-weight: 700; margin: 20px 0 10px 15px; color: #ddd; }
+        /* Banner Destaque */
+        .hero { position: relative; width: 100%; height: 55vh; background: url('https://image.tmdb.org/t/p/original/8rpDcsfLJypbO6vtecsmREy9O8C.jpg') center/cover; border-radius: 0 0 20px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .hero-gradient { position: absolute; bottom: 0; width: 100%; height: 80%; background: linear-gradient(to top, var(--bg-top) 0%, transparent 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; box-sizing: border-box; border-radius: 0 0 20px 20px;}
+        .hero-title { font-size: 28px; font-weight: 900; margin: 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.9); }
+        .hero-tags { font-size: 12px; color: #ccc; font-weight: 600; margin-bottom: 15px; }
+        
+        /* Botão de Play Estilo Premium */
+        .play-btn { background: var(--accent); color: #000; border: none; padding: 14px 28px; border-radius: 8px; font-weight: 800; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; width: max-content; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4); cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: 0.2s; }
+        .play-btn:active { transform: scale(0.95); }
+
+        /* Carrosséis */
+        .section-title { font-size: 15px; font-weight: 700; margin: 25px 0 12px 15px; color: #fff; display: flex; align-items: center; gap: 8px; }
+        .section-title i { color: var(--accent); }
+        
         .carousel { display: flex; gap: 12px; padding: 0 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
-        .carousel::-webkit-scrollbar { display: none; } /* Esconde barra de rolagem */
+        .carousel::-webkit-scrollbar { display: none; }
         
-        .card { flex: 0 0 110px; height: 160px; border-radius: 10px; background-color: #111; scroll-snap-align: start; overflow: hidden; position: relative; }
-        .card img { width: 100%; height: 100%; object-fit: cover; }
+        /* Cartões de Filmes/Séries (Verticais) */
+        .card-movie { flex: 0 0 110px; height: 165px; border-radius: 8px; background-color: #2a2d3e; scroll-snap-align: start; overflow: hidden; border: 2px solid transparent; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .card-movie img { width: 100%; height: 100%; object-fit: cover; }
+        
+        /* Cartões de TV Ao Vivo (Horizontais) */
+        .card-tv { flex: 0 0 140px; height: 80px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; }
+        .card-tv img { width: 50%; height: auto; object-fit: contain; }
+        .live-badge { position: absolute; top: 5px; right: 5px; background: red; color: white; font-size: 8px; font-weight: bold; padding: 2px 5px; border-radius: 4px; }
 
-        /* Barra de Navegação Inferior (Glassmorphism) */
-        .bottom-nav { position: fixed; bottom: 15px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: var(--glass); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1); border-radius: 25px; display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .nav-item { color: var(--text-muted); font-size: 18px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .nav-item.active { color: var(--accent); text-shadow: 0 0 10px var(--accent); }
-        .nav-item span { font-size: 9px; font-weight: 600; }
+        /* Barra de Navegação Inferior */
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
+        .nav-item { color: var(--text-muted); font-size: 18px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 5px; width: 20%; }
+        .nav-item.active { color: var(--text); }
+        .nav-item.active i { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.8); transform: scale(1.1); }
+        .nav-item span { font-size: 10px; font-weight: 600; }
     </style>
 </head>
 <body>
 
-    <!-- Destaque Principal -->
+    <div class="header">
+        <h1 class="header-logo">Stream<span>Flix</span></h1>
+    </div>
+
     <div class="hero">
         <div class="hero-gradient">
-            <div class="hero-tags">Ação • Lançamento</div>
-            <h1 class="hero-title">O Resgate</h1>
+            <div class="hero-tags">Ação • Lançamento 2026</div>
+            <h1 class="hero-title">O Resgate 2</h1>
             <br>
-            <button class="play-btn"><i class="fas fa-play"></i> Assistir Agora</button>
+            <button class="play-btn"><i class="fas fa-play"></i> Assistir</button>
         </div>
     </div>
 
-    <!-- Carrossel 1 -->
-    <div class="section-title">Recomendados para Você</div>
+    <div class="section-title"><i class="fas fa-film"></i> Filmes Adicionados</div>
     <div class="carousel">
-        <div class="card"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+1" alt=""></div>
-        <div class="card"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+2" alt=""></div>
-        <div class="card"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+3" alt=""></div>
-        <div class="card"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+4" alt=""></div>
-        <div class="card"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+5" alt=""></div>
+        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+1" alt=""></div>
+        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+2" alt=""></div>
+        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+3" alt=""></div>
+        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+4" alt=""></div>
+        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+5" alt=""></div>
     </div>
 
-    <!-- Carrossel 2 -->
-    <div class="section-title">Séries em Alta</div>
+    <div class="section-title"><i class="fas fa-tv"></i> Séries em Alta</div>
     <div class="carousel">
-        <div class="card" style="flex: 0 0 180px; height: 100px;"><img src="https://via.placeholder.com/360x200/111/fff?text=Serie+1" alt=""></div>
-        <div class="card" style="flex: 0 0 180px; height: 100px;"><img src="https://via.placeholder.com/360x200/111/fff?text=Serie+2" alt=""></div>
-        <div class="card" style="flex: 0 0 180px; height: 100px;"><img src="https://via.placeholder.com/360x200/111/fff?text=Serie+3" alt=""></div>
+        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Serie+1" alt=""></div>
+        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Serie+2" alt=""></div>
+        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Serie+3" alt=""></div>
+        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Serie+4" alt=""></div>
     </div>
 
-    <!-- Barra de Navegação Inferior -->
+    <div class="section-title"><i class="fas fa-broadcast-tower"></i> TV Ao Vivo</div>
+    <div class="carousel">
+        <div class="card-tv">
+            <div class="live-badge">AO VIVO</div>
+            <img src="https://via.placeholder.com/100x50/333/fff?text=Globo" alt="">
+        </div>
+        <div class="card-tv">
+            <div class="live-badge">AO VIVO</div>
+            <img src="https://via.placeholder.com/100x50/333/fff?text=SBT" alt="">
+        </div>
+        <div class="card-tv">
+            <div class="live-badge">AO VIVO</div>
+            <img src="https://via.placeholder.com/100x50/333/fff?text=Telecine" alt="">
+        </div>
+    </div>
+
     <div class="bottom-nav">
         <div class="nav-item active">
             <i class="fas fa-home"></i>
             <span>Início</span>
         </div>
         <div class="nav-item">
-            <i class="fas fa-search"></i>
-            <span>Buscar</span>
+            <i class="fas fa-film"></i>
+            <span>Filmes</span>
         </div>
         <div class="nav-item">
             <i class="fas fa-tv"></i>
             <span>Séries</span>
         </div>
         <div class="nav-item">
-            <i class="fas fa-bookmark"></i>
-            <span>Minha Lista</span>
+            <i class="fas fa-broadcast-tower"></i>
+            <span>TV</span>
+        </div>
+        <div class="nav-item">
+            <i class="fas fa-search"></i>
+            <span>Buscar</span>
         </div>
     </div>
 
