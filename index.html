@@ -6,16 +6,20 @@
     <title>StreamFlix</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* Paleta Premium Disney+ */
         :root { 
             --bg-top: #1a1d29; --bg-bottom: #040714; --accent: #00e5ff; 
             --glass: rgba(26, 29, 41, 0.85); --text: #f9f9f9; --text-muted: #8f98b0;
         }
+
         * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+
         body { 
             margin: 0; padding: 0; background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
             background-attachment: fixed; color: var(--text); font-family: 'Segoe UI', sans-serif; 
             overflow-x: hidden; padding-bottom: 90px; 
         }
+        
         .header { position: absolute; top: 0; width: 100%; padding: 15px; z-index: 10; text-align: center; background: linear-gradient(to bottom, rgba(4,7,20,0.8), transparent); }
         .header-logo { font-size: 22px; font-weight: 900; color: #fff; margin: 0; }
         .header-logo span { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.6); }
@@ -31,8 +35,12 @@
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .section-title { font-size: 15px; font-weight: 700; margin: 25px 0 12px 15px; display: flex; align-items: center; gap: 8px; }
+        /* Nova Estrutura de Títulos com botão Ver Todos */
+        .section-header { display: flex; justify-content: space-between; align-items: center; padding: 25px 15px 10px 15px; }
+        .section-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: #fff; }
         .section-title i { color: var(--accent); }
+        .ver-todos { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 4px; }
+        
         .carousel { display: flex; gap: 12px; padding: 0 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; min-height: 165px; }
         .carousel::-webkit-scrollbar { display: none; }
         
@@ -92,10 +100,9 @@
         </div>
     </div>
 
-    <!-- Telas Vazias -->
-    <div id="view-filmes" class="view" style="padding-top: 80px; text-align: center;"><h2 style="color: var(--accent);">Filmes VIP</h2><p class="loading-text">Em breve listagem infinita aqui.</p></div>
-    <div id="view-series" class="view" style="padding-top: 80px; text-align: center;"><h2 style="color: var(--accent);">Séries Premium</h2><p class="loading-text">Em breve listagem infinita aqui.</p></div>
-    <div id="view-tv" class="view" style="padding-top: 80px; text-align: center;"><h2 style="color: var(--accent);">TV Ao Vivo</h2><p class="loading-text">Em breve listagem infinita aqui.</p></div>
+    <div id="view-filmes" class="view" style="padding-top: 80px; text-align: center;"><h2 style="color: var(--accent);">Filmes VIP</h2><p class="loading-text">Grade em breve.</p></div>
+    <div id="view-series" class="view" style="padding-top: 80px; text-align: center;"><h2 style="color: var(--accent);">Séries Premium</h2><p class="loading-text">Grade em breve.</p></div>
+    <div id="view-tv" class="view" style="padding-top: 80px; text-align: center;"><h2 style="color: var(--accent);">TV Ao Vivo</h2><p class="loading-text">Grade em breve.</p></div>
 
     <div class="bottom-nav" id="bottomNav">
         <div class="nav-item active" onclick="mudarAba('view-home', this)"><i class="fas fa-home"></i><span>Início</span></div>
@@ -104,7 +111,6 @@
         <div class="nav-item" onclick="mudarAba('view-tv', this)"><i class="fas fa-broadcast-tower"></i><span>TV</span></div>
     </div>
 
-    <!-- Módulos Extras -->
     <div class="bottom-sheet-overlay" id="sheetOverlay" onclick="fecharSheetTV()"></div>
     <div class="bottom-sheet" id="bottomSheet">
         <div class="sheet-handle"></div>
@@ -122,7 +128,7 @@
             <h1 class="dp-title" id="dpTitle">Título</h1>
             <div class="dp-meta" id="dpMeta">Categoria</div>
             <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
-            <p class="dp-synopsis" id="dpSynopsis">Aguardando integração com TMDB (Próxima Fase) para exibir a história completa e o elenco do filme.</p>
+            <p class="dp-synopsis" id="dpSynopsis">Aguardando TMDB (Próxima Fase)...</p>
         </div>
     </div>
 
@@ -131,31 +137,26 @@
         let heroIndex = 0;
         let heroInterval = null;
 
-        // FILTRO DE PASTAS
+        // O NOVO FILTRO DE PASTAS (Ignora Oscar, Religioso, etc)
         function pastaValida(nome) {
             if (!nome) return false;
-            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO'];
+            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR'];
             const n = nome.toUpperCase();
             return !proibidos.some(p => n.includes(p));
         }
 
-        // LIMPADOR DE TÍTULOS (REGEX)
-        function formatarTituloIPTV(nomeBruto, nomePasta) {
+        // MOTOR DE ETIQUETAS E LIMPEZA
+        // Agora retorna apenas uma STRING separada por vírgula (ex: "4K,DUB") para evitar erro de HTML no botão
+        function processarTitulo(nomeBruto, nomePasta) {
             let nomeLimpo = nomeBruto || "Sem Título";
-            let badgesHTML = '';
-            
             const pastaU = nomePasta ? nomePasta.toUpperCase() : '';
-            const etiquetas = [];
+            const tags = [];
 
-            if(pastaU.includes('4K') || /4K|UHD|2160p/i.test(nomeLimpo)) { etiquetas.push({ l: '4K', c: '#fff', b: '#ff1744' }); }
-            if(/FHD|1080p/i.test(nomeLimpo)) { etiquetas.push({ l: 'FHD', c: '#000', b: '#00e5ff' }); }
-            if(/HD|720p/i.test(nomeLimpo)) { etiquetas.push({ l: 'HD', c: '#000', b: '#76ff03' }); }
-            if(pastaU.includes('LEGENDADO') || /\[LEG\]|\(LEG\)/i.test(nomeLimpo)) { etiquetas.push({ l: 'LEG', c: '#fff', b: '#b388ff' }); }
-            else if(pastaU.includes('DUBLADO') || /\[DUB\]|\(DUB\)/i.test(nomeLimpo)) { etiquetas.push({ l: 'DUB', c: '#000', b: '#00e676' }); }
-
-            etiquetas.forEach(e => {
-                badgesHTML += `<span style="background:${e.b}; color:${e.c}; font-size:8px; font-weight:900; padding:3px 5px; border-radius:4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">${e.l}</span>`;
-            });
+            if(pastaU.includes('4K') || /4K|UHD|2160p/i.test(nomeLimpo)) tags.push('4K');
+            if(/FHD|1080p/i.test(nomeLimpo)) tags.push('FHD');
+            if(/HD|720p/i.test(nomeLimpo)) tags.push('HD');
+            if(pastaU.includes('LEGENDADO') || /\[LEG\]|\(LEG\)/i.test(nomeLimpo)) tags.push('LEG');
+            else if(pastaU.includes('DUBLADO') || /\[DUB\]|\(DUB\)/i.test(nomeLimpo)) tags.push('DUB');
 
             nomeLimpo = nomeLimpo.replace(/(4K|UHD|2160p|FHD|1080p|HD|720p)/ig, '');
             nomeLimpo = nomeLimpo.replace(/\[(DUB|LEG|VOD).*?\]/ig, ''); 
@@ -166,34 +167,45 @@
 
             if(nomeLimpo.length < 2) nomeLimpo = nomeBruto.substring(0, 20);
 
-            return { tituloLimpo: nomeLimpo, htmlBadges: badgesHTML };
+            return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
-        // LIMPADOR DE SÍMBOLOS PARA TV
-        function formatarTV(nomeBruto) {
+        function processarTV(nomeBruto) {
             let nomeLimpo = nomeBruto || "Canal";
-            let badgesHTML = '';
-            const etiquetas = [];
+            const tags = [];
             
             const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF)\b/i);
             if(estado) {
-                etiquetas.push({ l: estado[0].toUpperCase(), c: '#fff', b: '#ff9100' });
+                tags.push(estado[0].toUpperCase());
                 nomeLimpo = nomeLimpo.replace(estado[0], '');
             }
-            
-            if(/FHD/i.test(nomeLimpo)) { etiquetas.push({ l: 'FHD', c: '#000', b: '#00e5ff' }); }
-            else if(/HD/i.test(nomeLimpo)) { etiquetas.push({ l: 'HD', c: '#000', b: '#76ff03' }); }
-            else if(/4K/i.test(nomeLimpo)) { etiquetas.push({ l: '4K', c: '#fff', b: '#ff1744' }); }
-
-            etiquetas.forEach(e => {
-                badgesHTML += `<span style="background:${e.b}; color:${e.c}; font-size:8px; font-weight:900; padding:3px 5px; border-radius:4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">${e.l}</span>`;
-            });
+            if(/FHD/i.test(nomeLimpo)) tags.push('FHD');
+            else if(/HD/i.test(nomeLimpo)) tags.push('HD');
+            else if(/4K/i.test(nomeLimpo)) tags.push('4K');
 
             nomeLimpo = nomeLimpo.replace(/(FHD|HD|4K|SD)/ig, '');
             nomeLimpo = nomeLimpo.replace(/[>|\[\]\(\)*]/g, ''); 
             nomeLimpo = nomeLimpo.replace(/\s+/g, ' ').trim();
 
-            return { tituloLimpo: nomeLimpo, htmlBadges: badgesHTML };
+            return { limpo: nomeLimpo, tagsStr: tags.join(',') };
+        }
+
+        // TRANSFORMA STRING "4K,DUB" EM HTML BONITO E SEGURO
+        function gerarHTMLBadges(tagsStr) {
+            if(!tagsStr) return '';
+            const tags = tagsStr.split(',');
+            let html = '';
+            tags.forEach(t => {
+                let cor = '#000', bg = '#fff';
+                if(t==='4K') { cor='#fff'; bg='#ff1744'; }
+                if(t==='FHD') { cor='#000'; bg='#00e5ff'; }
+                if(t==='HD') { cor='#000'; bg='#76ff03'; }
+                if(t==='DUB') { cor='#000'; bg='#00e676'; }
+                if(t==='LEG') { cor='#fff'; bg='#b388ff'; }
+                if(t.length === 2) { cor='#fff'; bg='#ff9100'; } // Estados
+                html += `<span style="background:${bg}; color:${cor}; font-size:8px; font-weight:900; padding:3px 5px; border-radius:4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">${t}</span>`;
+            });
+            return html;
         }
 
         function mudarAba(idView, btn) {
@@ -203,18 +215,23 @@
             document.getElementById(idView).classList.add('active');
         }
 
-        // MOTOR DE DADOS: AGORA PUXA MÚLTIPLAS PASTAS!
+        // BUSCA DE DADOS (Priorizando Gêneros Netflix)
         async function initApp() {
             try {
                 const containerDinamico = document.getElementById('conteudo-dinamico');
                 let htmlConstruido = "";
                 
-                // 1. FILMES (Puxa 4 pastas diferentes!)
+                // 1. FILMES (Tenta achar Lançamentos, Ação, Comédia, Terror)
                 try {
                     const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
                     const vodCats = await resVodCats.json();
                     
-                    const pastasFilmesValidas = vodCats.filter(c => pastaValida(c.category_name)).slice(0, 4);
+                    // Ordena pastas para priorizar as que importam
+                    const pastasFilmesValidas = vodCats.filter(c => pastaValida(c.category_name))
+                        .sort((a,b) => {
+                            const prioritarias = /LANÇA|AÇÃO|COMÉDIA|TERROR|AVENTURA|FICÇÃO/i;
+                            return prioritarias.test(b.category_name) - prioritarias.test(a.category_name);
+                        }).slice(0, 5); // Pega as 5 melhores
                     
                     for(let i = 0; i < pastasFilmesValidas.length; i++) {
                         const cat = pastasFilmesValidas[i];
@@ -233,11 +250,10 @@
                     }
                 } catch(e) { console.log("Erro Filmes", e); }
 
-                // 2. SÉRIES (Puxa 2 pastas)
+                // 2. SÉRIES
                 try {
                     const resSerieCats = await fetch('/api/iptv?action=get_series_categories');
                     const serieCats = await resSerieCats.json();
-                    
                     const pastasSerieValidas = serieCats.filter(c => pastaValida(c.category_name)).slice(0, 2);
                     
                     for(let i = 0; i < pastasSerieValidas.length; i++) {
@@ -250,11 +266,10 @@
                     }
                 } catch(e) { console.log("Erro Séries", e); }
 
-                // 3. TV AO VIVO (Puxa 3 pastas)
+                // 3. TV AO VIVO
                 try {
                     const resTvCats = await fetch('/api/iptv?action=get_live_categories');
                     const tvCats = await resTvCats.json();
-                    
                     const pastasTvValidas = tvCats.filter(c => pastaValida(c.category_name)).slice(0, 3);
                     
                     for(let i = 0; i < pastasTvValidas.length; i++) {
@@ -274,31 +289,37 @@
             }
         }
 
+        // GERA O CARROSSEL COM BOTÃO VER TODOS
         function gerarCarrosselHTML(nomePasta, tipo, icone, lista) {
-            let html = `<div class="section-title"><i class="fas fa-${icone}"></i> ${nomePasta}</div><div class="carousel">`;
+            let html = `
+            <div class="section-header">
+                <div class="section-title"><i class="fas fa-${icone}"></i> ${nomePasta}</div>
+                <div class="ver-todos">Ver Todos <i class="fas fa-chevron-right"></i></div>
+            </div>
+            <div class="carousel">`;
             
             lista.forEach(item => {
                 if(tipo === 'tv') {
-                    const tvLimpa = formatarTV(item.name);
+                    const fmtd = processarTV(item.name);
                     const capa = item.stream_icon;
                     html += `
-                    <div class="card-tv" onclick="abrirSheetTV('${tvLimpa.tituloLimpo}', '${item.stream_id}', '${tvLimpa.htmlBadges}')">
-                        <div class="card-badges">${tvLimpa.htmlBadges}</div>
+                    <div class="card-tv" onclick="abrirSheetTV('${fmtd.limpo}', '${item.stream_id}', '${fmtd.tagsStr}')">
+                        <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
                         ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : ''}
-                        <div class="titulo-tv" style="display:${capa ? 'none' : 'block'}">${tvLimpa.tituloLimpo}</div>
+                        <div class="titulo-tv" style="display:${capa ? 'none' : 'block'}">${fmtd.limpo}</div>
                         <div class="live-badge">AO VIVO</div>
                     </div>`;
                 } else if(tipo === 'filmes' || tipo === 'series') {
-                    const fmtd = formatarTituloIPTV(item.name, nomePasta);
+                    const fmtd = processarTitulo(item.name, nomePasta);
                     const capa = item.stream_icon || item.cover;
                     const argId = tipo === 'filmes' ? item.stream_id : item.series_id;
                     const argExt = item.container_extension || 'mp4';
                     
                     html += `
-                    <div class="card-movie" onclick="abrirDetalhes('${fmtd.tituloLimpo}', '${nomePasta}', '${capa}', '${argId}', '${tipo}', '${argExt}', '${fmtd.htmlBadges}')">
-                        <div class="card-badges">${fmtd.htmlBadges}</div>
+                    <div class="card-movie" onclick="abrirDetalhes('${fmtd.limpo}', '${nomePasta}', '${capa}', '${argId}', '${tipo}', '${argExt}', '${fmtd.tagsStr}')">
+                        <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
                         ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : ''}
-                        <div class="titulo-fallback" style="display:${capa ? 'none' : 'block'}">${fmtd.tituloLimpo}</div>
+                        <div class="titulo-fallback" style="display:${capa ? 'none' : 'block'}">${fmtd.limpo}</div>
                     </div>`;
                 }
             });
@@ -316,23 +337,23 @@
         function atualizarHero(nomeCat) {
             const filme = heroFilmes[heroIndex];
             if(!filme) return;
-            const formatado = formatarTituloIPTV(filme.name, nomeCat);
+            const formatado = processarTitulo(filme.name, nomeCat);
             const capa = filme.stream_icon || 'https://via.placeholder.com/800x600/111/fff?text=StreamFlix';
             document.getElementById('heroBanner').style.backgroundImage = `url('${capa}')`;
-            document.getElementById('heroTitle').innerText = formatado.tituloLimpo;
-            document.getElementById('heroTags').innerHTML = formatado.htmlBadges + `<span style="color:#fff; margin-left:5px;">${nomeCat}</span>`;
+            document.getElementById('heroTitle').innerText = formatado.limpo;
+            document.getElementById('heroTags').innerHTML = gerarHTMLBadges(formatado.tagsStr) + `<span style="color:#fff; margin-left:5px;">${nomeCat}</span>`;
         }
 
         function abrirHeroDetalhes() {
             const f = heroFilmes[heroIndex];
             if(!f) return;
-            const formatado = formatarTituloIPTV(f.name, ""); 
-            abrirDetalhes(formatado.tituloLimpo, "Destaque VIP", f.stream_icon, f.stream_id, 'vod', f.container_extension || 'mp4', formatado.htmlBadges);
+            const fmtd = processarTitulo(f.name, ""); 
+            abrirDetalhes(fmtd.limpo, "Destaque VIP", f.stream_icon, f.stream_id, 'vod', f.container_extension || 'mp4', fmtd.tagsStr);
         }
 
-        function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, badges) {
+        function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
             document.getElementById('dpTitle').innerText = titulo;
-            document.getElementById('dpMeta').innerHTML = (badges || "") + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
+            document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
             if (!urlCapa || urlCapa === 'undefined' || urlCapa === 'null') urlCapa = 'https://via.placeholder.com/800x600/111/fff';
             document.getElementById('dpPoster').style.backgroundImage = `url('${urlCapa}')`;
             
@@ -344,9 +365,9 @@
 
         function fecharDetalhes() { document.getElementById('detailsPage').classList.remove('active'); }
 
-        function abrirSheetTV(titulo, streamId, badges) {
+        function abrirSheetTV(titulo, streamId, tagsStr) {
             document.getElementById('tvTitle').innerText = titulo;
-            document.getElementById('tvBadges').innerHTML = badges;
+            document.getElementById('tvBadges').innerHTML = gerarHTMLBadges(tagsStr);
             document.getElementById('btnPlayTV').onclick = () => dispararPlayer(streamId, 'live', '', titulo);
             
             document.getElementById('sheetOverlay').classList.add('active');
@@ -360,36 +381,40 @@
         }
 
         // ==========================================
-        // 6. GERAÇÃO DE LINK DIRETO (100% NATIVO, SEM VERCEL)
+        // O CÓDIGO PERFEITO DE PLAY (COM INTENT)
         // ==========================================
         function dispararPlayer(id, tipo, ext, titulo) {
             if(tipo === 'series') {
-                alert(`Série: ${titulo}\n(Em breve: Lista de Episódios)`);
+                alert(`Série: ${titulo}\n(O painel de episódios será feito na próxima fase!)`);
                 return;
             }
 
             const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
             const textoOriginal = btn.innerHTML;
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Abrindo...`;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`;
 
-            // CONSTRUÇÃO DO LINK DIRETAMENTE NO CELULAR (Nunca falha!)
+            // O formato exato do Xtream Codes puro
             let urlFinal = "";
             const usuario = "558396043519";
             const senha = "64537505";
-            const dominio = "http://kavru.com:80";
+            const servidor = "kavru.com:80";
 
             if(tipo === 'vod') {
-                urlFinal = `${dominio}/movie/${usuario}/${senha}/${id}.${ext || 'mp4'}`;
+                urlFinal = `http://${servidor}/movie/${usuario}/${senha}/${id}.${ext || 'mp4'}`;
             } else if (tipo === 'live') {
-                urlFinal = `${dominio}/${usuario}/${senha}/${id}.ts`;
+                urlFinal = `http://${servidor}/${usuario}/${senha}/${id}`; // Exatamente como o UC Browser roda
             }
 
             if (window.AndroidApp) {
+                // Se estiver dentro do seu APK
                 window.AndroidApp.abrirVideoNativo(urlFinal);
-                setTimeout(() => { btn.innerHTML = textoOriginal; }, 2000);
+                setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
             } else {
-                alert(`O link final que o Android vai receber é:\n${urlFinal}`);
-                btn.innerHTML = textoOriginal;
+                // SE ESTIVER NO NAVEGADOR (Vercel): Força a abrir o MX Player ou UC Video!
+                // O código "intent" é uma ordem do sistema Android
+                const intentUrl = `intent://${urlFinal.replace('http://','')}#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end;`;
+                window.location.href = intentUrl;
+                setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
             }
         }
 
