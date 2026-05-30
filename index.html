@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-PT">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -28,7 +28,7 @@
         .hero { position: relative; width: 100%; height: 55vh; background-position: top center; background-size: cover; border-radius: 0 0 20px 20px; transition: background-image 0.8s ease; background-color: #111; cursor: pointer; }
         .hero-gradient { position: absolute; bottom: 0; width: 100%; height: 80%; background: linear-gradient(to top, var(--bg-top) 0%, transparent 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; border-radius: 0 0 20px 20px;}
         .hero-title { font-size: 26px; font-weight: 900; margin: 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.9); }
-        .hero-tags { font-size: 11px; color: #ccc; font-weight: 600; margin-bottom: 10px; text-transform: uppercase;}
+        .hero-tags { font-size: 11px; color: #ccc; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; display: flex; gap: 5px; align-items: center;}
         
         .play-btn { background: var(--accent); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4); cursor: pointer; text-transform: uppercase; width: max-content; }
 
@@ -46,6 +46,9 @@
         .card-movie { flex: 0 0 110px; height: 165px; border-radius: 8px; background-color: #2a2d3e; scroll-snap-align: start; overflow: hidden; cursor: pointer; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
         .card-movie img { width: 100%; height: 100%; object-fit: cover; }
         .card-movie .titulo-fallback { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: white; font-size: 9px; padding: 8px 4px; text-align: center; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        /* NOVO: Etiquetas Flutuantes (DUB/LEG/4K) nas Capas */
+        .card-badges { position: absolute; top: 5px; left: 5px; display: flex; gap: 3px; flex-wrap: wrap; z-index: 2; pointer-events: none; }
         
         .card-tv { flex: 0 0 140px; height: 80px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; }
         .card-tv img { width: 60%; object-fit: contain; }
@@ -73,7 +76,7 @@
         .dp-gradient { position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-bottom) 0%, rgba(4,7,20,0.5) 50%, transparent 100%); }
         .dp-content { padding: 0 20px; margin-top: -60px; position: relative; z-index: 2; }
         .dp-title { font-size: 30px; font-weight: 900; margin: 0 0 10px 0; line-height: 1.1; }
-        .dp-meta { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 20px; }
+        .dp-meta { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 20px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;}
         .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 15px; border-radius: 8px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(255,255,255,0.2); }
         .dp-synopsis { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 25px; }
         
@@ -111,17 +114,17 @@
 
     <div id="view-filmes" class="view" style="padding-top: 80px; text-align: center;">
         <h2 style="color: var(--accent);">Filmes VIP</h2>
-        <p class="loading-text">Grade de filmes será adicionada aqui.</p>
+        <p class="loading-text">Grade de filmes (Em breve).</p>
     </div>
 
     <div id="view-series" class="view" style="padding-top: 80px; text-align: center;">
         <h2 style="color: var(--accent);">Séries Premium</h2>
-        <p class="loading-text">Grade de séries será adicionada aqui.</p>
+        <p class="loading-text">Grade de séries (Em breve).</p>
     </div>
 
     <div id="view-tv" class="view" style="padding-top: 80px; text-align: center;">
         <h2 style="color: var(--accent);">TV Ao Vivo</h2>
-        <p class="loading-text">Grade de canais será adicionada aqui.</p>
+        <p class="loading-text">Grade de canais (Em breve).</p>
     </div>
 
     <div class="bottom-nav" id="bottomNav">
@@ -147,17 +150,48 @@
             <h1 class="dp-title" id="dpTitle">Título</h1>
             <div class="dp-meta" id="dpMeta">Categoria</div>
             <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
-            <p class="dp-synopsis" id="dpSynopsis">Nenhuma sinopse fornecida pelo servidor.</p>
+            <p class="dp-synopsis" id="dpSynopsis">Aguardando integração com TMDB (API) na próxima fase para exibir sinopse, elenco e nota oficial do filme.</p>
         </div>
     </div>
 
     <script>
-        // Variáveis globais para o slider
         let heroFilmes = [];
         let heroIndex = 0;
         let heroInterval = null;
 
-        // 1. NAVEGAÇÃO SPA
+        // 1. O LIMPADOR DE TÍTULOS E GERADOR DE ETIQUETAS (REGEX)
+        function formatarTituloIPTV(nomeBruto) {
+            let nomeLimpo = nomeBruto;
+            let badgesHTML = '';
+
+            // Regras de caça às palavras (RegEx)
+            const regras = [
+                { regex: /\[DUB\]|\(DUB\)|DUBLADO|- DUB/i, label: 'DUB', cor: '#00e676', bg: 'rgba(0,230,118,0.2)' },
+                { regex: /\[LEG\]|\(LEG\)|LEGENDADO|- LEG/i, label: 'LEG', cor: '#b388ff', bg: 'rgba(179,136,255,0.2)' },
+                { regex: /4K|UHD/i, label: '4K', cor: '#ffd600', bg: 'rgba(255,214,0,0.2)' },
+                { regex: /FHD|1080[pP]/i, label: 'FHD', cor: '#00e5ff', bg: 'rgba(0,229,255,0.2)' }
+            ];
+
+            regras.forEach(r => {
+                if (r.regex.test(nomeLimpo)) {
+                    badgesHTML += `<span style="background:${r.bg}; color:${r.cor}; border: 1px solid ${r.cor}; font-size:7px; font-weight:bold; padding:2px 4px; border-radius:4px;">${r.label}</span>`;
+                    nomeLimpo = nomeLimpo.replace(r.regex, ''); // Remove a palavra feia do nome
+                }
+            });
+
+            // Limpa lixos extras comuns de IPTV
+            nomeLimpo = nomeLimpo.replace(/\|[A-Z]+\|/g, ''); // Ex: Remove |PT| ou |BR|
+            nomeLimpo = nomeLimpo.replace(/\[VOD\]/i, '');
+            nomeLimpo = nomeLimpo.replace(/\(\s*\)/g, ''); // Parênteses vazios
+            nomeLimpo = nomeLimpo.replace(/\[\s*\]/g, ''); // Colchetes vazios
+            nomeLimpo = nomeLimpo.replace(/-\s*$/, ''); // Traço perdido no final
+            nomeLimpo = nomeLimpo.trim(); // Corta espaços nas pontas
+
+            return { tituloLimpo: nomeLimpo, htmlBadges: badgesHTML };
+        }
+
+
+        // 2. NAVEGAÇÃO SPA
         function mudarAba(idView, btn) {
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -165,7 +199,7 @@
             document.getElementById(idView).classList.add('active');
         }
 
-        // 2. BUSCAR DADOS NA API
+        // 3. BUSCAR DADOS NA API
         async function initApp() {
             try {
                 // BUSCA FILMES
@@ -177,7 +211,7 @@
                     const filmes = await resFilmes.json();
                     
                     if(filmes && filmes.length > 0) {
-                        heroFilmes = filmes.slice(0, 5); // Separa 5 para rodar no topo
+                        heroFilmes = filmes.slice(0, 5);
                         iniciarHeroSlider(vodCats[0].category_name);
                         preencherCarrosselFilmes('carrossel-filmes', filmes.slice(5, 20), vodCats[0].category_name);
                     }
@@ -190,7 +224,6 @@
                     const idSerie = serieCats[0].category_id;
                     const resSeries = await fetch(`/api/iptv?action=get_series&category_id=${idSerie}`);
                     const series = await resSeries.json();
-                    
                     if(series && series.length > 0) {
                         preencherCarrosselSeries('carrossel-series', series.slice(0, 15), serieCats[0].category_name);
                     }
@@ -203,7 +236,6 @@
                     const idTv = tvCats[0].category_id;
                     const resTv = await fetch(`/api/iptv?action=get_live_streams&category_id=${idTv}`);
                     const canais = await resTv.json();
-                    
                     if(canais && canais.length > 0) {
                         preencherCarrosselTV('carrossel-tv', canais.slice(0, 15));
                     }
@@ -214,38 +246,46 @@
             }
         }
 
-        // 3. SLIDER DO BANNER GIGANTE
+        // 4. SLIDER DO BANNER GIGANTE
         function iniciarHeroSlider(nomeCat) {
             atualizarHero(nomeCat);
             heroInterval = setInterval(() => {
                 heroIndex = (heroIndex + 1) % heroFilmes.length;
                 atualizarHero(nomeCat);
-            }, 5000); // Roda a cada 5 segundos
+            }, 5000);
         }
 
         function atualizarHero(nomeCat) {
             const filme = heroFilmes[heroIndex];
+            const dadosLimpados = formatarTituloIPTV(filme.name || "Filme");
             const capa = filme.stream_icon || 'https://via.placeholder.com/800x600/111/fff?text=StreamFlix';
+            
             document.getElementById('heroBanner').style.backgroundImage = `url('${capa}')`;
-            document.getElementById('heroTitle').innerText = filme.name || "Filme";
-            document.getElementById('heroTags').innerText = `${nomeCat} • Destaque`;
+            document.getElementById('heroTitle').innerText = dadosLimpados.tituloLimpo;
+            document.getElementById('heroTags').innerHTML = dadosLimpados.htmlBadges + `<span style="color:#fff; margin-left:5px;">${nomeCat}</span>`;
         }
 
         function abrirHeroDetalhes() {
             const f = heroFilmes[heroIndex];
-            abrirDetalhes(f.name, "Lançamento", f.stream_icon, f.stream_id, 'vod', f.container_extension || 'mp4');
+            const dadosLimpados = formatarTituloIPTV(f.name);
+            abrirDetalhes(dadosLimpados.tituloLimpo, "Lançamento", f.stream_icon, f.stream_id, 'vod', f.container_extension || 'mp4', dadosLimpados.htmlBadges);
         }
 
-        // 4. PREENCHER CARROSSÉIS
+        // 5. PREENCHER CARROSSÉIS
         function preencherCarrosselFilmes(idContainer, lista, nomeCat) {
             const container = document.getElementById(idContainer);
             container.innerHTML = "";
             lista.forEach(f => {
+                const dadosLimpados = formatarTituloIPTV(f.name);
                 const capa = f.stream_icon;
                 const card = document.createElement('div');
                 card.className = 'card-movie';
-                card.innerHTML = capa ? `<img src="${capa}" loading="lazy">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${f.name}</div>`;
-                card.onclick = () => abrirDetalhes(f.name, nomeCat, capa, f.stream_id, 'vod', f.container_extension || 'mp4');
+                
+                let conteudo = `<div class="card-badges">${dadosLimpados.htmlBadges}</div>`;
+                conteudo += capa ? `<img src="${capa}" loading="lazy">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${dadosLimpados.tituloLimpo}</div>`;
+                card.innerHTML = conteudo;
+                
+                card.onclick = () => abrirDetalhes(dadosLimpados.tituloLimpo, nomeCat, capa, f.stream_id, 'vod', f.container_extension || 'mp4', dadosLimpados.htmlBadges);
                 container.appendChild(card);
             });
         }
@@ -254,12 +294,12 @@
             const container = document.getElementById(idContainer);
             container.innerHTML = "";
             lista.forEach(s => {
+                const dadosLimpados = formatarTituloIPTV(s.name);
                 const capa = s.cover;
                 const card = document.createElement('div');
                 card.className = 'card-movie';
-                card.innerHTML = capa ? `<img src="${capa}" loading="lazy">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${s.name}</div>`;
-                // Séries futuramente terão tela de episódios, por hora abre detalhes normal
-                card.onclick = () => abrirDetalhes(s.name, "Série • " + nomeCat, capa, s.series_id, 'series', '');
+                card.innerHTML = capa ? `<img src="${capa}" loading="lazy">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${dadosLimpados.tituloLimpo}</div>`;
+                card.onclick = () => abrirDetalhes(dadosLimpados.tituloLimpo, "Série • " + nomeCat, capa, s.series_id, 'series', '', '');
                 container.appendChild(card);
             });
         }
@@ -277,13 +317,13 @@
             });
         }
 
-        // 5. TELAS E A MÁGICA DO PLAY NATIVO
-        function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext) {
+        // 6. TELAS E A MÁGICA DO PLAY NATIVO
+        function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, badges) {
             document.getElementById('dpTitle').innerText = titulo;
-            document.getElementById('dpMeta').innerHTML = cat;
+            // Insere os Badges junto da Categoria na Tela de Detalhes
+            document.getElementById('dpMeta').innerHTML = (badges || "") + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
             document.getElementById('dpPoster').style.backgroundImage = `url('${urlCapa || 'https://via.placeholder.com/800x600/111/fff'}')`;
             
-            // Configura o botão de PLAY para chamar o vídeo
             document.getElementById('btnPlayFilme').onclick = () => dispararPlayer(id, tipo, ext, titulo);
             
             document.getElementById('detailsPage').classList.add('active');
@@ -294,7 +334,7 @@
 
         function abrirSheetTV(titulo, streamId) {
             document.getElementById('tvTitle').innerText = titulo;
-            document.getElementById('btnPlayTV').onclick = () => dispararPlayer(streamId, 'live', 'm3u8', titulo);
+            document.getElementById('btnPlayTV').onclick = () => dispararPlayer(streamId, 'live', '', titulo);
             
             document.getElementById('sheetOverlay').classList.add('active');
             document.getElementById('bottomSheet').classList.add('active');
@@ -306,49 +346,46 @@
             document.getElementById('bottomSheet').classList.remove('active');
         }
 
-        // O DISPARADOR FINAL (Gera a URL e Manda pro APK)
+        // DISPARADOR (Com Correção do Link da TV)
         async function dispararPlayer(id, tipo, ext, titulo) {
             if(tipo === 'series') {
-                alert(`Você clicou na Série: ${titulo}\nAinda vamos construir o painel de Temporadas e Episódios!`);
+                alert(`Você clicou na Série: ${titulo}\nAinda vamos construir o painel de Temporadas!`);
                 return;
             }
 
             const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
             const textoOriginal = btn.innerHTML;
-            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Gerando link...`;
+            btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Gerando...`;
 
             try {
-                // Aqui nós buscamos o Link Real dependendo se é TV (m3u8) ou Filme (mp4)
                 let urlFinal = "";
                 if(tipo === 'vod') {
                     const res = await fetch(`/api/iptv?action=get_movie_url&stream_id=${id}&extension=${ext}`);
                     const data = await res.json();
                     urlFinal = data.url;
                 } else if (tipo === 'live') {
-                    // Substitua pela senha/usuário correto do Kavru se for Live
-                    urlFinal = `http://kavru.com:80/558396043519/64537505/${id}`;
+                    // CORREÇÃO: TV precisa terminar em .m3u8 e usar a rota /live/
+                    urlFinal = `http://kavru.com:80/live/558396043519/64537505/${id}.m3u8`;
                 }
 
                 if (window.AndroidApp) {
                     btn.innerHTML = `<i class="fas fa-check"></i> Abrindo...`;
-                    window.AndroidApp.abrirVideoNativo(urlFinal); // MANDA PARA O SEU CELULAR!
+                    window.AndroidApp.abrirVideoNativo(urlFinal);
                 } else {
-                    alert(`URL Gerada: ${urlFinal}\n(Abra dentro do seu APK Android para rodar liso!)`);
+                    alert(`URL Gerada: ${urlFinal}\n(Abra no APK para rodar nativamente)`);
                     btn.innerHTML = textoOriginal;
                 }
             } catch (e) {
-                alert("Erro ao buscar link do servidor.");
+                alert("Erro ao buscar link.");
                 btn.innerHTML = textoOriginal;
             }
         }
 
-        // Histórico do Botão Voltar
         window.addEventListener('popstate', function(event) {
             if (document.getElementById('detailsPage').classList.contains('active')) fecharDetalhes();
             else if (document.getElementById('bottomSheet').classList.contains('active')) fecharSheetTV();
         });
 
-        // INICIA TUDO
         window.onload = initApp;
     </script>
 </body>
