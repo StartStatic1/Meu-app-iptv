@@ -261,7 +261,7 @@
             <div id="dpEpisodes" style="display: none; padding-bottom: 10px;"></div>
             
             <div id="dpSimilarContainer" class="cast-section" style="display: none; padding-bottom: 30px;">
-                <div class="cast-title">Títulos Similares no Catálogo</div>
+                <div class="cast-title">Títulos Similares no TMDB</div>
                 <div class="carousel" id="dpSimilar"></div>
             </div>
         </div>
@@ -303,7 +303,6 @@
         let bancoFilmes = null;
         let bancoSeries = null;
         let bancoTV = null;
-
         let trailerKeyAtivo = null;
 
         function esc(str) { return (str || '').toString().replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
@@ -370,7 +369,6 @@
             return html;
         }
 
-        // Para as buscas internas TMDB X IPTV
         async function garantirBancoCarregado() {
             if(!bancoFilmes) { const resF = await fetch('/api/iptv?action=get_vod_streams'); bancoFilmes = await resF.json(); }
             if(!bancoSeries) { const resS = await fetch('/api/iptv?action=get_series'); bancoSeries = await resS.json(); }
@@ -391,6 +389,16 @@
             if(idView === 'view-series' && !seriesFoiCarregada) carregarCategoriasMenu('get_series_categories', 'conteudo-aba-series', 'series', 'tv');
             
             if(idView === 'view-buscar') document.getElementById('inputBuscaGlobal').focus();
+        }
+
+        // FUNÇÃO INCRÍVEL: Salta do TMDB direto para a pesquisa global
+        function redirecionarPesquisa(nomeTMDB) {
+            fecharAtor();
+            fecharDetalhes();
+            mudarAba('view-buscar', document.getElementById('nav-buscar'));
+            const input = document.getElementById('inputBuscaGlobal');
+            input.value = nomeTMDB;
+            pesquisarGlobal(); 
         }
 
         async function carregarCategoriasMenu(endpoint, divId, tipo, icone) {
@@ -638,7 +646,6 @@
             const boxSimilar = document.getElementById('dpSimilarContainer');
             const divSimilar = document.getElementById('dpSimilar');
             
-            // Reseta a tela
             boxSinopse.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A sincronizar com os Estúdios...';
             boxCast.style.display = 'none';
             boxSimilar.style.display = 'none';
@@ -647,11 +654,10 @@
             boxDirector.innerHTML = '';
             trailerKeyAtivo = null;
 
-            // ABRE A TELA E SALVA O HISTÓRICO
             document.getElementById('detailsPage').classList.add('active');
             history.pushState({ view: 'details' }, null, "");
 
-            // 1. CHAMA O TMDB (Puxando Créditos, Vídeos e Recomendações de uma vez!)
+            // 1. TENTA BUSCAR NO TMDB SEM TRAVAR SE O KAVRU ESTIVER LENTO
             try {
                 const tmdbType = tipo === 'series' ? 'tv' : 'movie';
                 const queryBusca = encodeURIComponent(titulo.replace(/\(\d{4}\)/g, '').trim());
@@ -662,11 +668,9 @@
                 if (tmdbData.results && tmdbData.results.length > 0) {
                     const tmdbId = tmdbData.results[0].id;
                     
-                    // Busca os dados supremos do filme
                     const detailsRes = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=credits,videos,recommendations`);
                     const details = await detailsRes.json();
 
-                    // A. Ficha Técnica
                     const ano = (details.release_date || details.first_air_date || "").substring(0,4);
                     const nota = details.vote_average ? details.vote_average.toFixed(1) : "";
                     const generos = details.genres ? details.genres.map(g=>g.name).slice(0,3).join(', ') : "";
@@ -679,11 +683,9 @@
                         if(dir) boxDirector.innerText = `Dirigido por ${dir.name}`;
                     }
 
-                    // B. Sinopse e Fundo
                     boxSinopse.innerText = details.overview || "Sinopse oficial indisponível.";
                     if (details.backdrop_path) document.getElementById('dpPoster').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${details.backdrop_path}')`;
 
-                    // C. Trailer
                     if(details.videos && details.videos.results) {
                         const trailer = details.videos.results.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
                         if(trailer) {
@@ -692,12 +694,10 @@
                         }
                     }
 
-                    // D. Elenco (Carrossel Clicável)
                     if (details.credits && details.credits.cast && details.credits.cast.length > 0) {
                         let htmlCast = '';
                         details.credits.cast.slice(0, 15).forEach(ator => {
                             const fotoAtor = ator.profile_path ? `https://image.tmdb.org/t/p/w200${ator.profile_path}` : 'https://via.placeholder.com/150x150/333/fff?text=Ator';
-                            // Clicar no ator abre a Biografia
                             htmlCast += `
                             <div class="cast-item" onclick="abrirAtor(${ator.id})">
                                 <img src="${fotoAtor}" class="cast-img">
@@ -709,31 +709,16 @@
                         boxCast.style.display = 'block';
                     }
 
-                    // E. Filmes Similares MÁGICOS (Cruza TMDB com IPTV)
                     if (details.recommendations && details.recommendations.results && details.recommendations.results.length > 0) {
-                        await garantirBancoCarregado();
                         let htmlSimilar = '';
-                        
                         details.recommendations.results.forEach(rec => {
                             const recTitle = rec.title || rec.name;
-                            // Procura se o filme do TMDB existe no seu Kavru
-                            const matchIPTV = bancoFilmes.find(f => f.name.toLowerCase().includes(recTitle.toLowerCase())) || 
-                                              bancoSeries.find(s => s.name.toLowerCase().includes(recTitle.toLowerCase()));
-                            
-                            if(matchIPTV) {
-                                const isSerie = matchIPTV.series_id ? true : false;
-                                const argId = isSerie ? matchIPTV.series_id : matchIPTV.stream_id;
-                                const argTipo = isSerie ? 'series' : 'vod';
-                                const argExt = matchIPTV.container_extension || 'mp4';
-                                const fmtd = processarTitulo(matchIPTV.name, "");
-                                const recImg = rec.poster_path ? `https://image.tmdb.org/t/p/w300${rec.poster_path}` : matchIPTV.stream_icon;
+                            const recImg = rec.poster_path ? `https://image.tmdb.org/t/p/w300${rec.poster_path}` : 'https://via.placeholder.com/220x330/111/fff';
 
-                                htmlSimilar += `
-                                <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', 'Recomendado', '${esc(recImg)}', '${argId}', '${argTipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
-                                    <img src="${recImg}" loading="lazy">
-                                    <div class="titulo-fallback" style="display:none;">${fmtd.limpo}</div>
-                                </div>`;
-                            }
+                            htmlSimilar += `
+                            <div class="card-movie" onclick="redirecionarPesquisa('${esc(recTitle)}')">
+                                <img src="${recImg}" loading="lazy">
+                            </div>`;
                         });
 
                         if(htmlSimilar !== '') {
@@ -746,10 +731,11 @@
                     boxSinopse.innerText = "Este título não foi encontrado no banco de dados do cinema.";
                 }
             } catch (err) {
-                boxSinopse.innerText = "Resumo indisponível.";
+                // Apenas avisa que o TMDB falhou, não apaga a tela!
+                if(boxSinopse.innerText.includes('sincronizar')) boxSinopse.innerText = "Resumo indisponível.";
             }
 
-            // 2. LÓGICA DE SÉRIES (EPISÓDIOS DO KAVRU)
+            // 2. LÓGICA DE SÉRIES (EPISÓDIOS)
             if(tipo === 'series') {
                 btnPlay.style.display = 'none';
                 boxEpisodios.style.display = 'block';
@@ -794,7 +780,7 @@
         }
 
         // ==========================================
-        // MODAL DO ATOR (BIOGRAFIA E FILMES)
+        // MODAL DO ATOR (LAZY LOAD PARA NÃO TRAVAR)
         // ==========================================
         async function abrirAtor(atorId) {
             const modal = document.getElementById('actorModal');
@@ -806,7 +792,6 @@
             history.pushState({ view: 'actor' }, null, "");
 
             try {
-                // Biografia
                 const pRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}?api_key=${TMDB_API_KEY}&language=pt-BR`);
                 const pData = await pRes.json();
                 
@@ -824,47 +809,26 @@
                 document.getElementById('actorPlace').innerText = pData.place_of_birth || "";
                 document.getElementById('actorBio').innerText = pData.biography || "Biografia em português não disponível no momento.";
 
-                // Filmes que ele fez
                 const cRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}/combined_credits?api_key=${TMDB_API_KEY}&language=pt-BR`);
                 const cData = await cRes.json();
                 
                 if(cData.cast && cData.cast.length > 0) {
-                    // Ordena por popularidade
                     const obras = cData.cast.sort((a,b) => b.popularity - a.popularity).slice(0, 20);
                     let htmlObras = '';
-                    await garantirBancoCarregado();
 
                     obras.forEach(obra => {
                         const obTitle = obra.title || obra.name;
                         const obImg = obra.poster_path ? `https://image.tmdb.org/t/p/w200${obra.poster_path}` : 'https://via.placeholder.com/220x330/111/fff';
                         
-                        // Verifica se você TEM esse filme no Kavru
-                        const matchIPTV = bancoFilmes.find(f => f.name.toLowerCase().includes(obTitle.toLowerCase())) || 
-                                          bancoSeries.find(s => s.name.toLowerCase().includes(obTitle.toLowerCase()));
-                        
-                        if(matchIPTV) {
-                            const isSerie = matchIPTV.series_id ? true : false;
-                            const argId = isSerie ? matchIPTV.series_id : matchIPTV.stream_id;
-                            const argTipo = isSerie ? 'series' : 'vod';
-                            const argExt = matchIPTV.container_extension || 'mp4';
-                            const fmtd = processarTitulo(matchIPTV.name, "");
-
-                            htmlObras += `
-                            <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', 'Do Elenco', '${esc(obImg)}', '${argId}', '${argTipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
-                                <img src="${obImg}" loading="lazy">
-                            </div>`;
-                        } else {
-                            // Se não tem no IPTV, mostra bloqueado
-                            htmlObras += `
-                            <div class="card-movie" onclick="alert('Este título do ator ainda não está disponível no seu servidor IPTV.')" style="opacity: 0.5;">
-                                <img src="${obImg}" loading="lazy">
-                            </div>`;
-                        }
+                        htmlObras += `
+                        <div class="card-movie" onclick="redirecionarPesquisa('${esc(obTitle)}')">
+                            <img src="${obImg}" loading="lazy">
+                        </div>`;
                     });
-                    document.getElementById('actorCredits').innerHTML = htmlObras || "Nenhuma obra deste ator está no catálogo IPTV.";
+                    document.getElementById('actorCredits').innerHTML = htmlObras || "Nenhuma obra deste ator foi encontrada.";
                 }
 
-            } catch(e) { document.getElementById('actorBio').innerText = "Erro ao carregar dados."; }
+            } catch(e) { document.getElementById('actorBio').innerText = "Erro ao carregar dados do TMDB."; }
         }
 
         // ==========================================
