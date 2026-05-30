@@ -10,9 +10,9 @@ export default async function handler(req, res) {
     const { action } = req.query;
 
     // 3. Credenciais protegidas no servidor (Ninguém do lado de fora consegue ver)
-    const baseUrl = "http://tharn.sbs";
-    const username = "4577052";
-    const password = "9396152";
+    const baseUrl = "http://bnewsc.top";
+    const username = "reginaldobr";
+    const password = "432334xc";
 
     // 4. Monta a URL final para a API do Xtream Codes
     let targetUrl = `${baseUrl}/player_api.php?username=${username}&password=${password}`;
