@@ -44,7 +44,6 @@
         .card-movie img { width: 100%; height: 100%; object-fit: cover; }
         .card-movie .titulo-fallback { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: white; font-size: 9px; padding: 8px 4px; text-align: center; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         
-        /* CORREÇÃO DAS ETIQUETAS */
         .card-badges { position: absolute; top: 5px; left: 5px; display: flex; flex-direction: column; gap: 4px; z-index: 2; pointer-events: none; }
         
         .card-tv { flex: 0 0 140px; height: 80px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; }
@@ -100,10 +99,9 @@
         <div class="carousel" id="carrossel-series">
             <div class="loading-text">Buscando séries...</div>
         </div>
-
-        <div class="section-title"><i class="fas fa-broadcast-tower"></i> TV Ao Vivo</div>
-        <div class="carousel" id="carrossel-tv">
-            <div class="loading-text">Buscando canais...</div>
+        
+        <div id="loading-tv-container">
+             <div class="loading-text">A procurar canais de TV na sua lista...</div>
         </div>
     </div>
 
@@ -144,45 +142,40 @@
         let heroInterval = null;
 
         // ==========================================
-        // 1. O NOVO MOTOR LIMPADOR (REGEX AGRESSIVO)
+        // 1. O MOTOR LIMPADOR (REGEX AGRESSIVO)
         // ==========================================
         function formatarTituloIPTV(nomeBruto) {
             let nomeLimpo = nomeBruto;
             let badgesHTML = '';
 
-            // Caça palavras específicas não importa onde estejam no nome
             const regras = [
-                { regex: /(4K|UHD|2160p)/ig, label: '4K', cor: '#fff', bg: '#ff1744' }, // Vermelho Alerta
-                { regex: /(FHD|1080p|1080)/ig, label: 'FHD', cor: '#000', bg: '#00e5ff' }, // Ciano
-                { regex: /(HD|720p)/ig, label: 'HD', cor: '#000', bg: '#76ff03' }, // Verde Limão
-                { regex: /(DUB|DUBLADO|PT-BR|BR)/ig, label: 'DUB', cor: '#000', bg: '#00e676' }, // Verde
-                { regex: /(LEG|LEGENDADO)/ig, label: 'LEG', cor: '#fff', bg: '#b388ff' } // Roxo
+                { regex: /(4K|UHD|2160p)/ig, label: '4K', cor: '#fff', bg: '#ff1744' }, 
+                { regex: /(FHD|1080p|1080)/ig, label: 'FHD', cor: '#000', bg: '#00e5ff' }, 
+                { regex: /(HD|720p)/ig, label: 'HD', cor: '#000', bg: '#76ff03' }, 
+                { regex: /(DUB|DUBLADO|PT-BR|BR)/ig, label: 'DUB', cor: '#000', bg: '#00e676' }, 
+                { regex: /(LEG|LEGENDADO)/ig, label: 'LEG', cor: '#fff', bg: '#b388ff' } 
             ];
 
             regras.forEach(r => {
                 if (r.regex.test(nomeLimpo)) {
-                    // Cria a etiqueta
                     badgesHTML += `<span style="background:${r.bg}; color:${r.cor}; font-size:8px; font-weight:900; padding:3px 5px; border-radius:4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">${r.label}</span>`;
-                    // Arranca a palavra do nome
                     nomeLimpo = nomeLimpo.replace(r.regex, '');
                 }
             });
 
-            // Limpa parênteses, colchetes e barras (Ex: [VOD], (2024), |PT|)
             nomeLimpo = nomeLimpo.replace(/\[.*?\]/g, ''); 
             nomeLimpo = nomeLimpo.replace(/\(.*?\.?\)/g, ''); 
             nomeLimpo = nomeLimpo.replace(/\|.*?\|/g, ''); 
             nomeLimpo = nomeLimpo.replace(/-\s*$/, ''); 
             nomeLimpo = nomeLimpo.trim(); 
 
-            // Se o limpador apagar tudo sem querer, usa o nome original
             if(nomeLimpo.length < 2) nomeLimpo = nomeBruto.substring(0, 20);
 
             return { tituloLimpo: nomeLimpo, htmlBadges: badgesHTML };
         }
 
         // ==========================================
-        // 2. FUNÇÕES BÁSICAS (Abas, Iniciar, etc)
+        // 2. FUNÇÕES BÁSICAS (Abas)
         // ==========================================
         function mudarAba(idView, btn) {
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -191,8 +184,12 @@
             document.getElementById(idView).classList.add('active');
         }
 
+        // ==========================================
+        // 3. BUSCA DE DADOS (COM VÁRIAS PASTAS DE TV)
+        // ==========================================
         async function initApp() {
             try {
+                // FILMES
                 const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
                 const vodCats = await resVodCats.json();
                 if(vodCats && vodCats.length > 0) {
@@ -207,6 +204,7 @@
                     }
                 }
 
+                // SÉRIES
                 const resSerieCats = await fetch('/api/iptv?action=get_series_categories');
                 const serieCats = await resSerieCats.json();
                 if(serieCats && serieCats.length > 0) {
@@ -218,21 +216,40 @@
                     }
                 }
 
+                // TV AO VIVO (AGORA PUXA VÁRIAS CATEGORIAS)
                 const resTvCats = await fetch('/api/iptv?action=get_live_categories');
                 const tvCats = await resTvCats.json();
+                
                 if(tvCats && tvCats.length > 0) {
-                    const idTv = tvCats[0].category_id;
-                    const resTv = await fetch(`/api/iptv?action=get_live_streams&category_id=${idTv}`);
-                    const canais = await resTv.json();
-                    if(canais && canais.length > 0) {
-                        preencherCarrosselTV('carrossel-tv', canais.slice(0, 15));
+                    const containerPrincipal = document.getElementById('view-home');
+                    
+                    // Remove o texto de carregamento da TV
+                    const loadingTv = document.getElementById('loading-tv-container');
+                    if(loadingTv) loadingTv.remove();
+
+                    // Vai puxar as 4 primeiras pastas de TV do seu servidor
+                    const limiteCategorias = Math.min(tvCats.length, 4); 
+                    
+                    for(let i = 0; i < limiteCategorias; i++) {
+                        const cat = tvCats[i];
+                        const resTv = await fetch(`/api/iptv?action=get_live_streams&category_id=${cat.category_id}`);
+                        const canais = await resTv.json();
+                        
+                        if(canais && canais.length > 0) {
+                            const tituloHTML = `<div class="section-title"><i class="fas fa-broadcast-tower"></i> ${cat.category_name}</div>`;
+                            const idCarrosselNovo = `carrossel-tv-${i}`;
+                            const carrosselHTML = `<div class="carousel" id="${idCarrosselNovo}"></div>`;
+                            
+                            containerPrincipal.insertAdjacentHTML('beforeend', tituloHTML + carrosselHTML);
+                            preencherCarrosselTV(idCarrosselNovo, canais.slice(0, 15));
+                        }
                     }
                 }
             } catch (error) { console.error("Falha API", error); }
         }
 
         // ==========================================
-        // 3. RENDERIZAÇÃO NA TELA
+        // 4. RENDERIZAÇÃO NA TELA
         // ==========================================
         function iniciarHeroSlider(nomeCat) {
             atualizarHero(nomeCat);
@@ -304,7 +321,7 @@
         }
 
         // ==========================================
-        // 4. TELAS DE DETALHES E CORREÇÃO DO PLAY
+        // 5. TELAS DE DETALHES E CORREÇÃO DO PLAY
         // ==========================================
         function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, badges) {
             document.getElementById('dpTitle').innerText = titulo;
@@ -351,7 +368,7 @@
                     const data = await res.json();
                     urlFinal = data.url;
                 } else if (tipo === 'live') {
-                    // CORREÇÃO MÁXIMA DA TV: A rota é direta com extensão .ts (Transport Stream)
+                    // LINK DA TV CORRIGIDO PARA FORMATO TS (.ts) DIRETO
                     urlFinal = `http://kavru.com:80/558396043519/64537505/${id}.ts`;
                 }
 
