@@ -100,18 +100,19 @@
         .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 15px; border-radius: 8px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(255,255,255,0.2); }
         .dp-synopsis { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 25px; }
 
-        /* DESIGN DAS TEMPORADAS E EPISÓDIOS (Inspirado no seu Print) */
+        /* OTIMIZAÇÃO: Layout de Temporadas e Episódios Limpo (16:9) */
         .season-title { font-size: 18px; font-weight: 800; color: #fff; margin: 30px 0 15px 0; }
         .ep-carousel { display: flex; gap: 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 10px; }
         .ep-carousel::-webkit-scrollbar { display: none; }
-        .ep-card { flex: 0 0 150px; border-radius: 8px; background: rgba(255,255,255,0.05); overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); scroll-snap-align: start; transition: 0.2s; }
+        .ep-card { flex: 0 0 160px; border-radius: 8px; background: rgba(255,255,255,0.05); overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); scroll-snap-align: start; transition: 0.2s; }
         .ep-card:active { transform: scale(0.95); }
-        .ep-thumb { width: 100%; height: 90px; background-color: #2a2d3e; background-size: cover; background-position: center; position: relative; display: flex; align-items: center; justify-content: center; }
+        .ep-thumb { width: 100%; aspect-ratio: 16/9; background-color: #2a2d3e; background-size: cover; background-position: center; position: relative; display: flex; align-items: center; justify-content: center; }
         .ep-thumb::after { content: ''; position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.3); }
         .ep-thumb i { font-size: 30px; color: rgba(255,255,255,0.8); z-index: 2; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
         .ep-info-text { padding: 10px; }
-        .ep-number { font-size: 11px; color: var(--accent); font-weight: 900; margin-bottom: 3px; letter-spacing: 1px;}
-        .ep-name { font-size: 12px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 600;}
+        .ep-number { font-size: 11px; color: var(--accent); font-weight: 900; margin-bottom: 4px; letter-spacing: 1px;}
+        /* Duas linhas para o título e corta nos 3 pontos */
+        .ep-name { font-size: 11px; color: #ccc; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; font-weight: 600; line-height: 1.3;}
         
         .loading-text { text-align: center; color: var(--text-muted); font-size: 12px; width: 100%; padding: 20px; }
     </style>
@@ -146,7 +147,6 @@
         <div class="grid-container" id="conteudo-grade"></div>
     </div>
 
-    <!-- ABAS PRINCIPAIS -->
     <div id="view-filmes" class="view" style="padding-top: 60px;">
         <div class="page-header" style="padding-top: 20px;">
             <h2 class="page-title" style="color: var(--accent);"><i class="fas fa-film"></i> Categorias de Filmes</h2>
@@ -199,7 +199,6 @@
         <button class="sheet-btn" id="btnPlayTV"><i class="fas fa-play"></i> Assistir Agora</button>
     </div>
 
-    <!-- PÁGINA DE DETALHES -->
     <div class="details-page" id="detailsPage">
         <button class="dp-back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
         <div class="dp-poster" id="dpPoster" style="background-image: url('');">
@@ -212,7 +211,6 @@
             <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
             <p class="dp-synopsis" id="dpSynopsis">Aguardando TMDB (Próxima Fase)...</p>
 
-            <!-- CAIXA DE EPISÓDIOS (Injetada via JS) -->
             <div id="dpEpisodes" style="display: none; padding-bottom: 30px;"></div>
         </div>
     </div>
@@ -521,7 +519,7 @@
         }
 
         // ==========================================
-        // CÉREBRO DA SÉRIE (EPISÓDIOS E TEMPORADAS)
+        // CÉREBRO DA SÉRIE: LIMPEZA DOS NOMES DOS EPISÓDIOS
         // ==========================================
         function iniciarHeroSlider(nomeCat) {
             atualizarHero(nomeCat);
@@ -549,7 +547,6 @@
             const btnPlay = document.getElementById('btnPlayFilme');
             const boxEpisodios = document.getElementById('dpEpisodes');
             
-            // SE FOR SÉRIE, OCULTA O BOTÃO PLAY E PUXA OS EPISÓDIOS DA VERCEL
             if(tipo === 'series') {
                 btnPlay.style.display = 'none';
                 boxEpisodios.style.display = 'block';
@@ -562,18 +559,31 @@
                     if(data && data.episodes && Object.keys(data.episodes).length > 0) {
                         let htmlEps = '';
                         
-                        // Cria uma fileira para cada Temporada
                         for (let season in data.episodes) {
                             htmlEps += `<h3 class="season-title">Temporada ${season}</h3>`;
                             htmlEps += `<div class="ep-carousel">`;
                             
                             data.episodes[season].forEach(ep => {
-                                const epTitle = ep.title || `Episódio ${ep.episode_num}`;
+                                // LIMPEZA DO TÍTULO DO EPISÓDIO
+                                let epTitle = ep.title || `Episódio ${ep.episode_num}`;
+                                
+                                // Tira o nome da série do título se existir
+                                const regexSerie = new RegExp(titulo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "\\s*[-:]?\\s*", "i");
+                                epTitle = epTitle.replace(regexSerie, ""); 
+                                
+                                // Tira código como S01E01 ou S1 E1
+                                epTitle = epTitle.replace(/S\d{1,2}\s*E\d{1,2}\s*[-:]?\s*/i, ""); 
+                                
+                                // Limpa caracteres soltos no início
+                                epTitle = epTitle.replace(/^[-_.:\s]+/, "").trim(); 
+                                
+                                // Se o título ficou vazio após limpar, usa o número
+                                if(!epTitle || epTitle.length < 2) epTitle = `Episódio ${ep.episode_num}`;
+
                                 const thumb = (ep.info && ep.info.movie_image) ? ep.info.movie_image : urlCapa;
                                 const sNum = String(season).padStart(2, '0');
                                 const eNum = String(ep.episode_num).padStart(2, '0');
                                 
-                                // O Episódio roda como 'episode' no player
                                 htmlEps += `
                                 <div class="ep-card" onclick="dispararPlayer('${ep.id}', 'episode', '${ep.container_extension || 'mp4'}', '${esc(epTitle)}')">
                                     <div class="ep-thumb" style="background-image: url('${thumb}');">
@@ -592,10 +602,9 @@
                         boxEpisodios.innerHTML = '<p class="loading-text">Esta série não tem episódios cadastrados no servidor.</p>';
                     }
                 } catch(e) {
-                    boxEpisodios.innerHTML = '<p class="loading-text">Ocorreu um erro ao ler a série. (Talvez falte o update no ficheiro api/iptv.js).</p>';
+                    boxEpisodios.innerHTML = '<p class="loading-text">Erro ao carregar episódios. Tente novamente.</p>';
                 }
             } else {
-                // SE FOR FILME, MOSTRA O BOTÃO PLAY NORMAL
                 btnPlay.style.display = 'flex';
                 boxEpisodios.style.display = 'none';
                 btnPlay.onclick = () => dispararPlayer(id, tipo, ext, titulo);
@@ -621,14 +630,10 @@
 
         async function dispararPlayer(id, tipo, ext, titulo) {
             const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
-            if(btn) {
-                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`;
-            }
+            if(btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`;
 
             try {
                 let urlFinal = "";
-                
-                // Agora o Player sabe buscar links de Filmes, TV e Episódios (series_url)
                 if(tipo === 'vod') {
                     const res = await fetch(`/api/iptv?action=get_movie_url&stream_id=${id}&extension=${ext}`);
                     const data = await res.json();
