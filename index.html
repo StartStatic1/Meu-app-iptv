@@ -34,7 +34,7 @@
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Skeleton Loader Premium */
+        /* Skeleton Loader Otimizado */
         @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
         .skeleton { background: #2a2d3e; background-image: linear-gradient(90deg, #2a2d3e 0px, #3a3e52 40px, #2a2d3e 80px); background-size: 1000px 100%; animation: shimmer 2.5s infinite linear; }
         .skel-hero { width: 100%; height: 55vh; border-radius: 0 0 20px 20px; margin-bottom: 20px; }
@@ -56,13 +56,14 @@
         
         .card-badges { position: absolute; top: 5px; left: 5px; display: flex; flex-direction: column; gap: 4px; z-index: 2; pointer-events: none; }
         
-        .card-tv { flex: 0 0 140px; height: 80px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; flex-direction: column; }
-        .card-tv img { width: 60%; height: 100%; object-fit: contain; }
-        .card-tv .titulo-tv { font-size: 11px; font-weight: bold; padding: 5px; text-align: center; color: #fff; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        /* Otimização dos Cards de TV para a nova Aba */
+        .card-tv { flex: 0 0 140px; height: 90px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; flex-direction: column; padding: 5px;}
+        .card-tv img { width: 50%; height: 60%; object-fit: contain; }
+        .card-tv .titulo-tv { font-size: 10px; font-weight: bold; padding-top: 5px; text-align: center; color: #ccc; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .live-badge { position: absolute; top: 5px; right: 5px; background: #e50914; color: white; font-size: 7px; font-weight: bold; padding: 2px 4px; border-radius: 3px; }
 
         .page-header { padding: 40px 15px 15px 15px; display: flex; align-items: center; gap: 15px; background: linear-gradient(to bottom, var(--bg-top), transparent); }
-        .page-header i { font-size: 20px; color: var(--accent); cursor: pointer; }
+        .page-header i { font-size: 20px; color: var(--accent); cursor: pointer; padding: 10px;}
         .page-title { font-size: 22px; font-weight: 800; margin: 0; }
         
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 15px 20px 15px; }
@@ -99,19 +100,13 @@
 
     <div class="header"><h1 class="header-logo">Stream<span>Flix</span></h1></div>
 
-    <!-- TELA 1: HOME -->
     <div id="view-home" class="view active">
-        
-        <!-- ESTADO DE CARREGAMENTO (SKELETON) -->
         <div id="loading-state">
             <div class="skeleton skel-hero"></div>
             <div class="skeleton skel-title"></div>
             <div class="skel-carousel"><div class="skeleton skel-card"></div><div class="skeleton skel-card"></div><div class="skeleton skel-card"></div></div>
-            <div class="skeleton skel-title"></div>
-            <div class="skel-carousel"><div class="skeleton skel-card"></div><div class="skeleton skel-card"></div><div class="skeleton skel-card"></div></div>
         </div>
 
-        <!-- CONTEÚDO REAL -->
         <div id="conteudo-real" style="display: none;">
             <div class="hero" id="heroBanner" style="background-image: url('');" onclick="abrirHeroDetalhes()">
                 <div class="hero-gradient">
@@ -124,7 +119,6 @@
         </div>
     </div>
 
-    <!-- TELA 2: GRADE (VER TODOS) -->
     <div id="view-grade" class="view">
         <div class="page-header">
             <i class="fas fa-arrow-left" onclick="mudarAba('view-home', document.getElementById('nav-home'))"></i>
@@ -133,24 +127,31 @@
         <div class="grid-container" id="conteudo-grade"></div>
     </div>
 
-    <!-- TELA 3: BUSCAR -->
+    <div id="view-tv" class="view" style="padding-top: 60px;">
+        <div class="page-header" style="padding-top: 20px;">
+            <h2 class="page-title" style="color: var(--accent);"><i class="fas fa-broadcast-tower"></i> Canais de TV</h2>
+        </div>
+        <div id="conteudo-tv">
+            <p class="loading-text">Conectando aos canais ao vivo...</p>
+        </div>
+    </div>
+
     <div id="view-buscar" class="view">
         <input type="text" class="search-bar" id="inputBusca" placeholder="Buscar filmes, séries..." disabled>
         <div class="section-title" style="margin-left: 15px;"><i class="fas fa-search"></i> Resultados</div>
         <div class="grid-container" id="resultados-busca">
-            <p class="loading-text" style="grid-column: span 3;">Motor de busca será ativado no próximo passo.</p>
+            <p class="loading-text" style="grid-column: span 3;">Motor de busca na próxima fase.</p>
         </div>
     </div>
 
-    <!-- BARRA INFERIOR -->
     <div class="bottom-nav" id="bottomNav">
         <div class="nav-item active" id="nav-home" onclick="mudarAba('view-home', this)"><i class="fas fa-home"></i><span>Início</span></div>
-        <div class="nav-item" onclick="alert('Abas exclusivas serão integradas em breve!')"><i class="fas fa-film"></i><span>Filmes</span></div>
-        <div class="nav-item" onclick="alert('Abas exclusivas serão integradas em breve!')"><i class="fas fa-tv"></i><span>Séries</span></div>
-        <div class="nav-item" onclick="mudarAba('view-buscar', this)"><i class="fas fa-search"></i><span>Buscar</span></div>
+        <div class="nav-item" onclick="alert('Na próxima fase!')"><i class="fas fa-film"></i><span>Filmes</span></div>
+        <div class="nav-item" onclick="alert('Na próxima fase!')"><i class="fas fa-tv"></i><span>Séries</span></div>
+        <div class="nav-item" id="nav-tv" onclick="mudarAba('view-tv', this)"><i class="fas fa-broadcast-tower"></i><span>TV</span></div>
+        <div class="nav-item" id="nav-buscar" onclick="mudarAba('view-buscar', this)"><i class="fas fa-search"></i><span>Buscar</span></div>
     </div>
 
-    <!-- MÓDULOS (TV E DETALHES) -->
     <div class="bottom-sheet-overlay" id="sheetOverlay" onclick="fecharSheetTV()"></div>
     <div class="bottom-sheet" id="bottomSheet">
         <div class="sheet-handle"></div>
@@ -176,12 +177,24 @@
         let heroFilmes = [];
         let heroIndex = 0;
         let heroInterval = null;
+        let tvFoiCarregada = false; // Memória para não carregar a TV duas vezes
 
         function esc(str) { return (str || '').toString().replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
 
+        // LIMPEZA DE PASTAS (Remove a palavra "Filmes | " para ficar mais bonito)
+        function limparNomePasta(nome) {
+            return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Séries\s*\|\s*/i, '').trim();
+        }
+
         function pastaValida(nome) {
             if (!nome) return false;
-            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR'];
+            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR', 'TESTE'];
+            return !proibidos.some(p => nome.toUpperCase().includes(p));
+        }
+
+        function pastaTVValida(nome) {
+            if (!nome) return false;
+            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO'];
             return !proibidos.some(p => nome.toUpperCase().includes(p));
         }
 
@@ -201,18 +214,20 @@
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
+        // LIMPADOR DE CANAIS DE TV MÁXIMO
         function processarTV(nomeBruto) {
             let nomeLimpo = nomeBruto || "Canal";
             const tags = [];
             const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/i);
             if(estado) tags.push(estado[0].toUpperCase());
             
-            if(/FHD/i.test(nomeLimpo)) tags.push('FHD');
+            if(/FHDR/i.test(nomeLimpo)) tags.push('FHDR');
+            else if(/FHD/i.test(nomeLimpo)) tags.push('FHD');
             else if(/HD/i.test(nomeLimpo)) tags.push('HD');
             else if(/4K/i.test(nomeLimpo)) tags.push('4K');
             else if(/SD/i.test(nomeLimpo)) tags.push('SD');
 
-            nomeLimpo = nomeLimpo.replace(/(FHD|HD|4K|SD)/ig, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').replace(/[>\-|*]/g, '').replace(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/ig, '').replace(/\s+/g, ' ').trim();
+            nomeLimpo = nomeLimpo.replace(/(FHDR|FHD|HD|4K|SD)/ig, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').replace(/[>\-|*]/g, '').replace(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/ig, '').replace(/\s+/g, ' ').trim();
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
@@ -222,6 +237,7 @@
             tagsStr.split(',').forEach(t => {
                 let cor = '#000', bg = '#fff';
                 if(t==='4K') { cor='#fff'; bg='#ff1744'; }
+                if(t==='FHDR') { cor='#fff'; bg='#d50000'; }
                 if(t==='FHD') { cor='#000'; bg='#00e5ff'; }
                 if(t==='HD') { cor='#000'; bg='#76ff03'; }
                 if(t==='DUB') { cor='#000'; bg='#00e676'; }
@@ -232,67 +248,98 @@
             return html;
         }
 
+        // INTELIGÊNCIA DO BOTÃO VOLTAR E NAVEGAÇÃO
         function mudarAba(idView, btn) {
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(idView).classList.add('active');
+
+            // Histórico para o botão voltar funcionar perfeito
+            if(idView !== 'view-home') history.pushState({ aba: idView }, null, "");
+
+            // Carrega a TV apenas se o utilizador clicar na aba TV
+            if(idView === 'view-tv' && !tvFoiCarregada) {
+                carregarTV();
+            }
         }
 
+        // CARREGAMENTO TURBO DA HOME (Apenas Filmes e Séries)
         async function initApp() {
             try {
                 let htmlConstruido = "";
                 
-                // 1. FILMES
-                try {
-                    const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
-                    const vodCats = await resVodCats.json();
-                    const pastasFilmes = vodCats.filter(c => pastaValida(c.category_name)).sort((a,b) => {
-                        const pri = /LANÇA|AÇÃO|COMÉDIA|TERROR|AVENTURA|FICÇÃO/i;
-                        return pri.test(b.category_name) - pri.test(a.category_name);
-                    }).slice(0, 5); 
-                    
-                    for(let i = 0; i < pastasFilmes.length; i++) {
+                // Puxa a primeira pasta de filmes para libertar o ecrã RÁPIDO
+                const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
+                const vodCats = await resVodCats.json();
+                const pastasFilmes = vodCats.filter(c => pastaValida(c.category_name)).sort((a,b) => {
+                    const pri = /LANÇA|AÇÃO|COMÉDIA|TERROR/i;
+                    return pri.test(b.category_name) - pri.test(a.category_name);
+                }).slice(0, 5); 
+
+                if(pastasFilmes.length > 0) {
+                    const res1 = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastasFilmes[0].category_id}`);
+                    const filmes1 = await res1.json();
+                    if(filmes1 && filmes1.length > 0) {
+                        heroFilmes = filmes1.slice(0, 5);
+                        iniciarHeroSlider(limparNomePasta(pastasFilmes[0].category_name));
+                        htmlConstruido += gerarCarrosselHTML(limparNomePasta(pastasFilmes[0].category_name), pastasFilmes[0].category_id, 'vod', 'film', filmes1.slice(5, 20));
+                    }
+                }
+
+                // LIBERTA O ECRÃ EM 1 SEGUNDO!
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('conteudo-real').style.display = 'block';
+                document.getElementById('conteudo-dinamico').innerHTML = htmlConstruido;
+
+                // Carrega o resto silenciosamente no fundo
+                setTimeout(async () => {
+                    let htmlExtra = "";
+                    for(let i = 1; i < pastasFilmes.length; i++) {
                         const res = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastasFilmes[i].category_id}`);
                         const filmes = await res.json();
-                        if(filmes && filmes.length > 0) {
-                            if(i === 0) { heroFilmes = filmes.slice(0, 5); iniciarHeroSlider(pastasFilmes[i].category_name); htmlConstruido += gerarCarrosselHTML(pastasFilmes[i].category_name, pastasFilmes[i].category_id, 'vod', 'film', filmes.slice(5, 20)); } 
-                            else { htmlConstruido += gerarCarrosselHTML(pastasFilmes[i].category_name, pastasFilmes[i].category_id, 'vod', 'film', filmes.slice(0, 15)); }
-                        }
+                        if(filmes && filmes.length > 0) htmlExtra += gerarCarrosselHTML(limparNomePasta(pastasFilmes[i].category_name), pastasFilmes[i].category_id, 'vod', 'film', filmes.slice(0, 15));
                     }
-                } catch(e) {}
 
-                // 2. SÉRIES
-                try {
                     const resSerieCats = await fetch('/api/iptv?action=get_series_categories');
                     const serieCats = await resSerieCats.json();
                     const pastasSeries = serieCats.filter(c => pastaValida(c.category_name)).slice(0, 2);
                     for(let i = 0; i < pastasSeries.length; i++) {
                         const res = await fetch(`/api/iptv?action=get_series&category_id=${pastasSeries[i].category_id}`);
                         const series = await res.json();
-                        if(series && series.length > 0) htmlConstruido += gerarCarrosselHTML(pastasSeries[i].category_name, pastasSeries[i].category_id, 'series', 'tv', series.slice(0, 15));
+                        if(series && series.length > 0) htmlExtra += gerarCarrosselHTML(limparNomePasta(pastasSeries[i].category_name), pastasSeries[i].category_id, 'series', 'tv', series.slice(0, 15));
                     }
-                } catch(e) {}
-
-                // 3. TV AO VIVO INCLUÍDA
-                try {
-                    const resTvCats = await fetch('/api/iptv?action=get_live_categories');
-                    const tvCats = await resTvCats.json();
-                    const pastasTv = tvCats.filter(c => pastaValida(c.category_name)).slice(0, 3);
-                    for(let i = 0; i < pastasTv.length; i++) {
-                        const res = await fetch(`/api/iptv?action=get_live_streams&category_id=${pastasTv[i].category_id}`);
-                        const canais = await res.json();
-                        if(canais && canais.length > 0) htmlConstruido += gerarCarrosselHTML(pastasTv[i].category_name, pastasTv[i].category_id, 'live', 'broadcast-tower', canais.slice(0, 15));
-                    }
-                } catch(e) {}
-
-                // Remove Skeleton e Mostra Conteúdo
-                document.getElementById('loading-state').style.display = 'none';
-                document.getElementById('conteudo-real').style.display = 'block';
-                document.getElementById('conteudo-dinamico').innerHTML = htmlConstruido || "<div class='loading-text'>Nenhum conteúdo.</div>";
+                    
+                    document.getElementById('conteudo-dinamico').innerHTML += htmlExtra;
+                }, 500);
 
             } catch (error) { 
-                document.getElementById('loading-state').innerHTML = "<div class='loading-text'>Erro ao comunicar com a API.</div>";
+                document.getElementById('loading-state').innerHTML = "<div class='loading-text'>Erro de ligação. Atualize a página.</div>";
+            }
+        }
+
+        // CARREGADOR EXCLUSIVO DA ABA TV
+        async function carregarTV() {
+            tvFoiCarregada = true;
+            try {
+                let htmlTV = "";
+                const resTvCats = await fetch('/api/iptv?action=get_live_categories');
+                const tvCats = await resTvCats.json();
+                
+                // Prioriza pastas famosas de TV
+                const pastasTv = tvCats.filter(c => pastaTVValida(c.category_name)).sort((a,b) => {
+                    const pri = /ABERTOS|GLOBO|TELECINE|HBO|ESPORTES/i;
+                    return pri.test(b.category_name) - pri.test(a.category_name);
+                }).slice(0, 5); // Mostra 5 fileiras na TV
+
+                for(let i = 0; i < pastasTv.length; i++) {
+                    const res = await fetch(`/api/iptv?action=get_live_streams&category_id=${pastasTv[i].category_id}`);
+                    const canais = await res.json();
+                    if(canais && canais.length > 0) htmlTV += gerarCarrosselHTML(pastasTv[i].category_name, pastasTv[i].category_id, 'live', 'broadcast-tower', canais.slice(0, 20));
+                }
+                document.getElementById('conteudo-tv').innerHTML = htmlTV;
+            } catch(e) {
+                document.getElementById('conteudo-tv').innerHTML = "<div class='loading-text'>Erro ao buscar canais.</div>";
             }
         }
 
@@ -313,7 +360,6 @@
                         <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
                         ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : ''}
                         <div class="titulo-tv" style="display:${capa ? 'none' : 'block'}">${fmtd.limpo}</div>
-                        <div class="live-badge">AO VIVO</div>
                     </div>`;
                 } else {
                     const fmtd = processarTitulo(item.name, nomePasta);
@@ -335,7 +381,7 @@
         async function abrirVerTodos(tipo, catId, nomePasta) {
             document.getElementById('titulo-grade').innerText = nomePasta;
             const containerGrade = document.getElementById('conteudo-grade');
-            containerGrade.innerHTML = `<p class="loading-text" style="grid-column: span 3;">A puxar todos os títulos...</p>`;
+            containerGrade.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> A montar a grade...</div>`;
             
             mudarAba('view-grade', null);
 
@@ -346,11 +392,6 @@
 
                 const res = await fetch(`/api/iptv?action=${action}&category_id=${catId}`);
                 const listaCompleta = await res.json();
-
-                if(!listaCompleta || listaCompleta.length === 0) {
-                    containerGrade.innerHTML = `<p class="loading-text" style="grid-column: span 3;">Pasta vazia.</p>`;
-                    return;
-                }
 
                 let htmlGrade = "";
                 listaCompleta.forEach(item => {
@@ -432,7 +473,7 @@
                     urlFinal = data.url;
                 }
 
-                if (!urlFinal) throw new Error("A Vercel não retornou o link.");
+                if (!urlFinal) throw new Error("A Vercel não retornou o link. (Canal Offline)");
 
                 if (window.AndroidApp) {
                     window.AndroidApp.abrirVideoNativo(urlFinal);
@@ -444,14 +485,21 @@
                     setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
                 }
             } catch (e) {
-                alert("Erro ao aceder à API: " + e.message);
+                alert(e.message.includes("Canal Offline") ? "Este canal parece estar desligado no servidor neste momento." : "Erro ao aceder à API.");
                 btn.innerHTML = textoOriginal;
             }
         }
 
+        // LÓGICA PERFEITA DO BOTÃO VOLTAR
         window.addEventListener('popstate', function(event) {
-            if (document.getElementById('detailsPage').classList.contains('active')) fecharDetalhes();
-            else if (document.getElementById('bottomSheet').classList.contains('active')) fecharSheetTV();
+            if (document.getElementById('detailsPage').classList.contains('active')) {
+                fecharDetalhes();
+            } else if (document.getElementById('bottomSheet').classList.contains('active')) {
+                fecharSheetTV();
+            } else if (!document.getElementById('view-home').classList.contains('active')) {
+                // Se estiver em Ver Todos, Buscar ou TV, volta para a Home
+                mudarAba('view-home', document.getElementById('nav-home'));
+            }
         });
 
         window.onload = initApp;
