@@ -56,16 +56,15 @@
         
         .card-badges { position: absolute; top: 5px; left: 5px; display: flex; flex-direction: column; gap: 4px; z-index: 2; pointer-events: none; }
         
-        /* Layout TV em Lista de Categorias */
+        /* Otimização dos Cards de TV para mostrar sempre o Título */
         .tv-category-item { background: rgba(255,255,255,0.05); margin: 10px 15px; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s; }
         .tv-category-item:active { background: rgba(255,255,255,0.15); transform: scale(0.98); }
         .tv-category-name { font-size: 14px; font-weight: 700; color: #fff; }
         .tv-category-icon { font-size: 18px; color: var(--accent); }
         
-        /* Card TV na Grade */
-        .card-tv { flex: 0 0 140px; height: 80px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; flex-direction: column; padding: 5px;}
-        .card-tv img { width: 50%; height: 60%; object-fit: contain; }
-        .card-tv .titulo-tv { font-size: 10px; font-weight: bold; padding-top: 5px; text-align: center; color: #ccc; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card-tv { flex: 0 0 140px; height: 100px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; flex-direction: column; padding: 8px 5px;}
+        .card-tv img { width: 50%; height: 45%; object-fit: contain; margin-bottom: 8px; }
+        .card-tv .titulo-tv { font-size: 10px; font-weight: bold; text-align: center; color: #ccc; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; } /* display block forçado para nunca sumir */
         .live-badge { position: absolute; top: 5px; right: 5px; background: #e50914; color: white; font-size: 7px; font-weight: bold; padding: 2px 4px; border-radius: 3px; }
 
         .page-header { padding: 40px 15px 15px 15px; display: flex; align-items: center; gap: 15px; background: linear-gradient(to bottom, var(--bg-top), transparent); }
@@ -129,7 +128,7 @@
 
     <div id="view-grade" class="view">
         <div class="page-header">
-            <i class="fas fa-arrow-left" onclick="mudarAba('view-home', document.getElementById('nav-home'))"></i>
+            <i class="fas fa-arrow-left" onclick="history.back()"></i>
             <h2 class="page-title" id="titulo-grade">Carregando...</h2>
         </div>
         <div class="grid-container" id="conteudo-grade"></div>
@@ -154,8 +153,8 @@
 
     <div class="bottom-nav" id="bottomNav">
         <div class="nav-item active" id="nav-home" onclick="mudarAba('view-home', this)"><i class="fas fa-home"></i><span>Início</span></div>
-        <div class="nav-item" onclick="alert('Abas de filmes serão integradas na próxima fase!')"><i class="fas fa-film"></i><span>Filmes</span></div>
-        <div class="nav-item" onclick="alert('Abas de séries serão integradas na próxima fase!')"><i class="fas fa-tv"></i><span>Séries</span></div>
+        <div class="nav-item" onclick="alert('Pílulas (Chips) de plataformas na próxima fase!')"><i class="fas fa-film"></i><span>Filmes</span></div>
+        <div class="nav-item" onclick="alert('Pílulas (Chips) de plataformas na próxima fase!')"><i class="fas fa-tv"></i><span>Séries</span></div>
         <div class="nav-item" id="nav-tv" onclick="mudarAba('view-tv', this)"><i class="fas fa-broadcast-tower"></i><span>TV</span></div>
         <div class="nav-item" id="nav-buscar" onclick="mudarAba('view-buscar', this)"><i class="fas fa-search"></i><span>Buscar</span></div>
     </div>
@@ -221,7 +220,6 @@
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
-        // LIMPEZA SUPREMA PARA A TV (Adeus Setas e Brackets)
         function processarTV(nomeBruto) {
             let nomeLimpo = nomeBruto || "Canal";
             const tags = [];
@@ -234,12 +232,7 @@
             else if(/4K/i.test(nomeLimpo)) tags.push('4K');
             else if(/SD/i.test(nomeLimpo)) tags.push('SD');
 
-            nomeLimpo = nomeLimpo.replace(/(FHDR|FHD|HD|4K|SD)/ig, '')
-                                 .replace(/\[.*?\]/g, '') // Tira [HD] etc
-                                 .replace(/\(.*?\)/g, '') // Tira (HD) etc
-                                 .replace(/[>\-|*•]/g, '') // Tira Setas, traços, pontos
-                                 .replace(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/ig, '')
-                                 .replace(/\s+/g, ' ').trim();
+            nomeLimpo = nomeLimpo.replace(/(FHDR|FHD|HD|4K|SD)/ig, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').replace(/[>\-|*]/g, '').replace(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/ig, '').replace(/\s+/g, ' ').trim();
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
@@ -260,13 +253,22 @@
             return html;
         }
 
-        function mudarAba(idView, btn) {
+        // MOTOR DE HISTÓRICO (O GESTO E A SETA FUNCIONAM EM HARMONIA)
+        function mudarAba(idView, btn, originHistory = false) {
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
+            else {
+                const autoBtn = document.getElementById('nav-' + idView.replace('view-',''));
+                if(autoBtn) autoBtn.classList.add('active');
+            }
+            
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(idView).classList.add('active');
 
-            if(idView !== 'view-home') history.pushState({ aba: idView }, null, "");
+            // Só regista no histórico se a chamada NÃO vier do gesto/botão voltar
+            if(!originHistory && idView !== 'view-home') {
+                history.pushState({ aba: idView }, null, "");
+            }
 
             if(idView === 'view-tv' && !tvFoiCarregada) {
                 carregarCategoriasTV();
@@ -277,7 +279,6 @@
             try {
                 let htmlConstruido = "";
                 
-                // Puxa RÁPIDO apenas Filmes
                 const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
                 const vodCats = await resVodCats.json();
                 const pastasFilmes = vodCats.filter(c => pastaValida(c.category_name)).sort((a,b) => {
@@ -295,12 +296,10 @@
                     }
                 }
 
-                // LIBERTA O ECRÃ
                 document.getElementById('loading-state').style.display = 'none';
                 document.getElementById('conteudo-real').style.display = 'block';
                 document.getElementById('conteudo-dinamico').innerHTML = htmlConstruido;
 
-                // Carrega Séries Silenciosamente
                 setTimeout(async () => {
                     let htmlExtra = "";
                     for(let i = 1; i < pastasFilmes.length; i++) {
@@ -326,7 +325,6 @@
             }
         }
 
-        // NOVO: CARREGADOR DA LISTA DE PASTAS DE TV
         async function carregarCategoriasTV() {
             tvFoiCarregada = true;
             try {
@@ -362,17 +360,28 @@
             <div class="carousel">`;
             
             lista.forEach(item => {
-                const fmtd = processarTitulo(item.name, nomePasta);
-                const capa = item.stream_icon || item.cover;
-                const argId = tipo === 'vod' ? item.stream_id : item.series_id;
-                const argExt = item.container_extension || 'mp4';
-                
-                html += `
-                <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', '${esc(nomePasta)}', '${esc(capa)}', '${argId}', '${tipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
-                    <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
-                    ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : ''}
-                    <div class="titulo-fallback" style="display:${capa ? 'none' : 'block'}">${fmtd.limpo}</div>
-                </div>`;
+                if(tipo === 'live') {
+                    const fmtd = processarTV(item.name);
+                    const capa = item.stream_icon;
+                    html += `
+                    <div class="card-tv" style="height:110px;" onclick="abrirSheetTV('${esc(fmtd.limpo)}', '${item.stream_id}', '${esc(fmtd.tagsStr)}')">
+                        <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
+                        ${capa ? `<img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/100x50/333/fff?text=TV'">` : `<i class="fas fa-tv" style="font-size:24px; color:#555; margin-bottom:5px;"></i>`}
+                        <div class="titulo-tv">${fmtd.limpo}</div>
+                    </div>`;
+                } else {
+                    const fmtd = processarTitulo(item.name, nomePasta);
+                    const capa = item.stream_icon || item.cover;
+                    const argId = tipo === 'vod' ? item.stream_id : item.series_id;
+                    const argExt = item.container_extension || 'mp4';
+                    
+                    html += `
+                    <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', '${esc(nomePasta)}', '${esc(capa)}', '${argId}', '${tipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
+                        <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
+                        ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : ''}
+                        <div class="titulo-fallback" style="display:${capa ? 'none' : 'block'}">${fmtd.limpo}</div>
+                    </div>`;
+                }
             });
             return html + `</div>`;
         }
@@ -398,10 +407,10 @@
                         const fmtd = processarTV(item.name);
                         const capa = item.stream_icon;
                         htmlGrade += `
-                        <div class="card-movie card-tv" style="height: 100px;" onclick="abrirSheetTV('${esc(fmtd.limpo)}', '${item.stream_id}', '${esc(fmtd.tagsStr)}')">
+                        <div class="card-movie card-tv" style="height: 110px;" onclick="abrirSheetTV('${esc(fmtd.limpo)}', '${item.stream_id}', '${esc(fmtd.tagsStr)}')">
                             <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
-                            ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : ''}
-                            <div class="titulo-tv" style="display:${capa ? 'none' : 'block'}">${fmtd.limpo}</div>
+                            ${capa ? `<img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/100x50/333/fff?text=TV'">` : `<i class="fas fa-tv" style="font-size:24px; color:#555; margin-bottom:5px;"></i>`}
+                            <div class="titulo-tv">${fmtd.limpo}</div>
                         </div>`;
                     } else {
                         const fmtd = processarTitulo(item.name, nomePasta);
@@ -412,7 +421,7 @@
                         htmlGrade += `
                         <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', '${esc(nomePasta)}', '${esc(capa)}', '${argId}', '${tipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
                             <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
-                            ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${fmtd.limpo}</div>`}
+                            ${capa ? `<img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${fmtd.limpo}</div>`}
                         </div>`;
                     }
                 });
@@ -447,7 +456,7 @@
             document.getElementById('btnPlayFilme').onclick = () => dispararPlayer(id, tipo, ext, titulo);
             
             document.getElementById('detailsPage').classList.add('active');
-            history.pushState({ modalOpen: true, type: 'details' }, null, "");
+            history.pushState({ aba: 'details' }, null, "");
         }
 
         function fecharDetalhes() { document.getElementById('detailsPage').classList.remove('active'); }
@@ -459,12 +468,11 @@
             
             document.getElementById('sheetOverlay').classList.add('active');
             document.getElementById('bottomSheet').classList.add('active');
-            history.pushState({ modalOpen: true, type: 'tv' }, null, "");
+            history.pushState({ aba: 'sheet' }, null, "");
         }
 
         function fecharSheetTV() { document.getElementById('sheetOverlay').classList.remove('active'); document.getElementById('bottomSheet').classList.remove('active'); }
 
-        // O TRUQUE MESTRE DA API PARA TV FUNCIONAR 100% SEM MEXER NO VERCEL BACKEND
         async function dispararPlayer(id, tipo, ext, titulo) {
             if(tipo === 'series') { alert(`Série: ${titulo}\n(O painel de episódios será feito na próxima fase!)`); return; }
 
@@ -479,13 +487,12 @@
                     const data = await res.json();
                     urlFinal = data.url;
                 } else if (tipo === 'live') {
-                    // Pega o link como se fosse filme, mas usa o replace para arrumar o caminho para TV nativa (.ts)!
-                    const res = await fetch(`/api/iptv?action=get_movie_url&stream_id=${id}&extension=ts`);
+                    const res = await fetch(`/api/iptv?action=get_live_url&stream_id=${id}`);
                     const data = await res.json();
-                    if(data.url) urlFinal = data.url.replace('/movie/', '/'); 
+                    urlFinal = data.url;
                 }
 
-                if (!urlFinal) throw new Error("A Vercel não retornou o link.");
+                if (!urlFinal) throw new Error("A Vercel não retornou o link. (Canal Offline)");
 
                 if (window.AndroidApp) {
                     window.AndroidApp.abrirVideoNativo(urlFinal);
@@ -497,23 +504,31 @@
                     setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
                 }
             } catch (e) {
-                alert("Erro ao aceder à API: " + e.message);
+                alert(e.message.includes("Canal Offline") ? "Este canal parece estar desligado no servidor neste momento." : "Erro ao aceder à API.");
                 btn.innerHTML = textoOriginal;
             }
         }
 
-        // LÓGICA PERFEITA DO BOTÃO VOLTAR
+        // O SEGREDO DO GESTO VOLTAR: Lê o Histórico do Android e decide o que fechar.
         window.addEventListener('popstate', function(event) {
             if (document.getElementById('detailsPage').classList.contains('active')) {
                 fecharDetalhes();
             } else if (document.getElementById('bottomSheet').classList.contains('active')) {
                 fecharSheetTV();
-            } else if (!document.getElementById('view-home').classList.contains('active')) {
-                mudarAba('view-home', document.getElementById('nav-home'));
+            } else if (event.state && event.state.aba) {
+                // Voltar para a aba anterior registada
+                mudarAba(event.state.aba, null, true);
+            } else {
+                // Proteção para garantir que nunca fecha o site por acidente, volta sempre à Home
+                mudarAba('view-home', document.getElementById('nav-home'), true);
             }
         });
 
-        window.onload = initApp;
+        window.onload = () => {
+            // Regista a Home como o ponto de partida do sistema
+            history.replaceState({ aba: 'view-home' }, null, "");
+            initApp();
+        };
     </script>
 </body>
 </html>
