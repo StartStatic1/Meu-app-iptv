@@ -5,20 +5,21 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'GET');
     res.setHeader('Content-Type', 'application/json');
 
-    const { action, category_id, stream_id } = req.query;
+    const { action, category_id, stream_id, extension } = req.query;
 
     const baseUrl = "http://bnewsc.top:80";
     const username = "reginaldobr";
     const password = "432334xc";
 
-    // NOVIDADE: Rota secreta para gerar o link do vídeo sem expor senha no HTML
-    if (action === "get_stream_url" && stream_id) {
-        // Formato padrão do Xtream Codes para canais ao vivo (geralmente .m3u8 ou .ts)
-        const streamUrl = `${baseUrl}/live/${username}/${password}/${stream_id}.m3u8`;
+    // NOVIDADE: Rota para gerar link de FILMES
+    if (action === "get_movie_url" && stream_id) {
+        // Filmes geralmente vêm com extensão .mp4 ou .mkv. Se não vier, testamos mp4.
+        const ext = extension || "mp4";
+        const streamUrl = `${baseUrl}/movie/${username}/${password}/${stream_id}.${ext}`;
         return res.status(200).json({ url: streamUrl });
     }
 
-    // Código original para carregar categorias e listas
+    // Consulta padrão da API Xtream
     let targetUrl = `${baseUrl}/player_api.php?username=${username}&password=${password}`;
 
     if (action) {
