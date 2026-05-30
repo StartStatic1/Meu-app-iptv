@@ -89,29 +89,54 @@
         .sheet-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto 20px; }
         .sheet-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; text-transform: uppercase; cursor: pointer; }
 
+        /* PÁGINAS DE SOBREPOSIÇÃO (Detalhes, Ator, Trailer) */
         .details-page { position: fixed; top: 0; left: 100%; width: 100%; height: 100vh; background: var(--bg-bottom); z-index: 3000; transition: left 0.3s ease-out; overflow-y: auto; padding-bottom: 30px; }
         .details-page.active { left: 0; }
         .dp-back-btn { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; z-index: 3010; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; cursor: pointer; }
         .dp-poster { width: 100%; height: 60vh; background-position: top center; background-size: cover; position: relative; background-color: #111; transition: background-image 0.5s ease;}
-        .dp-gradient { position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-bottom) 0%, rgba(4,7,20,0.7) 40%, transparent 100%); }
+        .dp-gradient { position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-bottom) 0%, rgba(4,7,20,0.8) 50%, transparent 100%); }
         .dp-content { padding: 0 20px; margin-top: -80px; position: relative; z-index: 2; }
         .dp-title { font-size: 32px; font-weight: 900; margin: 0 0 10px 0; line-height: 1.1; text-shadow: 0 2px 10px rgba(0,0,0,0.8);}
+        
+        /* Nova Ficha Técnica TMDB */
+        .dp-tmdb-meta { font-size: 11px; color: #ccc; font-weight: 600; margin-bottom: 5px; }
+        .dp-director { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; font-style: italic;}
+        
         .dp-meta { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 20px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;}
-        .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 15px; border-radius: 8px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(255,255,255,0.2); transition: 0.2s;}
+        
+        .action-buttons { display: flex; gap: 10px; margin-bottom: 25px; }
+        .dp-play-btn { flex: 2; background: #fff; color: #000; border: none; padding: 15px; border-radius: 8px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(255,255,255,0.2); transition: 0.2s;}
         .dp-play-btn:active { transform: scale(0.97); }
+        .dp-trailer-btn { flex: 1; background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 15px; border-radius: 8px; font-weight: 800; font-size: 13px; display: flex; justify-content: center; align-items: center; gap: 8px; text-transform: uppercase; transition: 0.2s; display:none;}
+        
         .dp-synopsis { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 25px; }
 
-        /* Estilos do Elenco (TMDB) */
+        /* Elenco TMDB */
         .cast-section { margin-bottom: 25px; }
-        .cast-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 15px; }
+        .cast-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 8px;}
         .cast-carousel { display: flex; gap: 15px; overflow-x: auto; scrollbar-width: none; padding-bottom: 10px; }
         .cast-carousel::-webkit-scrollbar { display: none; }
-        .cast-item { flex: 0 0 75px; text-align: center; }
+        .cast-item { flex: 0 0 75px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .cast-item:active { transform: scale(0.9); }
         .cast-img { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; background: #2a2d3e; margin-bottom: 8px; border: 2px solid rgba(255,255,255,0.1); }
         .cast-name { font-size: 11px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cast-char { font-size: 10px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-        .season-title { font-size: 18px; font-weight: 800; color: #fff; margin: 30px 0 15px 0; }
+        /* Modal do Ator */
+        .actor-modal { position: fixed; top: 100%; left: 0; width: 100%; height: 100vh; background: var(--bg-bottom); z-index: 3500; transition: top 0.3s ease-out; overflow-y: auto; padding-bottom: 30px; }
+        .actor-modal.active { top: 0; }
+        .actor-header { display: flex; align-items: center; gap: 20px; padding: 40px 20px 20px; background: var(--bg-top); }
+        .actor-img-large { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent); }
+        .actor-info h2 { margin: 0 0 5px 0; font-size: 22px; color: #fff; }
+        .actor-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
+        .actor-bio { font-size: 13px; color: #ccc; line-height: 1.5; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        /* Modal do Trailer */
+        .trailer-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 4000; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .trailer-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; padding: 10px; }
+        .trailer-frame { width: 100%; aspect-ratio: 16/9; background: #000; border: none; }
+
+        .season-title { font-size: 18px; font-weight: 800; color: #fff; margin: 30px 0 15px 0; border-left: 3px solid var(--accent); padding-left: 8px;}
         .ep-carousel { display: flex; gap: 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 10px; }
         .ep-carousel::-webkit-scrollbar { display: none; }
         .ep-card { flex: 0 0 160px; border-radius: 8px; background: rgba(255,255,255,0.05); overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); scroll-snap-align: start; transition: 0.2s; }
@@ -215,9 +240,17 @@
         </div>
         <div class="dp-content">
             <h1 class="dp-title" id="dpTitle">Título</h1>
+            
+            <div class="dp-tmdb-meta" id="dpTmdbMeta"></div>
+            <div class="dp-director" id="dpDirector"></div>
+
             <div class="dp-meta" id="dpMeta">Categoria</div>
             
-            <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
+            <div class="action-buttons">
+                <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
+                <button class="dp-trailer-btn" id="btnTrailer" onclick="abrirTrailer()"><i class="fas fa-film"></i> Trailer</button>
+            </div>
+            
             <p class="dp-synopsis" id="dpSynopsis">Aguardando TMDB...</p>
 
             <div id="dpCastContainer" class="cast-section" style="display: none;">
@@ -225,12 +258,39 @@
                 <div class="cast-carousel" id="dpCast"></div>
             </div>
 
-            <div id="dpEpisodes" style="display: none; padding-bottom: 30px;"></div>
+            <div id="dpEpisodes" style="display: none; padding-bottom: 10px;"></div>
+            
+            <div id="dpSimilarContainer" class="cast-section" style="display: none; padding-bottom: 30px;">
+                <div class="cast-title">Títulos Similares no Catálogo</div>
+                <div class="carousel" id="dpSimilar"></div>
+            </div>
         </div>
     </div>
 
+    <div class="actor-modal" id="actorModal">
+        <button class="dp-back-btn" style="position: fixed;" onclick="history.back()"><i class="fas fa-arrow-down"></i></button>
+        <div class="actor-header">
+            <img src="" id="actorImg" class="actor-img-large">
+            <div class="actor-info">
+                <h2 id="actorName">Nome</h2>
+                <div class="actor-meta" id="actorMeta">Nascimento / Idade</div>
+                <div class="actor-meta" id="actorPlace">Local</div>
+            </div>
+        </div>
+        <div class="actor-bio" id="actorBio">Biografia...</div>
+        
+        <div class="cast-section" style="padding: 20px 0;">
+            <div class="cast-title" style="margin-left: 20px;">Conhecido(a) Por</div>
+            <div class="carousel" id="actorCredits"></div>
+        </div>
+    </div>
+
+    <div class="trailer-modal" id="trailerModal">
+        <i class="fas fa-times trailer-close" onclick="fecharTrailer()"></i>
+        <iframe id="trailerFrame" class="trailer-frame" allowfullscreen></iframe>
+    </div>
+
     <script>
-        // CHAVE DE API DO TMDB
         const TMDB_API_KEY = '46230929e061f1d2f3df518aed983e08';
 
         let heroFilmes = [];
@@ -243,6 +303,8 @@
         let bancoFilmes = null;
         let bancoSeries = null;
         let bancoTV = null;
+
+        let trailerKeyAtivo = null;
 
         function esc(str) { return (str || '').toString().replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
         function limparNomePasta(nome) { return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Séries\s*\|\s*/i, '').trim(); }
@@ -308,6 +370,12 @@
             return html;
         }
 
+        // Para as buscas internas TMDB X IPTV
+        async function garantirBancoCarregado() {
+            if(!bancoFilmes) { const resF = await fetch('/api/iptv?action=get_vod_streams'); bancoFilmes = await resF.json(); }
+            if(!bancoSeries) { const resS = await fetch('/api/iptv?action=get_series'); bancoSeries = await resS.json(); }
+        }
+
         function mudarAba(idView, btn, originHistory = false) {
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
@@ -316,7 +384,7 @@
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(idView).classList.add('active');
 
-            if(!originHistory && idView !== 'view-home') history.pushState({ aba: idView }, null, "");
+            if(!originHistory && idView !== 'view-home') history.pushState({ view: idView }, null, "");
             
             if(idView === 'view-tv' && !tvFoiCarregada) carregarCategoriasMenu('get_live_categories', 'conteudo-tv', 'live', 'tv');
             if(idView === 'view-filmes' && !filmesFoiCarregada) carregarCategoriasMenu('get_vod_categories', 'conteudo-aba-filmes', 'vod', 'film');
@@ -503,9 +571,7 @@
 
             timeoutBusca = setTimeout(async () => {
                 try {
-                    if(!bancoFilmes) { const resF = await fetch('/api/iptv?action=get_vod_streams'); bancoFilmes = await resF.json(); }
-                    if(!bancoSeries) { const resS = await fetch('/api/iptv?action=get_series'); bancoSeries = await resS.json(); }
-
+                    await garantirBancoCarregado();
                     const resFilmes = bancoFilmes.filter(f => f.name && f.name.toLowerCase().includes(query)).slice(0, 30);
                     const resSeries = bancoSeries.filter(s => s.name && s.name.toLowerCase().includes(query)).slice(0, 15);
 
@@ -552,58 +618,88 @@
         }
 
         // ==========================================
-        // O GRANDE MOTOR TMDB (MÁGICA PURA)
+        // O MAGNÍFICO MOTOR TMDB: TRAILER, ELENCO E METADADOS
         // ==========================================
         async function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
-            // Limpa a tela
             document.getElementById('dpTitle').innerText = titulo;
             document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
             
-            // Coloca a capa do IPTV inicialmente
             const capaInicial = (!urlCapa || urlCapa === 'undefined') ? 'https://via.placeholder.com/800x600/111/fff' : urlCapa;
             document.getElementById('dpPoster').style.backgroundImage = `url('${capaInicial}')`;
             
             const btnPlay = document.getElementById('btnPlayFilme');
+            const btnTrailer = document.getElementById('btnTrailer');
             const boxEpisodios = document.getElementById('dpEpisodes');
             const boxSinopse = document.getElementById('dpSynopsis');
             const boxCast = document.getElementById('dpCastContainer');
             const divCast = document.getElementById('dpCast');
+            const boxMeta = document.getElementById('dpTmdbMeta');
+            const boxDirector = document.getElementById('dpDirector');
+            const boxSimilar = document.getElementById('dpSimilarContainer');
+            const divSimilar = document.getElementById('dpSimilar');
             
-            boxSinopse.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A contactar TMDB...';
+            // Reseta a tela
+            boxSinopse.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A sincronizar com os Estúdios...';
             boxCast.style.display = 'none';
-            divCast.innerHTML = '';
+            boxSimilar.style.display = 'none';
+            btnTrailer.style.display = 'none';
+            boxMeta.innerHTML = '';
+            boxDirector.innerHTML = '';
+            trailerKeyAtivo = null;
 
-            // TENTA BUSCAR NO TMDB
+            // ABRE A TELA E SALVA O HISTÓRICO
+            document.getElementById('detailsPage').classList.add('active');
+            history.pushState({ view: 'details' }, null, "");
+
+            // 1. CHAMA O TMDB (Puxando Créditos, Vídeos e Recomendações de uma vez!)
             try {
                 const tmdbType = tipo === 'series' ? 'tv' : 'movie';
-                // Remove anos e lixos para o TMDB achar certo (Ex: "O Gladiador 2 (2024)" vira "O Gladiador 2")
                 const queryBusca = encodeURIComponent(titulo.replace(/\(\d{4}\)/g, '').trim());
                 
                 const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/${tmdbType}?api_key=${TMDB_API_KEY}&language=pt-BR&query=${queryBusca}`);
                 const tmdbData = await tmdbRes.json();
 
                 if (tmdbData.results && tmdbData.results.length > 0) {
-                    const tmdbItem = tmdbData.results[0]; // Pega o primeiro e mais relevante
+                    const tmdbId = tmdbData.results[0].id;
                     
-                    // 1. SINOPSE
-                    boxSinopse.innerText = tmdbItem.overview || "Sinopse em português não disponível no momento.";
+                    // Busca os dados supremos do filme
+                    const detailsRes = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=credits,videos,recommendations`);
+                    const details = await detailsRes.json();
+
+                    // A. Ficha Técnica
+                    const ano = (details.release_date || details.first_air_date || "").substring(0,4);
+                    const nota = details.vote_average ? details.vote_average.toFixed(1) : "";
+                    const generos = details.genres ? details.genres.map(g=>g.name).slice(0,3).join(', ') : "";
+                    const duracao = details.runtime ? `${details.runtime} min` : "";
                     
-                    // 2. FUNDO EM HD (Se o TMDB tiver)
-                    if (tmdbItem.backdrop_path) {
-                        document.getElementById('dpPoster').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${tmdbItem.backdrop_path}')`;
+                    boxMeta.innerHTML = `<i class="fas fa-star" style="color:gold;"></i> ${nota} &nbsp;&bull;&nbsp; ${ano} &nbsp;&bull;&nbsp; ${generos} ${duracao ? '&nbsp;&bull;&nbsp; '+duracao : ''}`;
+                    
+                    if(details.credits && details.credits.crew) {
+                        const dir = details.credits.crew.find(c => c.job === 'Director');
+                        if(dir) boxDirector.innerText = `Dirigido por ${dir.name}`;
                     }
 
-                    // 3. ELENCO (Busca Secundária pelo ID do TMDB)
-                    const creditsRes = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${tmdbItem.id}/credits?api_key=${TMDB_API_KEY}&language=pt-BR`);
-                    const creditsData = await creditsRes.json();
+                    // B. Sinopse e Fundo
+                    boxSinopse.innerText = details.overview || "Sinopse oficial indisponível.";
+                    if (details.backdrop_path) document.getElementById('dpPoster').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${details.backdrop_path}')`;
 
-                    if (creditsData.cast && creditsData.cast.length > 0) {
+                    // C. Trailer
+                    if(details.videos && details.videos.results) {
+                        const trailer = details.videos.results.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
+                        if(trailer) {
+                            trailerKeyAtivo = trailer.key;
+                            btnTrailer.style.display = 'flex';
+                        }
+                    }
+
+                    // D. Elenco (Carrossel Clicável)
+                    if (details.credits && details.credits.cast && details.credits.cast.length > 0) {
                         let htmlCast = '';
-                        // Mostra os 10 primeiros atores
-                        creditsData.cast.slice(0, 10).forEach(ator => {
+                        details.credits.cast.slice(0, 15).forEach(ator => {
                             const fotoAtor = ator.profile_path ? `https://image.tmdb.org/t/p/w200${ator.profile_path}` : 'https://via.placeholder.com/150x150/333/fff?text=Ator';
+                            // Clicar no ator abre a Biografia
                             htmlCast += `
-                            <div class="cast-item">
+                            <div class="cast-item" onclick="abrirAtor(${ator.id})">
                                 <img src="${fotoAtor}" class="cast-img">
                                 <div class="cast-name">${ator.name}</div>
                                 <div class="cast-char">${ator.character}</div>
@@ -612,14 +708,48 @@
                         divCast.innerHTML = htmlCast;
                         boxCast.style.display = 'block';
                     }
+
+                    // E. Filmes Similares MÁGICOS (Cruza TMDB com IPTV)
+                    if (details.recommendations && details.recommendations.results && details.recommendations.results.length > 0) {
+                        await garantirBancoCarregado();
+                        let htmlSimilar = '';
+                        
+                        details.recommendations.results.forEach(rec => {
+                            const recTitle = rec.title || rec.name;
+                            // Procura se o filme do TMDB existe no seu Kavru
+                            const matchIPTV = bancoFilmes.find(f => f.name.toLowerCase().includes(recTitle.toLowerCase())) || 
+                                              bancoSeries.find(s => s.name.toLowerCase().includes(recTitle.toLowerCase()));
+                            
+                            if(matchIPTV) {
+                                const isSerie = matchIPTV.series_id ? true : false;
+                                const argId = isSerie ? matchIPTV.series_id : matchIPTV.stream_id;
+                                const argTipo = isSerie ? 'series' : 'vod';
+                                const argExt = matchIPTV.container_extension || 'mp4';
+                                const fmtd = processarTitulo(matchIPTV.name, "");
+                                const recImg = rec.poster_path ? `https://image.tmdb.org/t/p/w300${rec.poster_path}` : matchIPTV.stream_icon;
+
+                                htmlSimilar += `
+                                <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', 'Recomendado', '${esc(recImg)}', '${argId}', '${argTipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
+                                    <img src="${recImg}" loading="lazy">
+                                    <div class="titulo-fallback" style="display:none;">${fmtd.limpo}</div>
+                                </div>`;
+                            }
+                        });
+
+                        if(htmlSimilar !== '') {
+                            divSimilar.innerHTML = htmlSimilar;
+                            boxSimilar.style.display = 'block';
+                        }
+                    }
+
                 } else {
-                    boxSinopse.innerText = "Este título não foi encontrado no banco de dados mundial.";
+                    boxSinopse.innerText = "Este título não foi encontrado no banco de dados do cinema.";
                 }
             } catch (err) {
                 boxSinopse.innerText = "Resumo indisponível.";
             }
 
-            // LÓGICA DE PLAY OU EPISÓDIOS (INTACTA)
+            // 2. LÓGICA DE SÉRIES (EPISÓDIOS DO KAVRU)
             if(tipo === 'series') {
                 btnPlay.style.display = 'none';
                 boxEpisodios.style.display = 'block';
@@ -647,33 +777,113 @@
                                 
                                 htmlEps += `
                                 <div class="ep-card" onclick="dispararPlayer('${ep.id}', 'episode', '${ep.container_extension || 'mp4'}', '${esc(epTitle)}')">
-                                    <div class="ep-thumb" style="background-image: url('${thumb}');">
-                                        <i class="fas fa-play-circle"></i>
-                                    </div>
-                                    <div class="ep-info-text">
-                                        <div class="ep-number">S${sNum}E${eNum}</div>
-                                        <div class="ep-name">${epTitle}</div>
-                                    </div>
+                                    <div class="ep-thumb" style="background-image: url('${thumb}');"><i class="fas fa-play-circle"></i></div>
+                                    <div class="ep-info-text"><div class="ep-number">S${sNum}E${eNum}</div><div class="ep-name">${epTitle}</div></div>
                                 </div>`;
                             });
                             htmlEps += `</div>`;
                         }
                         boxEpisodios.innerHTML = htmlEps;
-                    } else {
-                        boxEpisodios.innerHTML = '<p class="loading-text">Esta série não tem episódios cadastrados no servidor.</p>';
-                    }
-                } catch(e) { boxEpisodios.innerHTML = '<p class="loading-text">Erro ao carregar episódios. Tente novamente.</p>'; }
+                    } else { boxEpisodios.innerHTML = '<p class="loading-text">Nenhum episódio cadastrado no servidor.</p>'; }
+                } catch(e) { boxEpisodios.innerHTML = '<p class="loading-text">Erro ao carregar episódios.</p>'; }
             } else {
                 btnPlay.style.display = 'flex';
                 boxEpisodios.style.display = 'none';
                 btnPlay.onclick = () => dispararPlayer(id, tipo, ext, titulo);
             }
+        }
 
-            document.getElementById('detailsPage').classList.add('active');
-            history.pushState({ aba: 'details' }, null, "");
+        // ==========================================
+        // MODAL DO ATOR (BIOGRAFIA E FILMES)
+        // ==========================================
+        async function abrirAtor(atorId) {
+            const modal = document.getElementById('actorModal');
+            document.getElementById('actorName').innerText = "Carregando...";
+            document.getElementById('actorBio').innerText = "";
+            document.getElementById('actorCredits').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando obras...';
+            
+            modal.classList.add('active');
+            history.pushState({ view: 'actor' }, null, "");
+
+            try {
+                // Biografia
+                const pRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}?api_key=${TMDB_API_KEY}&language=pt-BR`);
+                const pData = await pRes.json();
+                
+                document.getElementById('actorName').innerText = pData.name;
+                document.getElementById('actorImg').src = pData.profile_path ? `https://image.tmdb.org/t/p/w300${pData.profile_path}` : 'https://via.placeholder.com/150';
+                
+                let idade = "";
+                if(pData.birthday) {
+                    const nasc = new Date(pData.birthday);
+                    const ageDifMs = Date.now() - nasc.getTime();
+                    const ageDate = new Date(ageDifMs);
+                    idade = ` • ${Math.abs(ageDate.getUTCFullYear() - 1970)} anos`;
+                }
+                document.getElementById('actorMeta').innerText = pData.birthday ? `${pData.birthday}${idade}` : "Data de nascimento desconhecida";
+                document.getElementById('actorPlace').innerText = pData.place_of_birth || "";
+                document.getElementById('actorBio').innerText = pData.biography || "Biografia em português não disponível no momento.";
+
+                // Filmes que ele fez
+                const cRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}/combined_credits?api_key=${TMDB_API_KEY}&language=pt-BR`);
+                const cData = await cRes.json();
+                
+                if(cData.cast && cData.cast.length > 0) {
+                    // Ordena por popularidade
+                    const obras = cData.cast.sort((a,b) => b.popularity - a.popularity).slice(0, 20);
+                    let htmlObras = '';
+                    await garantirBancoCarregado();
+
+                    obras.forEach(obra => {
+                        const obTitle = obra.title || obra.name;
+                        const obImg = obra.poster_path ? `https://image.tmdb.org/t/p/w200${obra.poster_path}` : 'https://via.placeholder.com/220x330/111/fff';
+                        
+                        // Verifica se você TEM esse filme no Kavru
+                        const matchIPTV = bancoFilmes.find(f => f.name.toLowerCase().includes(obTitle.toLowerCase())) || 
+                                          bancoSeries.find(s => s.name.toLowerCase().includes(obTitle.toLowerCase()));
+                        
+                        if(matchIPTV) {
+                            const isSerie = matchIPTV.series_id ? true : false;
+                            const argId = isSerie ? matchIPTV.series_id : matchIPTV.stream_id;
+                            const argTipo = isSerie ? 'series' : 'vod';
+                            const argExt = matchIPTV.container_extension || 'mp4';
+                            const fmtd = processarTitulo(matchIPTV.name, "");
+
+                            htmlObras += `
+                            <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', 'Do Elenco', '${esc(obImg)}', '${argId}', '${argTipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
+                                <img src="${obImg}" loading="lazy">
+                            </div>`;
+                        } else {
+                            // Se não tem no IPTV, mostra bloqueado
+                            htmlObras += `
+                            <div class="card-movie" onclick="alert('Este título do ator ainda não está disponível no seu servidor IPTV.')" style="opacity: 0.5;">
+                                <img src="${obImg}" loading="lazy">
+                            </div>`;
+                        }
+                    });
+                    document.getElementById('actorCredits').innerHTML = htmlObras || "Nenhuma obra deste ator está no catálogo IPTV.";
+                }
+
+            } catch(e) { document.getElementById('actorBio').innerText = "Erro ao carregar dados."; }
+        }
+
+        // ==========================================
+        // TRAILER YOUTUBE
+        // ==========================================
+        function abrirTrailer() {
+            if(!trailerKeyAtivo) return;
+            const modal = document.getElementById('trailerModal');
+            document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${trailerKeyAtivo}?autoplay=1`;
+            modal.style.display = 'flex';
+            history.pushState({ view: 'trailer' }, null, "");
+        }
+        function fecharTrailer() {
+            document.getElementById('trailerModal').style.display = 'none';
+            document.getElementById('trailerFrame').src = '';
         }
 
         function fecharDetalhes() { document.getElementById('detailsPage').classList.remove('active'); }
+        function fecharAtor() { document.getElementById('actorModal').classList.remove('active'); }
         
         function abrirSheetTV(titulo, streamId, tagsStr) {
             document.getElementById('tvTitle').innerText = titulo;
@@ -682,9 +892,8 @@
             
             document.getElementById('sheetOverlay').classList.add('active');
             document.getElementById('bottomSheet').classList.add('active');
-            history.pushState({ aba: 'sheet' }, null, "");
+            history.pushState({ view: 'sheet' }, null, "");
         }
-
         function fecharSheetTV() { document.getElementById('sheetOverlay').classList.remove('active'); document.getElementById('bottomSheet').classList.remove('active'); }
 
         async function dispararPlayer(id, tipo, ext, titulo) {
@@ -724,20 +933,25 @@
             }
         }
 
+        // CONTROLADOR SUPREMO DO BOTÃO VOLTAR DO ANDROID
         window.addEventListener('popstate', function(event) {
-            if (document.getElementById('detailsPage').classList.contains('active')) {
+            if(document.getElementById('trailerModal').style.display === 'flex') {
+                fecharTrailer();
+            } else if (document.getElementById('actorModal').classList.contains('active')) {
+                fecharAtor();
+            } else if (document.getElementById('detailsPage').classList.contains('active')) {
                 fecharDetalhes();
             } else if (document.getElementById('bottomSheet').classList.contains('active')) {
                 fecharSheetTV();
-            } else if (event.state && event.state.aba) {
-                mudarAba(event.state.aba, null, true);
+            } else if (event.state && event.state.view) {
+                mudarAba(event.state.view, null, true);
             } else {
                 mudarAba('view-home', document.getElementById('nav-home'), true);
             }
         });
 
         window.onload = () => {
-            history.replaceState({ aba: 'view-home' }, null, "");
+            history.replaceState({ view: 'view-home' }, null, "");
             initApp();
         };
     </script>
