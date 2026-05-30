@@ -134,24 +134,21 @@
         let heroInterval = null;
 
         // ==========================================
-        // 1. O FILTRO E LIMPADOR INTELIGENTE
+        // 1. O NOVO FILTRO E LIMPADOR INTELIGENTE
         // ==========================================
         
-        // Bloqueia as pastas de lixo do IPTV
         function pastaValida(nome) {
+            if (!nome) return false;
             const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO'];
             const n = nome.toUpperCase();
             return !proibidos.some(p => n.includes(p));
         }
 
-        // Gera as etiquetas e limpa os nomes baseado na PASTA e no NOME
         function formatarTituloIPTV(nomeBruto, nomePasta) {
-            let nomeLimpo = nomeBruto;
+            let nomeLimpo = nomeBruto || "Sem Título";
             let badgesHTML = '';
             
-            // O Segredo: Se a pasta já disser que é 4K, Legendado, etc, ele carimba tudo!
             const pastaU = nomePasta ? nomePasta.toUpperCase() : '';
-            
             const etiquetas = [];
 
             if(pastaU.includes('4K') || /4K|UHD|2160p/i.test(nomeLimpo)) { etiquetas.push({ l: '4K', c: '#fff', b: '#ff1744' }); }
@@ -164,31 +161,32 @@
                 badgesHTML += `<span style="background:${e.b}; color:${e.c}; font-size:8px; font-weight:900; padding:3px 5px; border-radius:4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">${e.l}</span>`;
             });
 
-            // Limpeza brutal do nome do filme
             nomeLimpo = nomeLimpo.replace(/(4K|UHD|2160p|FHD|1080p|HD|720p)/ig, '');
             nomeLimpo = nomeLimpo.replace(/\[(DUB|LEG|VOD).*?\]/ig, ''); 
             nomeLimpo = nomeLimpo.replace(/\((DUB|LEG).*?\)/ig, ''); 
-            nomeLimpo = nomeLimpo.replace(/\|.*?\|/g, ''); // Tira |PT-BR|
+            nomeLimpo = nomeLimpo.replace(/\|.*?\|/g, ''); 
             nomeLimpo = nomeLimpo.replace(/-\s*$/, ''); 
-            nomeLimpo = nomeLimpo.replace(/\s+/g, ' ').trim(); // Arruma espaços duplos
+            nomeLimpo = nomeLimpo.replace(/\s+/g, ' ').trim(); 
 
             if(nomeLimpo.length < 2) nomeLimpo = nomeBruto.substring(0, 20);
 
             return { tituloLimpo: nomeLimpo, htmlBadges: badgesHTML };
         }
 
-        // Formatador para TV (Extrai SP, RJ, FHD, etc)
+        // NOVO: Limpador de Símbolos da TV (> [HD] Globo...)
         function formatarTV(nomeBruto) {
-            let nomeLimpo = nomeBruto;
+            let nomeLimpo = nomeBruto || "Canal";
             let badgesHTML = '';
-            
             const etiquetas = [];
-            // Acha estados (SP, RJ, MG)
+            
+            // Procura Estados
             const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF)\b/i);
             if(estado) {
                 etiquetas.push({ l: estado[0].toUpperCase(), c: '#fff', b: '#ff9100' });
                 nomeLimpo = nomeLimpo.replace(estado[0], '');
             }
+            
+            // Procura Qualidade
             if(/FHD/i.test(nomeLimpo)) { etiquetas.push({ l: 'FHD', c: '#000', b: '#00e5ff' }); }
             else if(/HD/i.test(nomeLimpo)) { etiquetas.push({ l: 'HD', c: '#000', b: '#76ff03' }); }
             else if(/4K/i.test(nomeLimpo)) { etiquetas.push({ l: '4K', c: '#fff', b: '#ff1744' }); }
@@ -197,16 +195,14 @@
                 badgesHTML += `<span style="background:${e.b}; color:${e.c}; font-size:8px; font-weight:900; padding:3px 5px; border-radius:4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">${e.l}</span>`;
             });
 
-            nomeLimpo = nomeLimpo.replace(/(FHD|HD|4K|\[.*?\]|\(.*?\))/ig, '');
-            nomeLimpo = nomeLimpo.replace(/\|.*?\|/g, ''); 
-            nomeLimpo = nomeLimpo.trim();
+            // Remove todos os lixos (Setas, Colchetes, Parênteses e as letras das qualidades)
+            nomeLimpo = nomeLimpo.replace(/(FHD|HD|4K|SD)/ig, '');
+            nomeLimpo = nomeLimpo.replace(/[>|\[\]\(\)*]/g, ''); 
+            nomeLimpo = nomeLimpo.replace(/\s+/g, ' ').trim();
 
             return { tituloLimpo: nomeLimpo, htmlBadges: badgesHTML };
         }
 
-        // ==========================================
-        // 2. FUNÇÕES BÁSICAS (Abas)
-        // ==========================================
         function mudarAba(idView, btn) {
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
@@ -214,69 +210,68 @@
             document.getElementById(idView).classList.add('active');
         }
 
-        // ==========================================
-        // 3. BUSCA DE DADOS (COM PASTAS INTELIGENTES)
-        // ==========================================
         async function initApp() {
             try {
                 const containerDinamico = document.getElementById('conteudo-dinamico');
                 let htmlConstruido = "";
                 
-                // 3.1 - FILMES (Pega a Primeira Pasta Válida, ex: Lançamentos)
-                const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
-                const vodCats = await resVodCats.json();
-                const pastaFilmeValida = vodCats.find(c => pastaValida(c.category_name));
-                
-                if(pastaFilmeValida) {
-                    const resFilmes = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastaFilmeValida.category_id}`);
-                    const filmes = await resFilmes.json();
+                // FILMES
+                try {
+                    const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
+                    const vodCats = await resVodCats.json();
+                    const pastaFilmeValida = vodCats.find(c => pastaValida(c.category_name));
                     
-                    if(filmes && filmes.length > 0) {
-                        heroFilmes = filmes.slice(0, 5);
-                        iniciarHeroSlider(pastaFilmeValida.category_name);
-                        htmlConstruido += gerarCarrosselHTML(pastaFilmeValida.category_name, 'filmes', 'film', filmes.slice(5, 20));
+                    if(pastaFilmeValida) {
+                        const resFilmes = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastaFilmeValida.category_id}`);
+                        const filmes = await resFilmes.json();
+                        
+                        if(filmes && filmes.length > 0) {
+                            heroFilmes = filmes.slice(0, 5);
+                            iniciarHeroSlider(pastaFilmeValida.category_name);
+                            htmlConstruido += gerarCarrosselHTML(pastaFilmeValida.category_name, 'filmes', 'film', filmes.slice(5, 20));
+                        }
                     }
-                }
+                } catch(e) { console.log("Erro Filmes", e); }
 
-                // 3.2 - SÉRIES
-                const resSerieCats = await fetch('/api/iptv?action=get_series_categories');
-                const serieCats = await resSerieCats.json();
-                const pastaSerieValida = serieCats.find(c => pastaValida(c.category_name));
-                
-                if(pastaSerieValida) {
-                    const resSeries = await fetch(`/api/iptv?action=get_series&category_id=${pastaSerieValida.category_id}`);
-                    const series = await resSeries.json();
-                    if(series && series.length > 0) {
-                        htmlConstruido += gerarCarrosselHTML(pastaSerieValida.category_name, 'series', 'tv', series.slice(0, 15));
+                // SÉRIES
+                try {
+                    const resSerieCats = await fetch('/api/iptv?action=get_series_categories');
+                    const serieCats = await resSerieCats.json();
+                    const pastaSerieValida = serieCats.find(c => pastaValida(c.category_name));
+                    
+                    if(pastaSerieValida) {
+                        const resSeries = await fetch(`/api/iptv?action=get_series&category_id=${pastaSerieValida.category_id}`);
+                        const series = await resSeries.json();
+                        if(series && series.length > 0) {
+                            htmlConstruido += gerarCarrosselHTML(pastaSerieValida.category_name, 'series', 'tv', series.slice(0, 15));
+                        }
                     }
-                }
+                } catch(e) { console.log("Erro Séries", e); }
 
-                // 3.3 - TV AO VIVO (Pega 3 Pastas Válidas que não são Lixo)
-                const resTvCats = await fetch('/api/iptv?action=get_live_categories');
-                const tvCats = await resTvCats.json();
-                
-                const pastasTvValidas = tvCats.filter(c => pastaValida(c.category_name)).slice(0, 3);
-                
-                for(let i = 0; i < pastasTvValidas.length; i++) {
-                    const cat = pastasTvValidas[i];
-                    const resTv = await fetch(`/api/iptv?action=get_live_streams&category_id=${cat.category_id}`);
-                    const canais = await resTv.json();
-                    if(canais && canais.length > 0) {
-                        htmlConstruido += gerarCarrosselHTML(cat.category_name, 'tv', 'broadcast-tower', canais.slice(0, 15));
+                // TV AO VIVO
+                try {
+                    const resTvCats = await fetch('/api/iptv?action=get_live_categories');
+                    const tvCats = await resTvCats.json();
+                    
+                    const pastasTvValidas = tvCats.filter(c => pastaValida(c.category_name)).slice(0, 3);
+                    
+                    for(let i = 0; i < pastasTvValidas.length; i++) {
+                        const cat = pastasTvValidas[i];
+                        const resTv = await fetch(`/api/iptv?action=get_live_streams&category_id=${cat.category_id}`);
+                        const canais = await resTv.json();
+                        if(canais && canais.length > 0) {
+                            htmlConstruido += gerarCarrosselHTML(cat.category_name, 'tv', 'broadcast-tower', canais.slice(0, 15));
+                        }
                     }
-                }
+                } catch(e) { console.log("Erro TV", e); }
                 
-                // Injeta tudo de uma vez
-                containerDinamico.innerHTML = htmlConstruido;
+                containerDinamico.innerHTML = htmlConstruido || "<div class='loading-text'>Nenhum conteúdo encontrado.</div>";
 
             } catch (error) { 
                 document.getElementById('conteudo-dinamico').innerHTML = "<div class='loading-text'>Erro ao conectar no servidor.</div>";
             }
         }
 
-        // ==========================================
-        // 4. GERADOR DE HTML (Renderização Otimizada)
-        // ==========================================
         function gerarCarrosselHTML(nomePasta, tipo, icone, lista) {
             let html = `<div class="section-title"><i class="fas fa-${icone}"></i> ${nomePasta}</div><div class="carousel">`;
             
@@ -300,7 +295,8 @@
                     html += `
                     <div class="card-movie" onclick="abrirDetalhes('${fmtd.tituloLimpo}', '${nomePasta}', '${capa}', '${argId}', '${tipo}', '${argExt}', '${fmtd.htmlBadges}')">
                         <div class="card-badges">${fmtd.htmlBadges}</div>
-                        ${capa ? `<img src="${capa}" loading="lazy">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${fmtd.tituloLimpo}</div>`}
+                        ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : ''}
+                        <div class="titulo-fallback" style="display:${capa ? 'none' : 'block'}">${fmtd.tituloLimpo}</div>
                     </div>`;
                 }
             });
@@ -317,6 +313,7 @@
 
         function atualizarHero(nomeCat) {
             const filme = heroFilmes[heroIndex];
+            if(!filme) return;
             const formatado = formatarTituloIPTV(filme.name, nomeCat);
             const capa = filme.stream_icon || 'https://via.placeholder.com/800x600/111/fff?text=StreamFlix';
             document.getElementById('heroBanner').style.backgroundImage = `url('${capa}')`;
@@ -326,20 +323,15 @@
 
         function abrirHeroDetalhes() {
             const f = heroFilmes[heroIndex];
-            // Aqui recuperamos a categoria real (ex: Lançamentos, 4K) baseada no nome original se possível, mas mantemos Genérica por segurança
+            if(!f) return;
             const formatado = formatarTituloIPTV(f.name, ""); 
             abrirDetalhes(formatado.tituloLimpo, "Destaque VIP", f.stream_icon, f.stream_id, 'vod', f.container_extension || 'mp4', formatado.htmlBadges);
         }
 
-        // ==========================================
-        // 5. TELAS E PLAYERS
-        // ==========================================
         function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, badges) {
             document.getElementById('dpTitle').innerText = titulo;
             document.getElementById('dpMeta').innerHTML = (badges || "") + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
-            
-            // Garantir que não envia undefined para a imagem
-            if (!urlCapa || urlCapa === 'undefined') urlCapa = 'https://via.placeholder.com/800x600/111/fff';
+            if (!urlCapa || urlCapa === 'undefined' || urlCapa === 'null') urlCapa = 'https://via.placeholder.com/800x600/111/fff';
             document.getElementById('dpPoster').style.backgroundImage = `url('${urlCapa}')`;
             
             document.getElementById('btnPlayFilme').onclick = () => dispararPlayer(id, tipo, ext, titulo);
@@ -380,20 +372,24 @@
                 if(tipo === 'vod') {
                     const res = await fetch(`/api/iptv?action=get_movie_url&stream_id=${id}&extension=${ext}`);
                     const data = await res.json();
-                    urlFinal = data.url;
+                    if(data.url) { urlFinal = data.url; }
                 } else if (tipo === 'live') {
                     urlFinal = `http://kavru.com:80/558396043519/64537505/${id}.ts`;
                 }
 
-                if (window.AndroidApp) {
+                if (urlFinal && window.AndroidApp) {
                     btn.innerHTML = `<i class="fas fa-check"></i> Abrindo...`;
                     window.AndroidApp.abrirVideoNativo(urlFinal);
-                } else {
+                } else if (urlFinal) {
+                    // SE ESTIVER NO NAVEGADOR (TESTE), MOSTRA O LINK
                     alert(`O link final que o Android vai receber é:\n${urlFinal}`);
+                    btn.innerHTML = textoOriginal;
+                } else {
+                    alert("O servidor não devolveu o link do vídeo.");
                     btn.innerHTML = textoOriginal;
                 }
             } catch (e) {
-                alert("Erro ao buscar servidor.");
+                alert("Erro ao buscar link no servidor.");
                 btn.innerHTML = textoOriginal;
             }
         }
