@@ -5,35 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cine Mega - VOD Player</title>
     <style>
-        body { margin: 0; padding: 0; background-color: #0f0f0f; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { margin: 0; padding: 0; background-color: #0f0f0f; color: #fff; font-family: sans-serif; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* Navegação Superior */
         .navbar { background-color: #1a1a1a; padding: 10px; display: flex; justify-content: center; gap: 15px; border-bottom: 2px solid #e50914; }
-        .nav-btn { background-color: #333; color: #fff; border: none; padding: 10px 20px; border-radius: 20px; font-weight: bold; cursor: pointer; transition: 0.3s; }
+        .nav-btn { background-color: #333; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; cursor: pointer; transition: 0.3s; }
         .nav-btn.active { background-color: #e50914; }
         
-        /* Player Fixo */
-        .player-area { width: 100%; max-height: 35vh; background-color: #000; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid #333; }
-        video { max-width: 100%; max-height: 100%; aspect-ratio: 16/9; }
+        .player-area { width: 100%; height: 30vh; background-color: #000; display: flex; justify-content: center; align-items: center; border-bottom: 1px solid #333; }
+        video { max-width: 100%; max-height: 100%; width: 100%; }
         
-        /* Área de Conteúdo */
         .bottom-area { display: flex; flex: 1; overflow: hidden; }
         
-        /* Categorias (Barra Lateral) */
-        .sidebar { width: 35%; max-width: 200px; background-color: #141414; border-right: 1px solid #2a2a2a; display: flex; flex-direction: column; overflow-y: auto; }
-        .category-item { padding: 12px 10px; border-bottom: 1px solid #222; cursor: pointer; font-size: 12px; transition: 0.2s; }
+        .sidebar { width: 35%; max-width: 180px; background-color: #141414; border-right: 1px solid #2a2a2a; display: flex; flex-direction: column; overflow-y: auto; }
+        .category-item { padding: 15px 10px; border-bottom: 1px solid #222; cursor: pointer; font-size: 11px; font-weight: bold; }
         .category-item:hover { background-color: #e50914; color: #fff; }
         
-        /* Grid de Filmes/Séries */
         .main-content { flex: 1; display: flex; flex-direction: column; background-color: #0f0f0f; }
         .top-bar { padding: 10px; background-color: #141414; font-size: 12px; color: #aaa; text-align: center; border-bottom: 1px solid #2a2a2a; }
-        .grid { flex: 1; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 10px; align-content: start; }
         
-        /* Cartão estilo Netflix */
-        .card { background-color: #1e1e1e; border-radius: 6px; overflow: hidden; cursor: pointer; transition: 0.2s; position: relative; }
-        .card:hover { transform: scale(1.05); box-shadow: 0 4px 15px rgba(229, 9, 20, 0.5); }
-        .card-img { width: 100%; aspect-ratio: 2/3; object-fit: cover; background: #222; display: block; }
-        .card-title { font-size: 10px; font-weight: bold; padding: 5px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: rgba(0,0,0,0.8); position: absolute; bottom: 0; width: 100%; box-sizing: border-box; }
+        .grid { flex: 1; overflow-y: auto; padding: 10px; display: grid; grid-template-columns: repeat(auto-fill, minmax(90px, 1fr)); gap: 12px; align-content: start; }
+        
+        /* CORREÇÃO DOS CARTÕES: Tamanho fixo para não espremer */
+        .card { background-color: #222; border-radius: 6px; overflow: hidden; cursor: pointer; position: relative; height: 140px; display: flex; flex-direction: column; border: 1px solid #333; }
+        .card-img { width: 100%; height: 100%; object-fit: cover; background-color: #111; }
+        .card-title { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.85); font-size: 9px; font-weight: bold; padding: 6px 4px; text-align: center; box-sizing: border-box; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #fff; }
     </style>
 </head>
 <body>
@@ -44,7 +39,7 @@
     </div>
 
     <div class="player-area">
-        <video id="videoPlayer" controls poster="https://via.placeholder.com/800x450?text=CINE+MEGA"></video>
+        <video id="videoPlayer" controls poster="https://via.placeholder.com/800x450/000000/FFFFFF?text=CINE+MEGA"></video>
     </div>
 
     <div class="bottom-area">
@@ -59,22 +54,20 @@
     </div>
 
     <script>
-        let modoAtual = 'vod'; // Pode ser 'vod' (Filmes) ou 'series' (Séries)
+        let modoAtual = 'vod'; 
 
         function setModo(modo) {
             modoAtual = modo;
             document.getElementById('btnFilmes').classList.toggle('active', modo === 'vod');
             document.getElementById('btnSeries').classList.toggle('active', modo === 'series');
             document.getElementById('contentGrid').innerHTML = "";
-            document.getElementById('loading').innerText = "Carregando categorias...";
+            document.getElementById('loading').innerText = "Carregando pastas...";
             carregarCategorias();
         }
 
         async function carregarCategorias() {
             const list = document.getElementById('categoryList');
             list.innerHTML = "<div style='padding:10px; text-align:center;'>Aguarde...</div>";
-            
-            // Define qual rota da API chamar baseado no botão clicado
             const action = modoAtual === 'vod' ? 'get_vod_categories' : 'get_series_categories';
 
             try {
@@ -90,7 +83,7 @@
                     list.appendChild(div);
                 });
             } catch (error) {
-                list.innerHTML = "<div style='color:red; padding:10px;'>Erro ao carregar</div>";
+                list.innerHTML = "<div style='color:red; padding:10px;'>Erro de servidor</div>";
             }
         }
 
@@ -98,27 +91,31 @@
             const grid = document.getElementById('contentGrid');
             const loading = document.getElementById('loading');
             grid.innerHTML = "";
-            loading.innerText = `Buscando em: ${nomeCategoria}...`;
+            loading.innerText = `Buscando: ${nomeCategoria}...`;
 
             const action = modoAtual === 'vod' ? 'get_vod_streams' : 'get_series';
 
             try {
                 const response = await fetch(`/api/iptv?action=${action}&category_id=${id}`);
                 const itens = await response.json();
-                loading.innerText = `${itens.length} títulos encontrados em: ${nomeCategoria}`;
+                loading.innerText = `${itens.length} títulos em: ${nomeCategoria}`;
                 
                 itens.forEach(item => {
                     const card = document.createElement('div');
                     card.className = 'card';
                     
-                    // Xtream usa stream_icon para filmes e cover para séries
-                    const coverUrl = item.stream_icon || item.cover || 'https://via.placeholder.com/200x300?text=Sem+Capa';
+                    // Lógica melhorada para capas vazias ou quebradas
+                    let urlCapa = item.stream_icon || item.cover || "";
+                    if (urlCapa.trim() === "") {
+                        urlCapa = 'https://via.placeholder.com/150x225/222222/FFFFFF?text=CINE+MEGA';
+                    }
+
                     const titulo = item.name || "Sem Título";
                     const itemId = item.stream_id || item.series_id;
                     const ext = item.container_extension || 'mp4';
                     
                     card.innerHTML = `
-                        <img class="card-img" src="${coverUrl}" onerror="this.src='https://via.placeholder.com/200x300?text=Sem+Capa'">
+                        <img class="card-img" src="${urlCapa}" onerror="this.src='https://via.placeholder.com/150x225/222222/FFFFFF?text=CINE+MEGA'">
                         <div class="card-title">${titulo}</div>
                     `;
                     
@@ -126,38 +123,35 @@
                         if (modoAtual === 'vod') {
                             tocarFilme(itemId, titulo, ext);
                         } else {
-                            alert(`Série: ${titulo}\n(Próximo nível: Criar a tela de episódios para o ID ${itemId})`);
+                            alert(`Série selecionada: ${titulo}\n(Preparado para tela de episódios futuramente)`);
                         }
                     };
                     
                     grid.appendChild(card);
                 });
             } catch (error) {
-                loading.innerText = "Erro ao carregar os títulos.";
+                loading.innerText = "Falha ao carregar títulos.";
             }
         }
 
         async function tocarFilme(streamId, titulo, ext) {
             const video = document.getElementById('videoPlayer');
             const loading = document.getElementById('loading');
-            loading.innerText = `Preparando filme: ${titulo}...`;
+            loading.innerText = `Preparando: ${titulo}...`;
 
             try {
-                // Pede o link do filme para o nosso backend Vercel
                 const response = await fetch(`/api/iptv?action=get_movie_url&stream_id=${streamId}&extension=${ext}`);
                 const data = await response.json();
                 
-                // Toca direto no navegador nativo (HTML5)
                 video.src = data.url;
-                video.play();
-                loading.innerText = `Reproduzindo: ${titulo}`;
+                video.play().catch(() => console.log("Aguardando play manual"));
+                loading.innerText = `Assistindo: ${titulo}`;
                 
             } catch (error) {
-                loading.innerText = "Erro ao buscar o arquivo de vídeo.";
+                loading.innerText = "Erro ao buscar vídeo.";
             }
         }
 
-        // Inicia carregando os filmes por padrão
         window.onload = () => setModo('vod');
     </script>
 </body>
