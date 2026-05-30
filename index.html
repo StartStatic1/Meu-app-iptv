@@ -3,63 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV Player - Passo 1</title>
-    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <title>IPTV Player - Navegação</title>
     <style>
-        body { background-color: #121212; color: #fff; font-family: sans-serif; text-align: center; padding: 20px; }
-        .btn { background-color: #00ff88; color: #000; padding: 12px 24px; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; font-size: 16px; }
-        #status { margin: 15px 0; color: #aaa; }
-        .lista-teste { max-width: 500px; margin: 20px auto; text-align: left; background: #1e1e1e; padding: 15px; border-radius: 8px; max-height: 300px; overflow-y: auto; }
-        .item-canal { padding: 8px; border-bottom: 1px solid #333; font-size: 14px; }
+        body { margin: 0; padding: 0; background-color: #121212; color: #fff; font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* Barra Lateral - Categorias */
+        .sidebar { width: 250px; background-color: #1a1a1a; border-right: 1px solid #2a2a2a; display: flex; flex-direction: column; }
+        .sidebar-header { padding: 20px; background-color: #00ff88; color: #000; font-weight: bold; text-align: center; }
+        .category-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .category-item { padding: 12px; margin-bottom: 5px; background-color: #2a2a2a; border-radius: 5px; cursor: pointer; font-size: 14px; transition: 0.2s; }
+        .category-item:hover { background-color: #3a3a3a; border-left: 4px solid #00ff88; }
+        
+        /* Área Principal - Canais */
+        .main-content { flex: 1; display: flex; flex-direction: column; }
+        .top-bar { padding: 20px; background-color: #1a1a1a; border-bottom: 1px solid #2a2a2a; }
+        .channel-grid { flex: 1; overflow-y: auto; padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 15px; align-content: start; }
+        .channel-card { background-color: #1e1e1e; border: 1px solid #333; border-radius: 8px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; }
+        .channel-card:hover { transform: scale(1.05); border-color: #00ff88; }
+        .channel-name { font-size: 12px; font-weight: bold; }
+        
+        #loading { color: #00ff88; font-weight: bold; }
     </style>
 </head>
 <body>
 
-    <h2>IPTV Player - Teste de Proxy Vercel</h2>
-    <p>Validando conexão segura e contorno de CORS no Chrome</p>
-
-    <button class="btn" onclick="testarProxy()">Testar Conexão com a API</button>
-    <div id="status">Clique no botão para iniciar o teste através da Vercel.</div>
-
-    <div class="lista-teste" id="listaCanais" style="display:none;">
+    <div class="sidebar">
+        <div class="sidebar-header">Categorias Ao Vivo</div>
+        <div class="category-list" id="categoryList">
+            <div style="text-align:center; margin-top:20px;">Carregando pastas...</div>
         </div>
+    </div>
+
+    <div class="main-content">
+        <div class="top-bar">
+            <span id="loading">Selecione uma categoria ao lado.</span>
+        </div>
+        <div class="channel-grid" id="channelGrid">
+            </div>
+    </div>
 
     <script>
-        async function testarProxy() {
-            const status = document.getElementById('status');
-            const lista = document.getElementById('listaCanais');
-            
-            status.innerText = "Chamando o Proxy da Vercel...";
-            lista.innerHTML = "";
-            lista.style.display = "none";
-
+        // 1. Carrega as categorias assim que a página abre
+        async function carregarCategorias() {
+            const list = document.getElementById('categoryList');
             try {
-                // Chamada para a NOSSA API Serverless interna da Vercel
-                const response = await fetch('/api/iptv?action=get_live_streams');
-                const data = await response.json();
-
-                if (data.error) {
-                    status.innerText = "Erro: " + data.error;
-                    return;
-                }
-
-                status.innerText = `Sucesso! Conectado. Total de canais no servidor: ${data.length}. Mostrando os 10 primeiros para teste:`;
-                lista.style.display = "block";
-
-                // Mostra apenas os 10 primeiros para validar que o Chrome leu o JSON com sucesso
-                const amostra = data.slice(0, 10);
-                amostra.forEach(canal => {
+                const response = await fetch('/api/iptv?action=get_live_categories');
+                const categorias = await response.json();
+                
+                list.innerHTML = ""; // Limpa o "Carregando"
+                
+                categorias.forEach(cat => {
                     const div = document.createElement('div');
-                    div.className = 'item-canal';
-                    div.innerText = `📺 ${canal.name} (ID: ${canal.stream_id})`;
-                    lista.appendChild(div);
+                    div.className = 'category-item';
+                    div.innerText = cat.category_name;
+                    // Quando clicar, chama a função de carregar os canais daquela pasta
+                    div.onclick = () => carregarCanais(cat.category_id, cat.category_name);
+                    list.appendChild(div);
                 });
-
             } catch (error) {
-                status.innerText = "Erro ao rodar o teste. Certifique-se de que o projeto foi publicado na Vercel.";
-                console.error(error);
+                list.innerHTML = "<div style='color:red;'>Erro ao carregar categorias.</div>";
             }
         }
+
+        // 2. Carrega os canais quando uma categoria é clicada
+        async function carregarCanais(id, nomeCategoria) {
+            const grid = document.getElementById('channelGrid');
+            const loading = document.getElementById('loading');
+            
+            grid.innerHTML = "";
+            loading.innerText = `Carregando canais da pasta: ${nomeCategoria}...`;
+
+            try {
+                // Passa o action e o category_id para o nosso Proxy
+                const response = await fetch(`/api/iptv?action=get_live_streams&category_id=${id}`);
+                const canais = await response.json();
+                
+                loading.innerText = `${canais.length} canais encontrados em "${nomeCategoria}".`;
+                
+                canais.forEach(canal => {
+                    const card = document.createElement('div');
+                    card.className = 'channel-card';
+                    card.innerHTML = `<div class="channel-name">${canal.name}</div>`;
+                    
+                    // No futuro, o onclick aqui vai abrir o Player de Vídeo!
+                    card.onclick = () => alert(`Você clicou no canal ID: ${canal.stream_id}\nEm breve: Abrir Player!`);
+                    
+                    grid.appendChild(card);
+                });
+            } catch (error) {
+                loading.innerText = "Erro ao carregar canais.";
+            }
+        }
+
+        // Inicia o processo
+        window.onload = carregarCategorias;
     </script>
 </body>
 </html>
