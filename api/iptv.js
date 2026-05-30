@@ -7,9 +7,9 @@ export default async function handler(req, res) {
 
     const { action, category_id, stream_id, extension } = req.query;
 
-    const baseUrl = "http://bnewsc.top:80";
-    const username = "reginaldobr";
-    const password = "432334xc";
+    const baseUrl = "http://kavru.com:80";
+    const username = "558396043519";
+    const password = "64537505";
 
     // NOVIDADE: Rota para gerar link de FILMES
     if (action === "get_movie_url" && stream_id) {
