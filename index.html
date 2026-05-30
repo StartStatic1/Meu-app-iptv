@@ -103,7 +103,6 @@
         .dp-director { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; font-style: italic;}
         .dp-meta { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 20px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;}
         
-        /* BOTÕES DE AÇÃO REFINADOS (Assistir | Alternativo | Trailer) */
         .action-buttons { display: flex; gap: 10px; margin-bottom: 15px; align-items: stretch; }
         .dp-play-btn { flex: 2; background: #fff; color: #000; border: none; padding: 15px; border-radius: 8px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(255,255,255,0.2); transition: 0.2s;}
         .dp-play-btn:active { transform: scale(0.97); }
@@ -114,6 +113,10 @@
         .dp-alt-btn i { color: var(--accent); }
         .dp-trailer-btn i { color: #ff0055; }
         
+        /* NOVO: Botão Visto */
+        .btn-watched { background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 8px; border-radius: 6px; font-weight: 700; font-size: 10px; display: flex; justify-content: center; align-items: center; gap: 6px; text-transform: uppercase; cursor: pointer; transition: 0.2s;}
+        .btn-watched.active { background: rgba(0, 230, 118, 0.2); border-color: #00e676; color: #00e676; }
+
         .dp-synopsis { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 25px; }
 
         .cast-section { margin-bottom: 25px; }
@@ -138,7 +141,6 @@
         .trailer-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; padding: 10px; z-index: 4010; }
         .trailer-frame { width: 100%; aspect-ratio: 16/9; background: #000; border: none; }
 
-        /* MODAL DE SERVIDORES ALTERNATIVOS */
         .server-modal { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--bg-top); border-radius: 24px 24px 0 0; z-index: 4000; padding: 25px 20px; transition: bottom 0.4s ease; border-top: 1px solid rgba(255,255,255,0.05); }
         .server-modal.active { bottom: 0; }
         .server-title { font-size: 16px; font-weight: 800; color: #fff; margin: 0 0 20px 0; text-align: center;}
@@ -155,8 +157,13 @@
         .season-title { font-size: 18px; font-weight: 800; color: #fff; margin: 30px 0 15px 0; border-left: 3px solid var(--accent); padding-left: 8px;}
         .ep-carousel { display: flex; gap: 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 10px; }
         .ep-carousel::-webkit-scrollbar { display: none; }
-        .ep-card { flex: 0 0 160px; border-radius: 8px; background: rgba(255,255,255,0.05); overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); scroll-snap-align: start; transition: 0.2s; }
+        .ep-card { flex: 0 0 160px; border-radius: 8px; background: rgba(255,255,255,0.05); overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); scroll-snap-align: start; transition: 0.2s; position: relative;}
         .ep-card:active { transform: scale(0.95); }
+        
+        /* NOVO: Bolinha de visto nos episódios */
+        .ep-watched-btn { position: absolute; top: 5px; left: 5px; z-index: 5; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; font-size: 10px; transition: 0.2s; }
+        .ep-watched-btn.active { background: #00e676; color: #000; border-color: #00e676; }
+
         .ep-thumb { width: 100%; aspect-ratio: 16/9; background-color: #2a2d3e; background-size: cover; background-position: center; position: relative; display: flex; align-items: center; justify-content: center; }
         .ep-thumb::after { content: ''; position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.3); }
         .ep-thumb i { font-size: 30px; color: rgba(255,255,255,0.8); z-index: 2; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
@@ -285,6 +292,7 @@
             <div class="action-buttons">
                 <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
                 <div class="btn-group-right">
+                    <button class="btn-watched" id="btnWatched" onclick="toggleWatchedGlobal()" style="display:none;"><i class="fas fa-check"></i> Visto</button>
                     <button class="dp-trailer-btn" id="btnTrailer" onclick="abrirTrailer()" style="display:none;"><i class="fas fa-film"></i> Trailer</button>
                     <button class="dp-alt-btn" id="btnAltServer" onclick="abrirMenuServidores()" style="display:none;"><i class="fas fa-server"></i> Web Player</button>
                 </div>
@@ -331,7 +339,7 @@
 
     <div class="embed-modal" id="embedModal">
         <i class="fas fa-times trailer-close" onclick="history.back()"></i>
-        <iframe id="embedFrame" class="embed-frame" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
+        <iframe id="embedFrame" class="embed-frame" allowfullscreen></iframe>
     </div>
 
     <script>
@@ -354,6 +362,43 @@
         let currentItemType = null;
         let currentSeason = 1;
         let currentEpisode = 1;
+        let currentStreamId = null; // Para marcar filmes como vistos
+
+        // ==========================================
+        // SISTEMA DE HISTÓRICO (VISTOS)
+        // ==========================================
+        function getWatchedList() {
+            try { return JSON.parse(localStorage.getItem('streamflix_watched')) || {}; } 
+            catch(e) { return {}; }
+        }
+        function saveWatchedList(list) {
+            localStorage.setItem('streamflix_watched', JSON.stringify(list));
+        }
+        function toggleWatchedGlobal() {
+            if(!currentStreamId) return;
+            const list = getWatchedList();
+            const btn = document.getElementById('btnWatched');
+            if(list[currentStreamId]) {
+                delete list[currentStreamId];
+                btn.classList.remove('active');
+            } else {
+                list[currentStreamId] = true;
+                btn.classList.add('active');
+            }
+            saveWatchedList(list);
+        }
+        function toggleEpWatched(event, epId, element) {
+            event.stopPropagation(); // Evita que clique no botão abra o episódio
+            const list = getWatchedList();
+            if(list[epId]) {
+                delete list[epId];
+                element.classList.remove('active');
+            } else {
+                list[epId] = true;
+                element.classList.add('active');
+            }
+            saveWatchedList(list);
+        }
 
         function esc(str) { return (str || '').toString().replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
         function limparNomePasta(nome) { return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Séries\s*\|\s*/i, '').trim(); }
@@ -674,9 +719,6 @@
             abrirDetalhes(fmtd.limpo, "Destaque VIP", f.stream_icon, f.stream_id, 'vod', f.container_extension || 'mp4', fmtd.tagsStr);
         }
 
-        // ==========================================
-        // O MAGNÍFICO MOTOR TMDB
-        // ==========================================
         async function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
             document.getElementById('dpTitle').innerText = titulo;
             document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
@@ -687,6 +729,7 @@
             const btnPlay = document.getElementById('btnPlayFilme');
             const btnTrailer = document.getElementById('btnTrailer');
             const btnAlt = document.getElementById('btnAltServer');
+            const btnWatched = document.getElementById('btnWatched');
             const boxEpisodios = document.getElementById('dpEpisodes');
             const boxSinopse = document.getElementById('dpSynopsis');
             const boxCast = document.getElementById('dpCastContainer');
@@ -701,6 +744,7 @@
             boxSimilar.style.display = 'none';
             btnTrailer.style.display = 'none';
             btnAlt.style.display = 'none';
+            btnWatched.style.display = 'none';
             boxMeta.innerHTML = '';
             boxDirector.innerHTML = '';
             trailerKeyAtivo = null;
@@ -709,6 +753,15 @@
             currentItemType = tipo === 'series' ? 'tv' : 'movie';
             currentSeason = 1;
             currentEpisode = 1;
+            currentStreamId = id;
+
+            // Verifica o Visto (Apenas Filmes)
+            if(tipo === 'vod') {
+                const list = getWatchedList();
+                if(list[id]) btnWatched.classList.add('active');
+                else btnWatched.classList.remove('active');
+                btnWatched.style.display = 'flex';
+            }
 
             document.getElementById('detailsPage').classList.add('active');
             history.pushState({ view: 'details' }, null, "");
@@ -802,6 +855,8 @@
                     
                     if(data && data.episodes && Object.keys(data.episodes).length > 0) {
                         let htmlEps = '';
+                        const watchedList = getWatchedList(); // Carrega os vistos da memoria
+                        
                         for (let season in data.episodes) {
                             htmlEps += `<h3 class="season-title">Temporada ${season}</h3>`;
                             htmlEps += `<div class="ep-carousel">`;
@@ -816,8 +871,11 @@
                                 const sNum = String(season).padStart(2, '0');
                                 const eNum = String(ep.episode_num).padStart(2, '0');
                                 
+                                const isWatched = watchedList[ep.id] ? 'active' : '';
+                                
                                 htmlEps += `
                                 <div class="ep-card" onclick="reproduzirEpisodio('${ep.id}', '${ep.container_extension || 'mp4'}', '${esc(epTitle)}', ${season}, ${ep.episode_num})">
+                                    <div class="ep-watched-btn ${isWatched}" onclick="toggleEpWatched(event, '${ep.id}', this)"><i class="fas fa-check"></i></div>
                                     <div class="ep-thumb" style="background-image: url('${thumb}');"><i class="fas fa-play-circle"></i></div>
                                     <div class="ep-info-text"><div class="ep-number">S${sNum}E${eNum}</div><div class="ep-name">${epTitle}</div></div>
                                 </div>`;
@@ -889,13 +947,9 @@
             } catch(e) { document.getElementById('actorBio').innerText = "Erro ao carregar dados do TMDB."; }
         }
 
-        // ==========================================
-        // TRAILER YOUTUBE & EMBED ALTERNATIVO (SEGURO)
-        // ==========================================
         function abrirTrailer() {
             if(!trailerKeyAtivo) return;
             const modal = document.getElementById('trailerModal');
-            // Abre de forma limpa, sem ativar âncoras na URL
             document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${trailerKeyAtivo}?autoplay=1`;
             modal.style.display = 'flex';
             history.pushState({ view: 'trailer' }, null, "");
@@ -927,8 +981,9 @@
                 if(currentItemType === 'movie') finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=movie`;
                 else finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=tv&season=${currentSeason}&episode=${currentEpisode}`;
             } else if (servidor === 'embedmovies') {
-                if(currentItemType === 'movie') finalUrl = `https://embedmovies.top/filme/${currentTmdbId}`;
-                else finalUrl = `https://embedmovies.top/serie/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
+                // CORREÇÃO: Usa o myembed.biz conforme documentação
+                if(currentItemType === 'movie') finalUrl = `https://myembed.biz/filme/${currentTmdbId}`;
+                else finalUrl = `https://myembed.biz/serie/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
             } else if (servidor === 'embedplayapi') {
                 if(currentItemType === 'movie') finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}`;
                 else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
@@ -936,7 +991,7 @@
 
             frame.src = finalUrl;
             modal.style.display = 'flex';
-            // CADEADO: O histórico não regista as janelas de popup que o player web tentar abrir.
+            // REGRA CADEADO: A âncora 'embed' protege a app. Se o anúncio abrir uma janela e o utilizador clicar voltar, apenas apaga esta âncora e fecha o frame!
             history.pushState({ view: 'embed' }, null, "");
         }
 
@@ -1013,5 +1068,3 @@
             initApp();
         };
     </script>
-</body>
-</html>
