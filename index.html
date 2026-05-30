@@ -6,7 +6,6 @@
     <title>StreamFlix</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Paleta Premium Disney+ */
         :root { 
             --bg-top: #1a1d29; --bg-bottom: #040714; --accent: #00e5ff; 
             --glass: rgba(26, 29, 41, 0.85); --text: #f9f9f9; --text-muted: #8f98b0;
@@ -35,7 +34,6 @@
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Nova Estrutura de Títulos com botão Ver Todos */
         .section-header { display: flex; justify-content: space-between; align-items: center; padding: 25px 15px 10px 15px; }
         .section-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: #fff; }
         .section-title i { color: var(--accent); }
@@ -137,7 +135,7 @@
         let heroIndex = 0;
         let heroInterval = null;
 
-        // O NOVO FILTRO DE PASTAS (Ignora Oscar, Religioso, etc)
+        // FILTRO INTELIGENTE
         function pastaValida(nome) {
             if (!nome) return false;
             const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR'];
@@ -145,8 +143,7 @@
             return !proibidos.some(p => n.includes(p));
         }
 
-        // MOTOR DE ETIQUETAS E LIMPEZA
-        // Agora retorna apenas uma STRING separada por vírgula (ex: "4K,DUB") para evitar erro de HTML no botão
+        // LIMPEZA E EXTRAÇÃO DE ETIQUETAS
         function processarTitulo(nomeBruto, nomePasta) {
             let nomeLimpo = nomeBruto || "Sem Título";
             const pastaU = nomePasta ? nomePasta.toUpperCase() : '';
@@ -174,23 +171,25 @@
             let nomeLimpo = nomeBruto || "Canal";
             const tags = [];
             
-            const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF)\b/i);
+            const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/i);
             if(estado) {
                 tags.push(estado[0].toUpperCase());
-                nomeLimpo = nomeLimpo.replace(estado[0], '');
             }
             if(/FHD/i.test(nomeLimpo)) tags.push('FHD');
             else if(/HD/i.test(nomeLimpo)) tags.push('HD');
             else if(/4K/i.test(nomeLimpo)) tags.push('4K');
+            else if(/SD/i.test(nomeLimpo)) tags.push('SD');
 
             nomeLimpo = nomeLimpo.replace(/(FHD|HD|4K|SD)/ig, '');
-            nomeLimpo = nomeLimpo.replace(/[>|\[\]\(\)*]/g, ''); 
+            nomeLimpo = nomeLimpo.replace(/\[.*?\]/g, ''); 
+            nomeLimpo = nomeLimpo.replace(/\(.*?\)/g, ''); 
+            nomeLimpo = nomeLimpo.replace(/[>\-|*]/g, ''); 
+            nomeLimpo = nomeLimpo.replace(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/ig, '');
             nomeLimpo = nomeLimpo.replace(/\s+/g, ' ').trim();
 
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
-        // TRANSFORMA STRING "4K,DUB" EM HTML BONITO E SEGURO
         function gerarHTMLBadges(tagsStr) {
             if(!tagsStr) return '';
             const tags = tagsStr.split(',');
@@ -202,36 +201,28 @@
                 if(t==='HD') { cor='#000'; bg='#76ff03'; }
                 if(t==='DUB') { cor='#000'; bg='#00e676'; }
                 if(t==='LEG') { cor='#fff'; bg='#b388ff'; }
-                if(t.length === 2) { cor='#fff'; bg='#ff9100'; } // Estados
+                if(t.length === 2) { cor='#fff'; bg='#ff9100'; } 
                 html += `<span style="background:${bg}; color:${cor}; font-size:8px; font-weight:900; padding:3px 5px; border-radius:4px; box-shadow: 0 2px 5px rgba(0,0,0,0.5);">${t}</span>`;
             });
             return html;
         }
 
-        function mudarAba(idView, btn) {
-            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.getElementById(idView).classList.add('active');
-        }
-
-        // BUSCA DE DADOS (Priorizando Gêneros Netflix)
+        // MOTOR PRINCIPAL DE BUSCA NAS PASTAS
         async function initApp() {
             try {
                 const containerDinamico = document.getElementById('conteudo-dinamico');
                 let htmlConstruido = "";
                 
-                // 1. FILMES (Tenta achar Lançamentos, Ação, Comédia, Terror)
+                // 1. FILMES
                 try {
                     const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
                     const vodCats = await resVodCats.json();
                     
-                    // Ordena pastas para priorizar as que importam
                     const pastasFilmesValidas = vodCats.filter(c => pastaValida(c.category_name))
                         .sort((a,b) => {
                             const prioritarias = /LANÇA|AÇÃO|COMÉDIA|TERROR|AVENTURA|FICÇÃO/i;
                             return prioritarias.test(b.category_name) - prioritarias.test(a.category_name);
-                        }).slice(0, 5); // Pega as 5 melhores
+                        }).slice(0, 5); 
                     
                     for(let i = 0; i < pastasFilmesValidas.length; i++) {
                         const cat = pastasFilmesValidas[i];
@@ -248,7 +239,7 @@
                             }
                         }
                     }
-                } catch(e) { console.log("Erro Filmes", e); }
+                } catch(e) { console.log("Erro Filmes"); }
 
                 // 2. SÉRIES
                 try {
@@ -264,7 +255,7 @@
                             htmlConstruido += gerarCarrosselHTML(cat.category_name, 'series', 'tv', series.slice(0, 15));
                         }
                     }
-                } catch(e) { console.log("Erro Séries", e); }
+                } catch(e) { console.log("Erro Séries"); }
 
                 // 3. TV AO VIVO
                 try {
@@ -280,16 +271,15 @@
                             htmlConstruido += gerarCarrosselHTML(cat.category_name, 'tv', 'broadcast-tower', canais.slice(0, 15));
                         }
                     }
-                } catch(e) { console.log("Erro TV", e); }
+                } catch(e) { console.log("Erro TV"); }
                 
                 containerDinamico.innerHTML = htmlConstruido || "<div class='loading-text'>Nenhum conteúdo encontrado.</div>";
 
             } catch (error) { 
-                document.getElementById('conteudo-dinamico').innerHTML = "<div class='loading-text'>Erro ao conectar no servidor.</div>";
+                document.getElementById('conteudo-dinamico').innerHTML = "<div class='loading-text'>Erro de ligação ao servidor.</div>";
             }
         }
 
-        // GERA O CARROSSEL COM BOTÃO VER TODOS
         function gerarCarrosselHTML(nomePasta, tipo, icone, lista) {
             let html = `
             <div class="section-header">
@@ -324,6 +314,14 @@
                 }
             });
             return html + `</div>`;
+        }
+
+        // INTERFACE SPA (Abas e Detalhes)
+        function mudarAba(idView, btn) {
+            document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(idView).classList.add('active');
         }
 
         function iniciarHeroSlider(nomeCat) {
@@ -381,9 +379,9 @@
         }
 
         // ==========================================
-        // O CÓDIGO PERFEITO DE PLAY (COM INTENT)
+        // CÓDIGO FINAL DE REPRODUÇÃO (SEGURO VIA API VERCEL)
         // ==========================================
-        function dispararPlayer(id, tipo, ext, titulo) {
+        async function dispararPlayer(id, tipo, ext, titulo) {
             if(tipo === 'series') {
                 alert(`Série: ${titulo}\n(O painel de episódios será feito na próxima fase!)`);
                 return;
@@ -393,28 +391,36 @@
             const textoOriginal = btn.innerHTML;
             btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`;
 
-            // O formato exato do Xtream Codes puro
-            let urlFinal = "";
-            const usuario = "558396043519";
-            const senha = "64537505";
-            const servidor = "kavru.com:80";
+            try {
+                let urlFinal = "";
+                
+                // O HTML bate na Vercel e a Vercel devolve a morada com a senha escondida
+                if(tipo === 'vod') {
+                    const res = await fetch(`/api/iptv?action=get_movie_url&stream_id=${id}&extension=${ext}`);
+                    const data = await res.json();
+                    urlFinal = data.url;
+                } else if (tipo === 'live') {
+                    const res = await fetch(`/api/iptv?action=get_live_url&stream_id=${id}`);
+                    const data = await res.json();
+                    urlFinal = data.url;
+                }
 
-            if(tipo === 'vod') {
-                urlFinal = `http://${servidor}/movie/${usuario}/${senha}/${id}.${ext || 'mp4'}`;
-            } else if (tipo === 'live') {
-                urlFinal = `http://${servidor}/${usuario}/${senha}/${id}`; // Exatamente como o UC Browser roda
-            }
+                if (!urlFinal) throw new Error("A Vercel não retornou o link.");
 
-            if (window.AndroidApp) {
-                // Se estiver dentro do seu APK
-                window.AndroidApp.abrirVideoNativo(urlFinal);
-                setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
-            } else {
-                // SE ESTIVER NO NAVEGADOR (Vercel): Força a abrir o MX Player ou UC Video!
-                // O código "intent" é uma ordem do sistema Android
-                const intentUrl = `intent://${urlFinal.replace('http://','')}#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end;`;
-                window.location.href = intentUrl;
-                setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
+                if (window.AndroidApp) {
+                    // Dentro da App Nativa
+                    window.AndroidApp.abrirVideoNativo(urlFinal);
+                    setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
+                } else {
+                    // No Navegador (Chrome/UC): Força o MX Player/VLC via Intent
+                    const urlLimpa = urlFinal.replace(/^https?:\/\//, '');
+                    const intentUrl = `intent://${urlLimpa}#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end;`;
+                    window.location.href = intentUrl;
+                    setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
+                }
+            } catch (e) {
+                alert("Erro ao aceder à API: " + e.message);
+                btn.innerHTML = textoOriginal;
             }
         }
 
