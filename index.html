@@ -4,217 +4,200 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>StreamFlix</title>
-    <!-- Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Paleta Disney+ (Azul Espacial e Azul Neon) */
+        /* Paleta Disney+ */
         :root { 
-            --bg-top: #1a1d29; 
-            --bg-bottom: #040714; 
-            --accent: #00e5ff; 
-            --glass: rgba(26, 29, 41, 0.85);
-            --text: #f9f9f9; 
-            --text-muted: #8f98b0;
+            --bg-top: #1a1d29; --bg-bottom: #040714; --accent: #00e5ff; 
+            --glass: rgba(26, 29, 41, 0.85); --text: #f9f9f9; --text-muted: #8f98b0;
         }
 
-        /* Blindagem Anti-Cópia e Toque Nativo */
-        * {
-            -webkit-touch-callout: none; 
-            -webkit-user-select: none; 
-            user-select: none;
-            -webkit-tap-highlight-color: transparent; 
-            box-sizing: border-box;
-        }
+        * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 
         body { 
-            margin: 0; padding: 0; 
-            background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
-            background-attachment: fixed;
-            color: var(--text); font-family: 'Segoe UI', sans-serif; 
+            margin: 0; padding: 0; background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
+            background-attachment: fixed; color: var(--text); font-family: 'Segoe UI', sans-serif; 
             overflow-x: hidden; padding-bottom: 90px; 
         }
         
-        /* Logo Flutuante no Topo */
+        /* Topo e Hero */
         .header { position: absolute; top: 0; width: 100%; padding: 15px; z-index: 10; text-align: center; background: linear-gradient(to bottom, rgba(4,7,20,0.8), transparent); }
-        .header-logo { font-size: 22px; font-weight: 900; color: #fff; letter-spacing: 1px; margin: 0; }
+        .header-logo { font-size: 22px; font-weight: 900; color: #fff; margin: 0; }
         .header-logo span { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.6); }
 
-        /* Banner Destaque */
-        .hero { position: relative; width: 100%; height: 55vh; background: url('https://image.tmdb.org/t/p/original/8rpDcsfLJypbO6vtecsmREy9O8C.jpg') center/cover; border-radius: 0 0 20px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .hero { position: relative; width: 100%; height: 55vh; background: url('https://image.tmdb.org/t/p/original/8rpDcsfLJypbO6vtecsmREy9O8C.jpg') center/cover; border-radius: 0 0 20px 20px; }
         .hero-gradient { position: absolute; bottom: 0; width: 100%; height: 80%; background: linear-gradient(to top, var(--bg-top) 0%, transparent 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; border-radius: 0 0 20px 20px;}
-        .hero-title { font-size: 28px; font-weight: 900; margin: 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.9); }
+        .hero-title { font-size: 28px; font-weight: 900; margin: 0; }
         .hero-tags { font-size: 12px; color: #ccc; font-weight: 600; margin-bottom: 15px; }
         
-        /* Botão de Play Estilo Premium */
-        .play-btn { background: var(--accent); color: #000; border: none; padding: 14px 28px; border-radius: 8px; font-weight: 800; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; width: max-content; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4); cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: 0.2s; }
-        .play-btn:active { transform: scale(0.95); }
+        .play-btn { background: var(--accent); color: #000; border: none; padding: 14px 28px; border-radius: 8px; font-weight: 800; font-size: 14px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4); cursor: pointer; text-transform: uppercase; }
 
         /* Carrosséis */
-        .section-title { font-size: 15px; font-weight: 700; margin: 25px 0 12px 15px; color: #fff; display: flex; align-items: center; gap: 8px; }
+        .section-title { font-size: 15px; font-weight: 700; margin: 25px 0 12px 15px; display: flex; align-items: center; gap: 8px; }
         .section-title i { color: var(--accent); }
-        
         .carousel { display: flex; gap: 12px; padding: 0 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
         .carousel::-webkit-scrollbar { display: none; }
         
-        /* Cartões de Filmes/Séries (Verticais) */
-        .card-movie { flex: 0 0 110px; height: 165px; border-radius: 8px; background-color: #2a2d3e; scroll-snap-align: start; overflow: hidden; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; }
+        .card-movie { flex: 0 0 110px; height: 165px; border-radius: 8px; background-color: #2a2d3e; scroll-snap-align: start; overflow: hidden; cursor: pointer; }
         .card-movie img { width: 100%; height: 100%; object-fit: cover; }
         
-        /* Cartões de TV Ao Vivo (Horizontais) */
         .card-tv { flex: 0 0 140px; height: 80px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; }
-        .card-tv img { width: 50%; height: auto; object-fit: contain; }
+        .card-tv img { width: 50%; object-fit: contain; }
         .live-badge { position: absolute; top: 5px; right: 5px; background: red; color: white; font-size: 8px; font-weight: bold; padding: 2px 5px; border-radius: 4px; }
 
-        /* Barra de Navegação Inferior */
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; padding-bottom: max(12px, env(safe-area-inset-bottom)); }
-        .nav-item { color: var(--text-muted); font-size: 18px; cursor: pointer; transition: 0.3s; display: flex; flex-direction: column; align-items: center; gap: 5px; width: 20%; }
+        /* Barra Inferior */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; }
+        .nav-item { color: var(--text-muted); font-size: 18px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; width: 20%; }
         .nav-item.active { color: var(--text); }
         .nav-item.active i { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.8); transform: scale(1.1); }
         .nav-item span { font-size: 10px; font-weight: 600; }
 
-        /* NOVO: Bottom Sheet (Menu que sobe) */
-        .bottom-sheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1999; opacity: 0; pointer-events: none; transition: 0.3s ease; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+        /* Bottom Sheet (Apenas para TV Ao Vivo) */
+        .bottom-sheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1999; opacity: 0; pointer-events: none; transition: 0.3s ease; }
         .bottom-sheet-overlay.active { opacity: 1; pointer-events: all; }
-        
-        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--bg-top); border-radius: 24px 24px 0 0; z-index: 2000; padding: 20px 20px 30px 20px; transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1); box-shadow: 0 -10px 40px rgba(0,0,0,0.6); border-top: 1px solid rgba(255,255,255,0.05); }
+        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--bg-top); border-radius: 24px 24px 0 0; z-index: 2000; padding: 20px; transition: bottom 0.4s ease; border-top: 1px solid rgba(255,255,255,0.05); }
         .bottom-sheet.active { bottom: 0; }
-        
         .sheet-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto 20px; }
-        .sheet-title { font-size: 20px; font-weight: 800; margin: 0 0 10px 0; color: #fff; }
-        .sheet-synopsis { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+        .sheet-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; text-transform: uppercase; cursor: pointer; }
+
+        /* =========================================
+           NOVA TELA DE DETALHES (FILMES E SÉRIES) 
+           ========================================= */
+        .details-page { 
+            position: fixed; top: 0; left: 100%; /* Começa escondida na direita */
+            width: 100%; height: 100vh; background: var(--bg-bottom); 
+            z-index: 3000; transition: left 0.3s ease-out; overflow-y: auto; padding-bottom: 30px;
+        }
+        .details-page.active { left: 0; /* Desliza para dentro */ }
         
-        .sheet-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3); }
-        .sheet-btn:active { transform: scale(0.97); }
+        .dp-back-btn { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; z-index: 3010; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; cursor: pointer; }
+        
+        .dp-poster { width: 100%; height: 60vh; background-position: top center; background-size: cover; position: relative; }
+        .dp-gradient { position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-bottom) 0%, rgba(4,7,20,0.5) 50%, transparent 100%); }
+        
+        .dp-content { padding: 0 20px; margin-top: -60px; position: relative; z-index: 2; }
+        .dp-title { font-size: 32px; font-weight: 900; margin: 0 0 10px 0; line-height: 1.1; }
+        .dp-meta { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 20px; display: flex; gap: 15px; }
+        .dp-meta span { color: var(--text-muted); font-weight: normal; }
+        
+        .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 15px; border-radius: 8px; font-weight: 800; font-size: 16px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(255,255,255,0.2); }
+        
+        .dp-synopsis { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 25px; }
+        .dp-info-row { font-size: 12px; color: #888; margin-bottom: 8px; }
+        .dp-info-row strong { color: #fff; margin-right: 5px; }
     </style>
 </head>
 <body>
 
-    <!-- Topo -->
-    <div class="header">
-        <h1 class="header-logo">Stream<span>Flix</span></h1>
-    </div>
+    <div class="header"><h1 class="header-logo">Stream<span>Flix</span></h1></div>
 
-    <!-- Destaque Principal -->
-    <div class="hero" onclick="abrirSheet('O Resgate 2', 'Após sobreviver a uma missão mortal em Dhaka, Tyler Rake é recrutado para resgatar a família de um implacável mafioso.')">
+    <div class="hero" onclick="abrirDetalhes('O Resgate 2', 'Ação', '2h 2min', '2026', 'Após sobreviver a uma missão mortal, Tyler Rake é recrutado novamente.', 'https://image.tmdb.org/t/p/original/8rpDcsfLJypbO6vtecsmREy9O8C.jpg')">
         <div class="hero-gradient">
             <div class="hero-tags">Ação • Lançamento 2026</div>
-            <h1 class="hero-title">O Resgate 2</h1>
-            <br>
-            <button class="play-btn"><i class="fas fa-play"></i> Assistir</button>
+            <h1 class="hero-title">O Resgate 2</h1><br>
+            <button class="play-btn"><i class="fas fa-info-circle"></i> Detalhes</button>
         </div>
     </div>
 
-    <!-- Carrossel de Filmes -->
-    <div class="section-title"><i class="fas fa-film"></i> Filmes Adicionados</div>
+    <div class="section-title"><i class="fas fa-film"></i> Lançamentos</div>
     <div class="carousel">
-        <div class="card-movie" onclick="abrirSheet('Homem-Aranha', 'Peter Parker lida com as consequências de suas escolhas e do multiverso abrindo brechas perigosas.')">
-            <img src="https://via.placeholder.com/220x330/111/fff?text=Homem+Aranha" alt="">
+        <div class="card-movie" onclick="abrirDetalhes('Homem-Aranha: Sem Volta', 'Ficção • Ação', '2h 28min', '2021', 'Peter Parker lida com o multiverso e enfrenta vilões de outras realidades.', 'https://image.tmdb.org/t/p/w500/1g0dhYtq4irTY1R80vEF38T4XQf.jpg')">
+            <img src="https://via.placeholder.com/220x330/111/fff?text=Aranha" alt="">
         </div>
-        <div class="card-movie" onclick="abrirSheet('Duna: Parte 2', 'Paul Atreides se une a Chani e aos Fremen em uma guerra de vingança contra os conspiradores.')">
+        <div class="card-movie" onclick="abrirDetalhes('Duna: Parte 2', 'Ficção Científica', '2h 46min', '2024', 'Paul Atreides se une aos Fremen em uma guerra de vingança.', 'https://image.tmdb.org/t/p/w500/8b8R8l88Qje9dn9OE8PeNdYDn5.jpg')">
             <img src="https://via.placeholder.com/220x330/111/fff?text=Duna+2" alt="">
         </div>
-        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+3" alt=""></div>
-        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+4" alt=""></div>
-        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+5" alt=""></div>
     </div>
 
-    <!-- Carrossel de Séries -->
-    <div class="section-title"><i class="fas fa-tv"></i> Séries em Alta</div>
-    <div class="carousel">
-        <div class="card-movie" onclick="abrirSheet('The Last of Us', 'Joel e Ellie atravessam um Estados Unidos pós-apocalíptico enfrentando monstros e humanos cruéis.')">
-            <img src="https://via.placeholder.com/220x330/111/fff?text=The+Last+of+Us" alt="">
-        </div>
-        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Serie+2" alt=""></div>
-        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Serie+3" alt=""></div>
-        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Serie+4" alt=""></div>
-    </div>
-
-    <!-- Carrossel de TV Ao Vivo -->
     <div class="section-title"><i class="fas fa-broadcast-tower"></i> TV Ao Vivo</div>
     <div class="carousel">
-        <div class="card-tv" onclick="abrirSheet('TV Globo', 'Programação Ao Vivo do canal aberto. Transmissão nacional sem atrasos.')">
+        <div class="card-tv" onclick="abrirSheetTV('TV Globo', 'Programação Nacional Ao Vivo.')">
             <div class="live-badge">AO VIVO</div>
             <img src="https://via.placeholder.com/100x50/333/fff?text=Globo" alt="">
         </div>
-        <div class="card-tv" onclick="abrirSheet('SBT Ao Vivo', 'Entretenimento, auditorio e novelas no ar agora.')">
+        <div class="card-tv" onclick="abrirSheetTV('Premiere 1', 'Campeonato Brasileiro Série A.')">
             <div class="live-badge">AO VIVO</div>
-            <img src="https://via.placeholder.com/100x50/333/fff?text=SBT" alt="">
-        </div>
-        <div class="card-tv">
-            <div class="live-badge">AO VIVO</div>
-            <img src="https://via.placeholder.com/100x50/333/fff?text=Telecine" alt="">
+            <img src="https://via.placeholder.com/100x50/333/fff?text=Premiere" alt="">
         </div>
     </div>
 
-    <!-- Barra de Navegação Inferior -->
     <div class="bottom-nav">
-        <div class="nav-item active">
-            <i class="fas fa-home"></i>
-            <span>Início</span>
-        </div>
-        <div class="nav-item">
-            <i class="fas fa-film"></i>
-            <span>Filmes</span>
-        </div>
-        <div class="nav-item">
-            <i class="fas fa-tv"></i>
-            <span>Séries</span>
-        </div>
-        <div class="nav-item">
-            <i class="fas fa-broadcast-tower"></i>
-            <span>TV</span>
-        </div>
-        <div class="nav-item">
-            <i class="fas fa-search"></i>
-            <span>Buscar</span>
-        </div>
+        <div class="nav-item active"><i class="fas fa-home"></i><span>Início</span></div>
+        <div class="nav-item"><i class="fas fa-film"></i><span>Filmes</span></div>
+        <div class="nav-item"><i class="fas fa-tv"></i><span>Séries</span></div>
+        <div class="nav-item"><i class="fas fa-search"></i><span>Buscar</span></div>
     </div>
 
-    <!-- Fundo escuro do Bottom Sheet -->
-    <div class="bottom-sheet-overlay" id="sheetOverlay" onclick="fecharSheet()"></div>
-
-    <!-- O Painel que sobe -->
+    <div class="bottom-sheet-overlay" id="sheetOverlay" onclick="fecharSheetTV()"></div>
     <div class="bottom-sheet" id="bottomSheet">
         <div class="sheet-handle"></div>
-        <h2 class="sheet-title" id="sheetTitle">Nome do Filme</h2>
-        <p class="sheet-synopsis" id="sheetSynopsis">Sinopse do conteúdo...</p>
-        
-        <button class="sheet-btn" id="sheetPlayBtn" onclick="chamarPlayerNativo()">
-            <i class="fas fa-play"></i> Assistir Agora
-        </button>
+        <h2 style="margin:0 0 5px; color:#fff;" id="tvTitle">Canal</h2>
+        <p style="margin:0 0 10px; font-size:12px; color:#888;" id="tvDesc">Descrição...</p>
+        <button class="sheet-btn" onclick="chamarPlayerNativo()"><i class="fas fa-play"></i> Assistir Agora</button>
     </div>
 
-    <!-- SCRIPTS MÁGICOS -->
-    <script>
-        // Função para abrir o painel
-        function abrirSheet(titulo, sinopse) {
-            document.getElementById('sheetTitle').innerText = titulo;
-            document.getElementById('sheetSynopsis').innerText = sinopse || "Sinopse não disponível no momento.";
+    <div class="details-page" id="detailsPage">
+        <button class="dp-back-btn" onclick="fecharDetalhes()"><i class="fas fa-arrow-left"></i></button>
+        
+        <div class="dp-poster" id="dpPoster" style="background-image: url('');">
+            <div class="dp-gradient"></div>
+        </div>
+        
+        <div class="dp-content">
+            <h1 class="dp-title" id="dpTitle">Título</h1>
+            <div class="dp-meta" id="dpMeta">
+                2026 <span>|</span> Ação <span>|</span> 2h 10m
+            </div>
             
+            <button class="dp-play-btn" onclick="chamarPlayerNativo()">
+                <i class="fas fa-play"></i> Assistir
+            </button>
+            
+            <p class="dp-synopsis" id="dpSynopsis">Sinopse...</p>
+            
+            <div class="dp-info-row"><strong>Elenco:</strong> Carregando via API...</div>
+            <div class="dp-info-row"><strong>Diretor:</strong> Carregando...</div>
+        </div>
+    </div>
+
+    <script>
+        // Lógica do Bottom Sheet (TV)
+        function abrirSheetTV(titulo, desc) {
+            document.getElementById('tvTitle').innerText = titulo;
+            document.getElementById('tvDesc').innerText = desc;
             document.getElementById('sheetOverlay').classList.add('active');
             document.getElementById('bottomSheet').classList.add('active');
-            
-            // Adiciona estado no histórico (para o botão voltar do Android funcionar)
-            history.pushState({ modalOpen: true }, null, "");
+            history.pushState({ modalOpen: true, type: 'tv' }, null, "");
         }
-
-        // Função para fechar o painel
-        function fecharSheet() {
+        function fecharSheetTV() {
             document.getElementById('sheetOverlay').classList.remove('active');
             document.getElementById('bottomSheet').classList.remove('active');
         }
 
-        // Função do Play que vai chamar o Java
-        function chamarPlayerNativo() {
-            fecharSheet();
-            alert("Em breve: O Android vai pegar o link do IPTV e abrir o player externo aqui!");
-            // Exemplo da ponte: window.AndroidApp.abrirVideoNativo(url_do_video);
+        // Lógica da TELA DE DETALHES (Filmes/Séries)
+        function abrirDetalhes(titulo, genero, duracao, ano, sinopse, urlCapa) {
+            document.getElementById('dpTitle').innerText = titulo;
+            document.getElementById('dpMeta').innerHTML = `${ano} <span>|</span> ${genero} <span>|</span> ${duracao}`;
+            document.getElementById('dpSynopsis').innerText = sinopse;
+            document.getElementById('dpPoster').style.backgroundImage = `url('${urlCapa}')`;
+            
+            document.getElementById('detailsPage').classList.add('active');
+            history.pushState({ modalOpen: true, type: 'details' }, null, "");
+        }
+        function fecharDetalhes() {
+            document.getElementById('detailsPage').classList.remove('active');
         }
 
-        // Intercepta o botão "Voltar" do celular
+        function chamarPlayerNativo() {
+            alert("Preparando para enviar ao Player Nativo!");
+        }
+
+        // Inteligência do Botão Voltar do Celular
         window.addEventListener('popstate', function(event) {
-            if (document.getElementById('bottomSheet').classList.contains('active')) {
-                fecharSheet();
+            if (document.getElementById('detailsPage').classList.contains('active')) {
+                fecharDetalhes();
+            } else if (document.getElementById('bottomSheet').classList.contains('active')) {
+                fecharSheetTV();
             }
         });
     </script>
