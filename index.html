@@ -192,8 +192,7 @@
             renderizarGrid(itensFiltrados);
         }
 
-        async function tocarFilme(streamId, titulo, ext) {
-            const video = document.getElementById('videoPlayer');
+                async function tocarFilme(streamId, titulo, ext) {
             const loading = document.getElementById('loading');
             loading.innerText = `Preparando: ${titulo}...`;
 
@@ -201,9 +200,17 @@
                 const response = await fetch(`/api/iptv?action=get_movie_url&stream_id=${streamId}&extension=${ext}`);
                 const data = await response.json();
                 
-                video.src = data.url;
-                video.play().catch(() => console.log("Aguardando play manual"));
-                loading.innerText = `Assistindo: ${titulo}`;
+                // VERIFICA SE ESTÁ DENTRO DO SEU APLICATIVO APK
+                if (window.AndroidApp) {
+                    loading.innerText = `Abrindo no player nativo...`;
+                    window.AndroidApp.abrirVideoNativo(data.url); // Chama o Java!
+                } else {
+                    // Se o usuário tentar assistir pelo Chrome normal (Fallback)
+                    const video = document.getElementById('videoPlayer');
+                    video.src = data.url;
+                    video.play().catch(() => console.log("Aguardando play manual"));
+                    loading.innerText = `Assistindo no navegador: ${titulo}`;
+                }
                 
             } catch (error) {
                 loading.innerText = "Erro ao buscar vídeo.";
