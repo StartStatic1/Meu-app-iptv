@@ -135,7 +135,7 @@
         .actor-bio { font-size: 13px; color: #ccc; line-height: 1.5; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
         .trailer-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 4000; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .trailer-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; padding: 10px; }
+        .trailer-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; padding: 10px; z-index: 4010; }
         .trailer-frame { width: 100%; aspect-ratio: 16/9; background: #000; border: none; }
 
         /* MODAL DE SERVIDORES ALTERNATIVOS */
@@ -146,10 +146,11 @@
         .server-btn:active { background: rgba(255,255,255,0.15); transform: scale(0.98);}
         .server-btn.bf { border-left: 4px solid #ff0055; }
         .server-btn.em { border-left: 4px solid var(--accent); }
+        .server-btn.ep { border-left: 4px solid #00e676; }
         .server-warn { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 15px; line-height: 1.4;}
 
         .embed-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 4500; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .embed-frame { width: 100%; aspect-ratio: 16/9; background: #000; border: none; }
+        .embed-frame { width: 100%; aspect-ratio: 16/9; background: #000; border: none; z-index: 4501; }
 
         .season-title { font-size: 18px; font-weight: 800; color: #fff; margin: 30px 0 15px 0; border-left: 3px solid var(--accent); padding-left: 8px;}
         .ep-carousel { display: flex; gap: 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 10px; }
@@ -252,16 +253,20 @@
     <div class="server-modal" id="serverModal">
         <div class="sheet-handle" onclick="fecharMenuServidores()"></div>
         <div class="server-title">Servidores Alternativos (Web)</div>
-        <div class="server-btn bf" onclick="abrirPlayerWeb('betterflix')">
-            <div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; BetterFlix Server</div>
+        <div class="server-btn em" onclick="abrirPlayerWeb('embedmovies')">
+            <div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; Servidor 1 (EmbedMovies)</div>
             <i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
         </div>
-        <div class="server-btn em" onclick="abrirPlayerWeb('embedmovies')">
-            <div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; EmbedMovies Server</div>
+        <div class="server-btn ep" onclick="abrirPlayerWeb('embedplayapi')">
+            <div><i class="fas fa-play-circle" style="color:#00e676;"></i> &nbsp; Servidor 2 (EmbedPlayApi)</div>
+            <i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
+        </div>
+        <div class="server-btn bf" onclick="abrirPlayerWeb('betterflix')">
+            <div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; Servidor 3 (BetterFlix)</div>
             <i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
         </div>
         <div class="server-warn">
-            Estes servidores rodam diretamente no navegador e podem exibir anúncios de terceiros.<br>Para a melhor experiência sem anúncios, utilize o botão "Assistir" da página principal (Servidor Kavru).
+            * Estes servidores rodam diretamente no navegador e podem exibir anúncios de terceiros.<br>Para uma experiência nativa sem anúncios, utilize o botão principal "Assistir".
         </div>
     </div>
 
@@ -320,14 +325,13 @@
     </div>
 
     <div class="trailer-modal" id="trailerModal">
-        <i class="fas fa-times trailer-close" onclick="fecharTrailer()"></i>
+        <i class="fas fa-times trailer-close" onclick="history.back()"></i>
         <iframe id="trailerFrame" class="trailer-frame" allowfullscreen></iframe>
     </div>
 
     <div class="embed-modal" id="embedModal">
-        <i class="fas fa-times trailer-close" onclick="fecharEmbed()"></i>
-        <iframe id="embedFrame" class="embed-frame" allowfullscreen></iframe>
-        <div class="embed-warning"><i class="fas fa-info-circle"></i> Feche no X no canto superior direito para voltar ao aplicativo.</div>
+        <i class="fas fa-times trailer-close" onclick="history.back()"></i>
+        <iframe id="embedFrame" class="embed-frame" allowfullscreen sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"></iframe>
     </div>
 
     <script>
@@ -346,9 +350,8 @@
         
         let trailerKeyAtivo = null;
         
-        // Memória para os Web Players
         let currentTmdbId = null;
-        let currentItemType = null; // 'movie' ou 'tv'
+        let currentItemType = null;
         let currentSeason = 1;
         let currentEpisode = 1;
 
@@ -439,8 +442,8 @@
         }
 
         function redirecionarPesquisa(nomeTMDB) {
-            fecharAtor();
-            fecharDetalhes();
+            document.getElementById('actorModal').classList.remove('active');
+            document.getElementById('detailsPage').classList.remove('active');
             mudarAba('view-buscar', document.getElementById('nav-buscar'));
             const input = document.getElementById('inputBuscaGlobal');
             input.value = nomeTMDB;
@@ -672,7 +675,7 @@
         }
 
         // ==========================================
-        // O MAGNÍFICO MOTOR TMDB: TRAILER E PLAYERS WEB
+        // O MAGNÍFICO MOTOR TMDB
         // ==========================================
         async function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
             document.getElementById('dpTitle').innerText = titulo;
@@ -702,7 +705,6 @@
             boxDirector.innerHTML = '';
             trailerKeyAtivo = null;
             
-            // Reseta a Memória dos Web Players
             currentTmdbId = null;
             currentItemType = tipo === 'series' ? 'tv' : 'movie';
             currentSeason = 1;
@@ -720,7 +722,7 @@
 
                 if (tmdbData.results && tmdbData.results.length > 0) {
                     const tmdbId = tmdbData.results[0].id;
-                    currentTmdbId = tmdbId; // Guarda o ID para o Player Alternativo
+                    currentTmdbId = tmdbId; 
                     btnAlt.style.display = 'flex'; 
                     
                     const detailsRes = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=credits,videos,recommendations`);
@@ -738,7 +740,7 @@
                         if(dir) boxDirector.innerText = `Dirigido por ${dir.name}`;
                     }
 
-                    boxSinopse.innerText = details.overview || "Sinopse oficial indisponível.";
+                    boxSinopse.innerText = details.overview || "Sinopse oficial indisponível em Português.";
                     if (details.backdrop_path) document.getElementById('dpPoster').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${details.backdrop_path}')`;
 
                     if(details.videos && details.videos.results) {
@@ -814,7 +816,6 @@
                                 const sNum = String(season).padStart(2, '0');
                                 const eNum = String(ep.episode_num).padStart(2, '0');
                                 
-                                // Quando clica num Episódio, ele passa a season e episode pro Web Player, e também dispara o Kavru
                                 htmlEps += `
                                 <div class="ep-card" onclick="reproduzirEpisodio('${ep.id}', '${ep.container_extension || 'mp4'}', '${esc(epTitle)}', ${season}, ${ep.episode_num})">
                                     <div class="ep-thumb" style="background-image: url('${thumb}');"><i class="fas fa-play-circle"></i></div>
@@ -833,7 +834,6 @@
             }
         }
 
-        // Função intermediária para Episódios (Para atualizar a memória do Web Player antes de tocar)
         function reproduzirEpisodio(id, ext, titulo, season, episode) {
             currentSeason = season;
             currentEpisode = episode;
@@ -890,11 +890,12 @@
         }
 
         // ==========================================
-        // TRAILER E SERVIDORES WEB ALTERNATIVOS
+        // TRAILER YOUTUBE & EMBED ALTERNATIVO (SEGURO)
         // ==========================================
         function abrirTrailer() {
             if(!trailerKeyAtivo) return;
             const modal = document.getElementById('trailerModal');
+            // Abre de forma limpa, sem ativar âncoras na URL
             document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${trailerKeyAtivo}?autoplay=1`;
             modal.style.display = 'flex';
             history.pushState({ view: 'trailer' }, null, "");
@@ -928,12 +929,17 @@
             } else if (servidor === 'embedmovies') {
                 if(currentItemType === 'movie') finalUrl = `https://embedmovies.top/filme/${currentTmdbId}`;
                 else finalUrl = `https://embedmovies.top/serie/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
+            } else if (servidor === 'embedplayapi') {
+                if(currentItemType === 'movie') finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}`;
+                else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
             }
 
             frame.src = finalUrl;
             modal.style.display = 'flex';
+            // CADEADO: O histórico não regista as janelas de popup que o player web tentar abrir.
             history.pushState({ view: 'embed' }, null, "");
         }
+
         function fecharEmbed() {
             document.getElementById('embedModal').style.display = 'none';
             document.getElementById('embedFrame').src = '';
@@ -990,6 +996,7 @@
             }
         }
 
+        // CADEADO DO BOTÃO VOLTAR DO ANDROID (Evita que o anúncio destrua a navegação)
         window.addEventListener('popstate', function(event) {
             if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); } 
             else if (document.getElementById('embedModal').style.display === 'flex') { fecharEmbed(); } 
