@@ -7,19 +7,17 @@ export default async function handler(req, res) {
 
     const { action, category_id, stream_id, extension } = req.query;
 
+    // NOVAS CREDENCIAIS: Servidor Kavru
     const baseUrl = "http://kavru.com:80";
     const username = "558396043519";
     const password = "64537505";
 
-    // NOVIDADE: Rota para gerar link de FILMES
     if (action === "get_movie_url" && stream_id) {
-        // Filmes geralmente vêm com extensão .mp4 ou .mkv. Se não vier, testamos mp4.
         const ext = extension || "mp4";
         const streamUrl = `${baseUrl}/movie/${username}/${password}/${stream_id}.${ext}`;
         return res.status(200).json({ url: streamUrl });
     }
 
-    // Consulta padrão da API Xtream
     let targetUrl = `${baseUrl}/player_api.php?username=${username}&password=${password}`;
 
     if (action) {
