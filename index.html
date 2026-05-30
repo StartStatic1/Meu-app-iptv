@@ -53,13 +53,13 @@
         .card-movie { flex: 0 0 110px; height: 165px; border-radius: 8px; background-color: #2a2d3e; scroll-snap-align: start; overflow: hidden; cursor: pointer; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
         .card-movie img { width: 100%; height: 100%; object-fit: cover; }
         .card-movie .titulo-fallback { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: white; font-size: 9px; padding: 8px 4px; text-align: center; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        
         .card-badges { position: absolute; top: 5px; left: 5px; display: flex; flex-direction: column; gap: 4px; z-index: 2; pointer-events: none; }
         
-        .tv-category-item { background: rgba(255,255,255,0.05); margin: 10px 15px; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s; }
-        .tv-category-item:active { background: rgba(255,255,255,0.15); transform: scale(0.98); }
-        .tv-category-name { font-size: 14px; font-weight: 700; color: #fff; }
-        .tv-category-icon { font-size: 18px; color: var(--accent); }
+        /* Itens de Categoria (Usado para TV, Filmes e Séries nas abas) */
+        .category-item { background: rgba(255,255,255,0.05); margin: 10px 15px; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s; }
+        .category-item:active { background: rgba(255,255,255,0.15); transform: scale(0.98); }
+        .category-name { font-size: 14px; font-weight: 700; color: #fff; }
+        .category-icon { font-size: 18px; color: var(--accent); }
         
         .card-tv { flex: 0 0 140px; height: 100px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; flex-direction: column; padding: 8px 5px;}
         .card-tv img { width: 50%; height: 45%; object-fit: contain; margin-bottom: 8px; }
@@ -73,7 +73,6 @@
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 15px 20px 15px; }
         .grid-container .card-movie { flex: unset; width: 100%; height: 160px; }
 
-        /* ESTILOS DA BARRA DE PESQUISA */
         .search-container { position: relative; width: calc(100% - 30px); margin: 60px auto 20px auto; }
         .search-bar { width: 100%; padding: 15px 20px 15px 45px; border-radius: 30px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 16px; outline: none; box-sizing: border-box; transition: 0.3s; }
         .search-bar:focus { background: rgba(255,255,255,0.12); border-color: var(--accent); box-shadow: 0 0 15px rgba(0,229,255,0.2); }
@@ -103,6 +102,14 @@
         .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 15px; border-radius: 8px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(255,255,255,0.2); }
         .dp-synopsis { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 25px; }
         
+        /* NOVO: Estilos para a Lista de Episódios */
+        .season-title { font-size: 16px; font-weight: 800; color: var(--accent); margin: 25px 0 10px 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 5px;}
+        .ep-item { background: rgba(255,255,255,0.05); margin-bottom: 8px; padding: 12px 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.05); cursor: pointer; transition: 0.2s; }
+        .ep-item:active { background: rgba(255,255,255,0.1); transform: scale(0.98); }
+        .ep-info { display: flex; align-items: center; gap: 12px; }
+        .ep-info i { color: var(--text-muted); font-size: 20px; }
+        .ep-title { font-size: 13px; font-weight: 600; color: #fff; }
+
         .loading-text { text-align: center; color: var(--text-muted); font-size: 12px; width: 100%; padding: 20px; }
     </style>
 </head>
@@ -110,6 +117,7 @@
 
     <div class="header"><h1 class="header-logo">Stream<span>Flix</span></h1></div>
 
+    <!-- TELA 1: HOME -->
     <div id="view-home" class="view active">
         <div id="loading-state">
             <div class="skeleton skel-hero"></div>
@@ -129,6 +137,7 @@
         </div>
     </div>
 
+    <!-- TELA 2: GRADE (VER TODOS) -->
     <div id="view-grade" class="view">
         <div class="page-header">
             <i class="fas fa-arrow-left" onclick="history.back()"></i>
@@ -137,24 +146,37 @@
         <div class="grid-container" id="conteudo-grade"></div>
     </div>
 
+    <!-- TELA 3: ABAS DE FILMES E SÉRIES -->
+    <div id="view-filmes" class="view" style="padding-top: 60px;">
+        <div class="page-header" style="padding-top: 20px;">
+            <h2 class="page-title" style="color: var(--accent);"><i class="fas fa-film"></i> Categorias de Filmes</h2>
+        </div>
+        <div id="conteudo-aba-filmes"><p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A carregar...</p></div>
+    </div>
+
+    <div id="view-series" class="view" style="padding-top: 60px;">
+        <div class="page-header" style="padding-top: 20px;">
+            <h2 class="page-title" style="color: var(--accent);"><i class="fas fa-tv"></i> Categorias de Séries</h2>
+        </div>
+        <div id="conteudo-aba-series"><p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A carregar...</p></div>
+    </div>
+
+    <!-- TELA 4: TV AO VIVO -->
     <div id="view-tv" class="view">
         <div class="search-container" style="margin-top: 80px;">
             <i class="fas fa-search search-icon"></i>
             <input type="text" class="search-bar" id="inputBuscaTV" placeholder="Buscar canal ao vivo..." onkeyup="pesquisarTV()">
         </div>
-        
-        <div id="conteudo-tv">
-            <p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A carregar categorias...</p>
-        </div>
+        <div id="conteudo-tv"><p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A carregar categorias...</p></div>
         <div class="grid-container" id="resultados-tv" style="display: none;"></div>
     </div>
 
+    <!-- TELA 5: BUSCAR -->
     <div id="view-buscar" class="view">
         <div class="search-container" style="margin-top: 80px;">
             <i class="fas fa-search search-icon"></i>
             <input type="text" class="search-bar" id="inputBuscaGlobal" placeholder="Qual filme ou série você procura?" onkeyup="pesquisarGlobal()">
         </div>
-        
         <div id="resultados-busca-container">
             <div class="section-title" style="margin-left: 15px;"><i class="fas fa-film"></i> Títulos Encontrados</div>
             <div class="grid-container" id="resultados-global">
@@ -163,14 +185,16 @@
         </div>
     </div>
 
+    <!-- BARRA INFERIOR -->
     <div class="bottom-nav" id="bottomNav">
         <div class="nav-item active" id="nav-home" onclick="mudarAba('view-home', this)"><i class="fas fa-home"></i><span>Início</span></div>
-        <div class="nav-item" onclick="alert('Abas exclusivas para Filmes serão ativadas!')"><i class="fas fa-film"></i><span>Filmes</span></div>
-        <div class="nav-item" onclick="alert('Abas exclusivas para Séries serão ativadas!')"><i class="fas fa-tv"></i><span>Séries</span></div>
+        <div class="nav-item" id="nav-filmes" onclick="mudarAba('view-filmes', this)"><i class="fas fa-film"></i><span>Filmes</span></div>
+        <div class="nav-item" id="nav-series" onclick="mudarAba('view-series', this)"><i class="fas fa-tv"></i><span>Séries</span></div>
         <div class="nav-item" id="nav-tv" onclick="mudarAba('view-tv', this)"><i class="fas fa-broadcast-tower"></i><span>TV</span></div>
         <div class="nav-item" id="nav-buscar" onclick="mudarAba('view-buscar', this)"><i class="fas fa-search"></i><span>Buscar</span></div>
     </div>
 
+    <!-- MODAIS -->
     <div class="bottom-sheet-overlay" id="sheetOverlay" onclick="fecharSheetTV()"></div>
     <div class="bottom-sheet" id="bottomSheet">
         <div class="sheet-handle"></div>
@@ -187,8 +211,14 @@
         <div class="dp-content">
             <h1 class="dp-title" id="dpTitle">Título</h1>
             <div class="dp-meta" id="dpMeta">Categoria</div>
+            
+            <!-- Botão Play para Filmes -->
             <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
+            
             <p class="dp-synopsis" id="dpSynopsis">Aguardando TMDB (Próxima Fase)...</p>
+
+            <!-- Container de Temporadas (Apenas para Séries) -->
+            <div id="dpEpisodes" style="display: none; margin-top: 20px;"></div>
         </div>
     </div>
 
@@ -197,8 +227,9 @@
         let heroIndex = 0;
         let heroInterval = null;
         let tvFoiCarregada = false;
+        let filmesFoiCarregada = false;
+        let seriesFoiCarregada = false;
 
-        // MEMÓRIA CACHE DOS BUSCADORES
         let bancoFilmes = null;
         let bancoSeries = null;
         let bancoTV = null;
@@ -273,17 +304,44 @@
         function mudarAba(idView, btn, originHistory = false) {
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
-            else {
-                const autoBtn = document.getElementById('nav-' + idView.replace('view-',''));
-                if(autoBtn) autoBtn.classList.add('active');
-            }
+            else { const autoBtn = document.getElementById('nav-' + idView.replace('view-','')); if(autoBtn) autoBtn.classList.add('active'); }
             
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(idView).classList.add('active');
 
             if(!originHistory && idView !== 'view-home') history.pushState({ aba: idView }, null, "");
-            if(idView === 'view-tv' && !tvFoiCarregada) carregarCategoriasTV();
+            
+            if(idView === 'view-tv' && !tvFoiCarregada) carregarCategoriasMenu('get_live_categories', 'conteudo-tv', 'live', 'tv');
+            if(idView === 'view-filmes' && !filmesFoiCarregada) carregarCategoriasMenu('get_vod_categories', 'conteudo-aba-filmes', 'vod', 'film');
+            if(idView === 'view-series' && !seriesFoiCarregada) carregarCategoriasMenu('get_series_categories', 'conteudo-aba-series', 'series', 'tv');
+            
             if(idView === 'view-buscar') document.getElementById('inputBuscaGlobal').focus();
+        }
+
+        // NOVO MOTOR GENÉRICO PARA CARREGAR AS ABAS (Filmes, Séries, TV)
+        async function carregarCategoriasMenu(endpoint, divId, tipo, icone) {
+            if(tipo === 'live') tvFoiCarregada = true;
+            if(tipo === 'vod') filmesFoiCarregada = true;
+            if(tipo === 'series') seriesFoiCarregada = true;
+
+            try {
+                let html = "";
+                const res = await fetch(`/api/iptv?action=${endpoint}`);
+                const cats = await res.json();
+                
+                const validas = cats.filter(c => tipo === 'live' ? pastaTVValida(c.category_name) : pastaValida(c.category_name));
+
+                validas.forEach(cat => {
+                    html += `
+                    <div class="category-item" onclick="abrirVerTodos('${tipo}', '${cat.category_id}', '${esc(limparNomePasta(cat.category_name))}')">
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <i class="fas fa-${icone} category-icon"></i><span class="category-name">${limparNomePasta(cat.category_name)}</span>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 12px;"></i>
+                    </div>`;
+                });
+                document.getElementById(divId).innerHTML = html;
+            } catch(e) { document.getElementById(divId).innerHTML = "<div class='loading-text'>Erro ao carregar lista.</div>"; }
         }
 
         async function initApp() {
@@ -330,27 +388,6 @@
                 }, 100);
 
             } catch (error) { document.getElementById('loading-state').innerHTML = "<div class='loading-text'>Erro de ligação. Atualize a página.</div>"; }
-        }
-
-        async function carregarCategoriasTV() {
-            tvFoiCarregada = true;
-            try {
-                let htmlTV = "";
-                const resTvCats = await fetch('/api/iptv?action=get_live_categories');
-                const tvCats = await resTvCats.json();
-                const pastasTvValidas = tvCats.filter(c => pastaTVValida(c.category_name));
-
-                pastasTvValidas.forEach(cat => {
-                    htmlTV += `
-                    <div class="tv-category-item" onclick="abrirVerTodos('live', '${cat.category_id}', '${esc(cat.category_name)}')">
-                        <div style="display:flex; align-items:center; gap:15px;">
-                            <i class="fas fa-tv tv-category-icon"></i><span class="tv-category-name">${cat.category_name}</span>
-                        </div>
-                        <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 12px;"></i>
-                    </div>`;
-                });
-                document.getElementById('conteudo-tv').innerHTML = htmlTV;
-            } catch(e) { document.getElementById('conteudo-tv').innerHTML = "<div class='loading-text'>Erro ao buscar canais.</div>"; }
         }
 
         function gerarCarrosselHTML(nomePasta, catId, tipo, icone, lista) {
@@ -420,12 +457,10 @@
         }
 
         // ==========================================
-        // SISTEMA DE PESQUISA (LUPAS) - MOTOR 5.0
+        // LUPAS DE PESQUISA (MOTOR 5.0)
         // ==========================================
-        
         let timeoutBusca = null;
 
-        // LUPA DA TV
         async function pesquisarTV() {
             clearTimeout(timeoutBusca);
             const query = document.getElementById('inputBuscaTV').value.toLowerCase();
@@ -433,34 +468,21 @@
             const divResultados = document.getElementById('resultados-tv');
 
             if(query.length < 3) {
-                divPastas.style.display = 'block';
-                divResultados.style.display = 'none';
-                return;
+                divPastas.style.display = 'block'; divResultados.style.display = 'none'; return;
             }
 
-            divPastas.style.display = 'none';
-            divResultados.style.display = 'grid';
+            divPastas.style.display = 'none'; divResultados.style.display = 'grid';
             divResultados.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> A procurar canal...</div>`;
 
             timeoutBusca = setTimeout(async () => {
-                if(!bancoTV) {
-                    try {
-                        const res = await fetch('/api/iptv?action=get_live_streams');
-                        bancoTV = await res.json();
-                    } catch(e) { divResultados.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Falha ao contactar servidor.</p>`; return; }
-                }
+                if(!bancoTV) { try { const res = await fetch('/api/iptv?action=get_live_streams'); bancoTV = await res.json(); } catch(e) { return; } }
 
-                const resultados = bancoTV.filter(c => c.name && c.name.toLowerCase().includes(query)).slice(0, 50); // Limita a 50 resultados rápidos
-                
-                if(resultados.length === 0) {
-                    divResultados.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Nenhum canal encontrado.</p>`;
-                    return;
-                }
+                const resultados = bancoTV.filter(c => c.name && c.name.toLowerCase().includes(query)).slice(0, 50);
+                if(resultados.length === 0) { divResultados.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Nenhum canal encontrado.</p>`; return; }
 
                 let html = "";
                 resultados.forEach(item => {
-                    const fmtd = processarTV(item.name);
-                    const capa = item.stream_icon;
+                    const fmtd = processarTV(item.name); const capa = item.stream_icon;
                     html += `
                     <div class="card-movie card-tv" style="height: 110px;" onclick="abrirSheetTV('${esc(fmtd.limpo)}', '${item.stream_id}', '${esc(fmtd.tagsStr)}')">
                         <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
@@ -469,35 +491,27 @@
                     </div>`;
                 });
                 divResultados.innerHTML = html;
-            }, 800); // 800ms de delay para não travar enquanto o utilizador digita
+            }, 800);
         }
 
-        // LUPA GLOBAL (Filmes e Séries)
         async function pesquisarGlobal() {
             clearTimeout(timeoutBusca);
             const query = document.getElementById('inputBuscaGlobal').value.toLowerCase();
             const container = document.getElementById('resultados-global');
 
-            if(query.length < 3) {
-                container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras para o robô iniciar a busca.</p>`;
-                return;
-            }
+            if(query.length < 3) { container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras...</p>`; return; }
 
             container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> A procurar no catálogo...</div>`;
 
             timeoutBusca = setTimeout(async () => {
                 try {
-                    // Traz tudo e salva na memória do telemóvel na primeira vez
                     if(!bancoFilmes) { const resF = await fetch('/api/iptv?action=get_vod_streams'); bancoFilmes = await resF.json(); }
                     if(!bancoSeries) { const resS = await fetch('/api/iptv?action=get_series'); bancoSeries = await resS.json(); }
 
                     const resFilmes = bancoFilmes.filter(f => f.name && f.name.toLowerCase().includes(query)).slice(0, 30);
                     const resSeries = bancoSeries.filter(s => s.name && s.name.toLowerCase().includes(query)).slice(0, 15);
 
-                    if(resFilmes.length === 0 && resSeries.length === 0) {
-                        container.innerHTML = `<p class="loading-text" style="grid-column: span 3;">Nada encontrado com "${query}".</p>`;
-                        return;
-                    }
+                    if(resFilmes.length === 0 && resSeries.length === 0) { container.innerHTML = `<p class="loading-text" style="grid-column: span 3;">Nada encontrado.</p>`; return; }
 
                     let html = "";
                     resFilmes.forEach(item => {
@@ -517,14 +531,13 @@
                             ${item.cover ? `<img src="${item.cover}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${fmtd.limpo}</div>`}
                         </div>`;
                     });
-
                     container.innerHTML = html;
                 } catch(e) { container.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Erro na busca.</p>`; }
             }, 800);
         }
 
         // ==========================================
-        // FINAL DE INTERFACE E REPRODUÇÃO
+        // MOTOR DE SÉRIES (TEMPORADAS E EPISÓDIOS)
         // ==========================================
         function iniciarHeroSlider(nomeCat) {
             atualizarHero(nomeCat);
@@ -543,14 +556,58 @@
             abrirDetalhes(fmtd.limpo, "Destaque VIP", f.stream_icon, f.stream_id, 'vod', f.container_extension || 'mp4', fmtd.tagsStr);
         }
 
-        function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
+        async function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
             document.getElementById('dpTitle').innerText = titulo;
             document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
             if (!urlCapa || urlCapa === 'undefined') urlCapa = 'https://via.placeholder.com/800x600/111/fff';
             document.getElementById('dpPoster').style.backgroundImage = `url('${urlCapa}')`;
             
-            document.getElementById('btnPlayFilme').onclick = () => dispararPlayer(id, tipo, ext, titulo);
+            const btnPlay = document.getElementById('btnPlayFilme');
+            const boxEpisodios = document.getElementById('dpEpisodes');
             
+            // SE FOR SÉRIE: Esconde botão Play e puxa os episódios!
+            if(tipo === 'series') {
+                btnPlay.style.display = 'none';
+                boxEpisodios.style.display = 'block';
+                boxEpisodios.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A buscar as temporadas...</p>';
+                
+                try {
+                    const res = await fetch(`/api/iptv?action=get_series_info&series_id=${id}`);
+                    const data = await res.json();
+                    
+                    if(data.episodes && Object.keys(data.episodes).length > 0) {
+                        let htmlEps = '';
+                        for (const season in data.episodes) {
+                            htmlEps += `<h3 class="season-title">Temporada ${season}</h3>`;
+                            data.episodes[season].forEach(ep => {
+                                const epTitle = ep.title || `Episódio ${ep.episode_num}`;
+                                const epId = ep.id;
+                                const epExt = ep.container_extension || 'mp4';
+                                
+                                // O Episódio roda como 'vod' no dispararPlayer
+                                htmlEps += `
+                                <div class="ep-item" onclick="dispararPlayer('${epId}', 'vod', '${epExt}', '${esc(epTitle)}')">
+                                    <div class="ep-info">
+                                        <i class="fas fa-play-circle"></i>
+                                        <span class="ep-title">${ep.episode_num}. ${epTitle}</span>
+                                    </div>
+                                </div>`;
+                            });
+                        }
+                        boxEpisodios.innerHTML = htmlEps;
+                    } else {
+                        boxEpisodios.innerHTML = '<p class="loading-text">Nenhum episódio disponível.</p>';
+                    }
+                } catch(e) {
+                    boxEpisodios.innerHTML = '<p class="loading-text">Erro ao carregar episódios.</p>';
+                }
+            } else {
+                // É Filme: Mostra o Play normal!
+                btnPlay.style.display = 'flex';
+                boxEpisodios.style.display = 'none';
+                btnPlay.onclick = () => dispararPlayer(id, tipo, ext, titulo);
+            }
+
             document.getElementById('detailsPage').classList.add('active');
             history.pushState({ aba: 'details' }, null, "");
         }
@@ -570,9 +627,8 @@
         function fecharSheetTV() { document.getElementById('sheetOverlay').classList.remove('active'); document.getElementById('bottomSheet').classList.remove('active'); }
 
         async function dispararPlayer(id, tipo, ext, titulo) {
-            if(tipo === 'series') { alert(`Série: ${titulo}\n(O painel de episódios será feito na próxima fase!)`); return; }
-
             const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
+            if(!btn) return;
             const textoOriginal = btn.innerHTML;
             btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`;
 
@@ -588,7 +644,7 @@
                     urlFinal = data.url;
                 }
 
-                if (!urlFinal) throw new Error("A Vercel não retornou o link. (Canal Offline)");
+                if (!urlFinal) throw new Error("A Vercel não retornou o link.");
 
                 if (window.AndroidApp) {
                     window.AndroidApp.abrirVideoNativo(urlFinal);
@@ -600,8 +656,8 @@
                     setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
                 }
             } catch (e) {
-                alert(e.message.includes("Canal Offline") ? "Este canal parece estar desligado no servidor neste momento." : "Erro ao aceder à API.");
-                btn.innerHTML = textoOriginal;
+                alert("Erro ao aceder à API: " + e.message);
+                if(btn) btn.innerHTML = textoOriginal;
             }
         }
 
