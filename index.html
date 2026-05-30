@@ -92,15 +92,25 @@
         .details-page { position: fixed; top: 0; left: 100%; width: 100%; height: 100vh; background: var(--bg-bottom); z-index: 3000; transition: left 0.3s ease-out; overflow-y: auto; padding-bottom: 30px; }
         .details-page.active { left: 0; }
         .dp-back-btn { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; z-index: 3010; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; cursor: pointer; }
-        .dp-poster { width: 100%; height: 60vh; background-position: top center; background-size: cover; position: relative; background-color: #111; }
-        .dp-gradient { position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-bottom) 0%, rgba(4,7,20,0.5) 50%, transparent 100%); }
-        .dp-content { padding: 0 20px; margin-top: -60px; position: relative; z-index: 2; }
-        .dp-title { font-size: 30px; font-weight: 900; margin: 0 0 10px 0; line-height: 1.1; }
+        .dp-poster { width: 100%; height: 60vh; background-position: top center; background-size: cover; position: relative; background-color: #111; transition: background-image 0.5s ease;}
+        .dp-gradient { position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-bottom) 0%, rgba(4,7,20,0.7) 40%, transparent 100%); }
+        .dp-content { padding: 0 20px; margin-top: -80px; position: relative; z-index: 2; }
+        .dp-title { font-size: 32px; font-weight: 900; margin: 0 0 10px 0; line-height: 1.1; text-shadow: 0 2px 10px rgba(0,0,0,0.8);}
         .dp-meta { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 20px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;}
-        .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 15px; border-radius: 8px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(255,255,255,0.2); }
+        .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 15px; border-radius: 8px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(255,255,255,0.2); transition: 0.2s;}
+        .dp-play-btn:active { transform: scale(0.97); }
         .dp-synopsis { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 25px; }
 
-        /* OTIMIZAÇÃO: Layout de Temporadas e Episódios Limpo (16:9) */
+        /* Estilos do Elenco (TMDB) */
+        .cast-section { margin-bottom: 25px; }
+        .cast-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 15px; }
+        .cast-carousel { display: flex; gap: 15px; overflow-x: auto; scrollbar-width: none; padding-bottom: 10px; }
+        .cast-carousel::-webkit-scrollbar { display: none; }
+        .cast-item { flex: 0 0 75px; text-align: center; }
+        .cast-img { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; background: #2a2d3e; margin-bottom: 8px; border: 2px solid rgba(255,255,255,0.1); }
+        .cast-name { font-size: 11px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .cast-char { font-size: 10px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
         .season-title { font-size: 18px; font-weight: 800; color: #fff; margin: 30px 0 15px 0; }
         .ep-carousel { display: flex; gap: 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 10px; }
         .ep-carousel::-webkit-scrollbar { display: none; }
@@ -111,7 +121,6 @@
         .ep-thumb i { font-size: 30px; color: rgba(255,255,255,0.8); z-index: 2; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
         .ep-info-text { padding: 10px; }
         .ep-number { font-size: 11px; color: var(--accent); font-weight: 900; margin-bottom: 4px; letter-spacing: 1px;}
-        /* Duas linhas para o título e corta nos 3 pontos */
         .ep-name { font-size: 11px; color: #ccc; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; font-weight: 600; line-height: 1.3;}
         
         .loading-text { text-align: center; color: var(--text-muted); font-size: 12px; width: 100%; padding: 20px; }
@@ -209,13 +218,21 @@
             <div class="dp-meta" id="dpMeta">Categoria</div>
             
             <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
-            <p class="dp-synopsis" id="dpSynopsis">Aguardando TMDB (Próxima Fase)...</p>
+            <p class="dp-synopsis" id="dpSynopsis">Aguardando TMDB...</p>
+
+            <div id="dpCastContainer" class="cast-section" style="display: none;">
+                <div class="cast-title">Elenco Principal</div>
+                <div class="cast-carousel" id="dpCast"></div>
+            </div>
 
             <div id="dpEpisodes" style="display: none; padding-bottom: 30px;"></div>
         </div>
     </div>
 
     <script>
+        // CHAVE DE API DO TMDB
+        const TMDB_API_KEY = '46230929e061f1d2f3df518aed983e08';
+
         let heroFilmes = [];
         let heroIndex = 0;
         let heroInterval = null;
@@ -444,7 +461,6 @@
             } catch(e) { containerGrade.innerHTML = `<p class="loading-text" style="grid-column: span 3;">Erro ao carregar a pasta.</p>`; }
         }
 
-        // LUPAS
         let timeoutBusca = null;
         async function pesquisarTV() {
             clearTimeout(timeoutBusca);
@@ -518,9 +534,6 @@
             }, 800);
         }
 
-        // ==========================================
-        // CÉREBRO DA SÉRIE: LIMPEZA DOS NOMES DOS EPISÓDIOS
-        // ==========================================
         function iniciarHeroSlider(nomeCat) {
             atualizarHero(nomeCat);
             heroInterval = setInterval(() => { heroIndex = (heroIndex + 1) % heroFilmes.length; atualizarHero(nomeCat); }, 5000);
@@ -538,15 +551,75 @@
             abrirDetalhes(fmtd.limpo, "Destaque VIP", f.stream_icon, f.stream_id, 'vod', f.container_extension || 'mp4', fmtd.tagsStr);
         }
 
+        // ==========================================
+        // O GRANDE MOTOR TMDB (MÁGICA PURA)
+        // ==========================================
         async function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
+            // Limpa a tela
             document.getElementById('dpTitle').innerText = titulo;
             document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
-            if (!urlCapa || urlCapa === 'undefined') urlCapa = 'https://via.placeholder.com/800x600/111/fff';
-            document.getElementById('dpPoster').style.backgroundImage = `url('${urlCapa}')`;
+            
+            // Coloca a capa do IPTV inicialmente
+            const capaInicial = (!urlCapa || urlCapa === 'undefined') ? 'https://via.placeholder.com/800x600/111/fff' : urlCapa;
+            document.getElementById('dpPoster').style.backgroundImage = `url('${capaInicial}')`;
             
             const btnPlay = document.getElementById('btnPlayFilme');
             const boxEpisodios = document.getElementById('dpEpisodes');
+            const boxSinopse = document.getElementById('dpSynopsis');
+            const boxCast = document.getElementById('dpCastContainer');
+            const divCast = document.getElementById('dpCast');
             
+            boxSinopse.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A contactar TMDB...';
+            boxCast.style.display = 'none';
+            divCast.innerHTML = '';
+
+            // TENTA BUSCAR NO TMDB
+            try {
+                const tmdbType = tipo === 'series' ? 'tv' : 'movie';
+                // Remove anos e lixos para o TMDB achar certo (Ex: "O Gladiador 2 (2024)" vira "O Gladiador 2")
+                const queryBusca = encodeURIComponent(titulo.replace(/\(\d{4}\)/g, '').trim());
+                
+                const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/${tmdbType}?api_key=${TMDB_API_KEY}&language=pt-BR&query=${queryBusca}`);
+                const tmdbData = await tmdbRes.json();
+
+                if (tmdbData.results && tmdbData.results.length > 0) {
+                    const tmdbItem = tmdbData.results[0]; // Pega o primeiro e mais relevante
+                    
+                    // 1. SINOPSE
+                    boxSinopse.innerText = tmdbItem.overview || "Sinopse em português não disponível no momento.";
+                    
+                    // 2. FUNDO EM HD (Se o TMDB tiver)
+                    if (tmdbItem.backdrop_path) {
+                        document.getElementById('dpPoster').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${tmdbItem.backdrop_path}')`;
+                    }
+
+                    // 3. ELENCO (Busca Secundária pelo ID do TMDB)
+                    const creditsRes = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${tmdbItem.id}/credits?api_key=${TMDB_API_KEY}&language=pt-BR`);
+                    const creditsData = await creditsRes.json();
+
+                    if (creditsData.cast && creditsData.cast.length > 0) {
+                        let htmlCast = '';
+                        // Mostra os 10 primeiros atores
+                        creditsData.cast.slice(0, 10).forEach(ator => {
+                            const fotoAtor = ator.profile_path ? `https://image.tmdb.org/t/p/w200${ator.profile_path}` : 'https://via.placeholder.com/150x150/333/fff?text=Ator';
+                            htmlCast += `
+                            <div class="cast-item">
+                                <img src="${fotoAtor}" class="cast-img">
+                                <div class="cast-name">${ator.name}</div>
+                                <div class="cast-char">${ator.character}</div>
+                            </div>`;
+                        });
+                        divCast.innerHTML = htmlCast;
+                        boxCast.style.display = 'block';
+                    }
+                } else {
+                    boxSinopse.innerText = "Este título não foi encontrado no banco de dados mundial.";
+                }
+            } catch (err) {
+                boxSinopse.innerText = "Resumo indisponível.";
+            }
+
+            // LÓGICA DE PLAY OU EPISÓDIOS (INTACTA)
             if(tipo === 'series') {
                 btnPlay.style.display = 'none';
                 boxEpisodios.style.display = 'block';
@@ -558,26 +631,14 @@
                     
                     if(data && data.episodes && Object.keys(data.episodes).length > 0) {
                         let htmlEps = '';
-                        
                         for (let season in data.episodes) {
                             htmlEps += `<h3 class="season-title">Temporada ${season}</h3>`;
                             htmlEps += `<div class="ep-carousel">`;
                             
                             data.episodes[season].forEach(ep => {
-                                // LIMPEZA DO TÍTULO DO EPISÓDIO
                                 let epTitle = ep.title || `Episódio ${ep.episode_num}`;
-                                
-                                // Tira o nome da série do título se existir
                                 const regexSerie = new RegExp(titulo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "\\s*[-:]?\\s*", "i");
-                                epTitle = epTitle.replace(regexSerie, ""); 
-                                
-                                // Tira código como S01E01 ou S1 E1
-                                epTitle = epTitle.replace(/S\d{1,2}\s*E\d{1,2}\s*[-:]?\s*/i, ""); 
-                                
-                                // Limpa caracteres soltos no início
-                                epTitle = epTitle.replace(/^[-_.:\s]+/, "").trim(); 
-                                
-                                // Se o título ficou vazio após limpar, usa o número
+                                epTitle = epTitle.replace(regexSerie, "").replace(/S\d{1,2}\s*E\d{1,2}\s*[-:]?\s*/i, "").replace(/^[-_.:\s]+/, "").trim(); 
                                 if(!epTitle || epTitle.length < 2) epTitle = `Episódio ${ep.episode_num}`;
 
                                 const thumb = (ep.info && ep.info.movie_image) ? ep.info.movie_image : urlCapa;
@@ -601,9 +662,7 @@
                     } else {
                         boxEpisodios.innerHTML = '<p class="loading-text">Esta série não tem episódios cadastrados no servidor.</p>';
                     }
-                } catch(e) {
-                    boxEpisodios.innerHTML = '<p class="loading-text">Erro ao carregar episódios. Tente novamente.</p>';
-                }
+                } catch(e) { boxEpisodios.innerHTML = '<p class="loading-text">Erro ao carregar episódios. Tente novamente.</p>'; }
             } else {
                 btnPlay.style.display = 'flex';
                 boxEpisodios.style.display = 'none';
