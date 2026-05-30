@@ -34,7 +34,7 @@
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Skeleton Loader Otimizado */
+        /* Skeleton Loader */
         @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
         .skeleton { background: #2a2d3e; background-image: linear-gradient(90deg, #2a2d3e 0px, #3a3e52 40px, #2a2d3e 80px); background-size: 1000px 100%; animation: shimmer 2.5s infinite linear; }
         .skel-hero { width: 100%; height: 55vh; border-radius: 0 0 20px 20px; margin-bottom: 20px; }
@@ -56,8 +56,14 @@
         
         .card-badges { position: absolute; top: 5px; left: 5px; display: flex; flex-direction: column; gap: 4px; z-index: 2; pointer-events: none; }
         
-        /* Otimização dos Cards de TV para a nova Aba */
-        .card-tv { flex: 0 0 140px; height: 90px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; flex-direction: column; padding: 5px;}
+        /* Layout TV em Lista de Categorias */
+        .tv-category-item { background: rgba(255,255,255,0.05); margin: 10px 15px; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s; }
+        .tv-category-item:active { background: rgba(255,255,255,0.15); transform: scale(0.98); }
+        .tv-category-name { font-size: 14px; font-weight: 700; color: #fff; }
+        .tv-category-icon { font-size: 18px; color: var(--accent); }
+        
+        /* Card TV na Grade */
+        .card-tv { flex: 0 0 140px; height: 80px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; flex-direction: column; padding: 5px;}
         .card-tv img { width: 50%; height: 60%; object-fit: contain; }
         .card-tv .titulo-tv { font-size: 10px; font-weight: bold; padding-top: 5px; text-align: center; color: #ccc; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .live-badge { position: absolute; top: 5px; right: 5px; background: #e50914; color: white; font-size: 7px; font-weight: bold; padding: 2px 4px; border-radius: 3px; }
@@ -94,6 +100,8 @@
         .dp-meta { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 20px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;}
         .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 15px; border-radius: 8px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(255,255,255,0.2); }
         .dp-synopsis { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 25px; }
+        
+        .loading-text { text-align: center; color: var(--text-muted); font-size: 12px; width: 100%; padding: 20px; }
     </style>
 </head>
 <body>
@@ -129,10 +137,10 @@
 
     <div id="view-tv" class="view" style="padding-top: 60px;">
         <div class="page-header" style="padding-top: 20px;">
-            <h2 class="page-title" style="color: var(--accent);"><i class="fas fa-broadcast-tower"></i> Canais de TV</h2>
+            <h2 class="page-title" style="color: var(--accent);"><i class="fas fa-broadcast-tower"></i> Categorias de TV</h2>
         </div>
         <div id="conteudo-tv">
-            <p class="loading-text">Conectando aos canais ao vivo...</p>
+            <p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A carregar categorias...</p>
         </div>
     </div>
 
@@ -146,8 +154,8 @@
 
     <div class="bottom-nav" id="bottomNav">
         <div class="nav-item active" id="nav-home" onclick="mudarAba('view-home', this)"><i class="fas fa-home"></i><span>Início</span></div>
-        <div class="nav-item" onclick="alert('Na próxima fase!')"><i class="fas fa-film"></i><span>Filmes</span></div>
-        <div class="nav-item" onclick="alert('Na próxima fase!')"><i class="fas fa-tv"></i><span>Séries</span></div>
+        <div class="nav-item" onclick="alert('Abas de filmes serão integradas na próxima fase!')"><i class="fas fa-film"></i><span>Filmes</span></div>
+        <div class="nav-item" onclick="alert('Abas de séries serão integradas na próxima fase!')"><i class="fas fa-tv"></i><span>Séries</span></div>
         <div class="nav-item" id="nav-tv" onclick="mudarAba('view-tv', this)"><i class="fas fa-broadcast-tower"></i><span>TV</span></div>
         <div class="nav-item" id="nav-buscar" onclick="mudarAba('view-buscar', this)"><i class="fas fa-search"></i><span>Buscar</span></div>
     </div>
@@ -177,11 +185,10 @@
         let heroFilmes = [];
         let heroIndex = 0;
         let heroInterval = null;
-        let tvFoiCarregada = false; // Memória para não carregar a TV duas vezes
+        let tvFoiCarregada = false;
 
         function esc(str) { return (str || '').toString().replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
 
-        // LIMPEZA DE PASTAS (Remove a palavra "Filmes | " para ficar mais bonito)
         function limparNomePasta(nome) {
             return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Séries\s*\|\s*/i, '').trim();
         }
@@ -194,7 +201,7 @@
 
         function pastaTVValida(nome) {
             if (!nome) return false;
-            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO'];
+            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO', 'CÂMERA'];
             return !proibidos.some(p => nome.toUpperCase().includes(p));
         }
 
@@ -214,7 +221,7 @@
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
-        // LIMPADOR DE CANAIS DE TV MÁXIMO
+        // LIMPEZA SUPREMA PARA A TV (Adeus Setas e Brackets)
         function processarTV(nomeBruto) {
             let nomeLimpo = nomeBruto || "Canal";
             const tags = [];
@@ -227,7 +234,12 @@
             else if(/4K/i.test(nomeLimpo)) tags.push('4K');
             else if(/SD/i.test(nomeLimpo)) tags.push('SD');
 
-            nomeLimpo = nomeLimpo.replace(/(FHDR|FHD|HD|4K|SD)/ig, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').replace(/[>\-|*]/g, '').replace(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/ig, '').replace(/\s+/g, ' ').trim();
+            nomeLimpo = nomeLimpo.replace(/(FHDR|FHD|HD|4K|SD)/ig, '')
+                                 .replace(/\[.*?\]/g, '') // Tira [HD] etc
+                                 .replace(/\(.*?\)/g, '') // Tira (HD) etc
+                                 .replace(/[>\-|*•]/g, '') // Tira Setas, traços, pontos
+                                 .replace(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/ig, '')
+                                 .replace(/\s+/g, ' ').trim();
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
@@ -248,28 +260,24 @@
             return html;
         }
 
-        // INTELIGÊNCIA DO BOTÃO VOLTAR E NAVEGAÇÃO
         function mudarAba(idView, btn) {
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(idView).classList.add('active');
 
-            // Histórico para o botão voltar funcionar perfeito
             if(idView !== 'view-home') history.pushState({ aba: idView }, null, "");
 
-            // Carrega a TV apenas se o utilizador clicar na aba TV
             if(idView === 'view-tv' && !tvFoiCarregada) {
-                carregarTV();
+                carregarCategoriasTV();
             }
         }
 
-        // CARREGAMENTO TURBO DA HOME (Apenas Filmes e Séries)
         async function initApp() {
             try {
                 let htmlConstruido = "";
                 
-                // Puxa a primeira pasta de filmes para libertar o ecrã RÁPIDO
+                // Puxa RÁPIDO apenas Filmes
                 const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
                 const vodCats = await resVodCats.json();
                 const pastasFilmes = vodCats.filter(c => pastaValida(c.category_name)).sort((a,b) => {
@@ -287,12 +295,12 @@
                     }
                 }
 
-                // LIBERTA O ECRÃ EM 1 SEGUNDO!
+                // LIBERTA O ECRÃ
                 document.getElementById('loading-state').style.display = 'none';
                 document.getElementById('conteudo-real').style.display = 'block';
                 document.getElementById('conteudo-dinamico').innerHTML = htmlConstruido;
 
-                // Carrega o resto silenciosamente no fundo
+                // Carrega Séries Silenciosamente
                 setTimeout(async () => {
                     let htmlExtra = "";
                     for(let i = 1; i < pastasFilmes.length; i++) {
@@ -311,32 +319,34 @@
                     }
                     
                     document.getElementById('conteudo-dinamico').innerHTML += htmlExtra;
-                }, 500);
+                }, 100);
 
             } catch (error) { 
                 document.getElementById('loading-state').innerHTML = "<div class='loading-text'>Erro de ligação. Atualize a página.</div>";
             }
         }
 
-        // CARREGADOR EXCLUSIVO DA ABA TV
-        async function carregarTV() {
+        // NOVO: CARREGADOR DA LISTA DE PASTAS DE TV
+        async function carregarCategoriasTV() {
             tvFoiCarregada = true;
             try {
                 let htmlTV = "";
                 const resTvCats = await fetch('/api/iptv?action=get_live_categories');
                 const tvCats = await resTvCats.json();
                 
-                // Prioriza pastas famosas de TV
-                const pastasTv = tvCats.filter(c => pastaTVValida(c.category_name)).sort((a,b) => {
-                    const pri = /ABERTOS|GLOBO|TELECINE|HBO|ESPORTES/i;
-                    return pri.test(b.category_name) - pri.test(a.category_name);
-                }).slice(0, 5); // Mostra 5 fileiras na TV
+                const pastasTvValidas = tvCats.filter(c => pastaTVValida(c.category_name));
 
-                for(let i = 0; i < pastasTv.length; i++) {
-                    const res = await fetch(`/api/iptv?action=get_live_streams&category_id=${pastasTv[i].category_id}`);
-                    const canais = await res.json();
-                    if(canais && canais.length > 0) htmlTV += gerarCarrosselHTML(pastasTv[i].category_name, pastasTv[i].category_id, 'live', 'broadcast-tower', canais.slice(0, 20));
-                }
+                pastasTvValidas.forEach(cat => {
+                    htmlTV += `
+                    <div class="tv-category-item" onclick="abrirVerTodos('live', '${cat.category_id}', '${esc(cat.category_name)}')">
+                        <div style="display:flex; align-items:center; gap:15px;">
+                            <i class="fas fa-tv tv-category-icon"></i>
+                            <span class="tv-category-name">${cat.category_name}</span>
+                        </div>
+                        <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 12px;"></i>
+                    </div>`;
+                });
+                
                 document.getElementById('conteudo-tv').innerHTML = htmlTV;
             } catch(e) {
                 document.getElementById('conteudo-tv').innerHTML = "<div class='loading-text'>Erro ao buscar canais.</div>";
@@ -352,28 +362,17 @@
             <div class="carousel">`;
             
             lista.forEach(item => {
-                if(tipo === 'live') {
-                    const fmtd = processarTV(item.name);
-                    const capa = item.stream_icon;
-                    html += `
-                    <div class="card-tv" onclick="abrirSheetTV('${esc(fmtd.limpo)}', '${item.stream_id}', '${esc(fmtd.tagsStr)}')">
-                        <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
-                        ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : ''}
-                        <div class="titulo-tv" style="display:${capa ? 'none' : 'block'}">${fmtd.limpo}</div>
-                    </div>`;
-                } else {
-                    const fmtd = processarTitulo(item.name, nomePasta);
-                    const capa = item.stream_icon || item.cover;
-                    const argId = tipo === 'vod' ? item.stream_id : item.series_id;
-                    const argExt = item.container_extension || 'mp4';
-                    
-                    html += `
-                    <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', '${esc(nomePasta)}', '${esc(capa)}', '${argId}', '${tipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
-                        <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
-                        ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : ''}
-                        <div class="titulo-fallback" style="display:${capa ? 'none' : 'block'}">${fmtd.limpo}</div>
-                    </div>`;
-                }
+                const fmtd = processarTitulo(item.name, nomePasta);
+                const capa = item.stream_icon || item.cover;
+                const argId = tipo === 'vod' ? item.stream_id : item.series_id;
+                const argExt = item.container_extension || 'mp4';
+                
+                html += `
+                <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', '${esc(nomePasta)}', '${esc(capa)}', '${argId}', '${tipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
+                    <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
+                    ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : ''}
+                    <div class="titulo-fallback" style="display:${capa ? 'none' : 'block'}">${fmtd.limpo}</div>
+                </div>`;
             });
             return html + `</div>`;
         }
@@ -401,7 +400,7 @@
                         htmlGrade += `
                         <div class="card-movie card-tv" style="height: 100px;" onclick="abrirSheetTV('${esc(fmtd.limpo)}', '${item.stream_id}', '${esc(fmtd.tagsStr)}')">
                             <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
-                            ${capa ? `<img src="${capa}" loading="lazy">` : ''}
+                            ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : ''}
                             <div class="titulo-tv" style="display:${capa ? 'none' : 'block'}">${fmtd.limpo}</div>
                         </div>`;
                     } else {
@@ -413,12 +412,12 @@
                         htmlGrade += `
                         <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', '${esc(nomePasta)}', '${esc(capa)}', '${argId}', '${tipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
                             <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
-                            ${capa ? `<img src="${capa}" loading="lazy">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${fmtd.limpo}</div>`}
+                            ${capa ? `<img src="${capa}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${fmtd.limpo}</div>`}
                         </div>`;
                     }
                 });
 
-                containerGrade.innerHTML = htmlGrade;
+                containerGrade.innerHTML = htmlGrade || `<p class="loading-text" style="grid-column: span 3;">Pasta vazia.</p>`;
             } catch(e) { containerGrade.innerHTML = `<p class="loading-text" style="grid-column: span 3;">Erro ao carregar a pasta.</p>`; }
         }
 
@@ -452,8 +451,20 @@
         }
 
         function fecharDetalhes() { document.getElementById('detailsPage').classList.remove('active'); }
+        
+        function abrirSheetTV(titulo, streamId, tagsStr) {
+            document.getElementById('tvTitle').innerText = titulo;
+            document.getElementById('tvBadges').innerHTML = gerarHTMLBadges(tagsStr);
+            document.getElementById('btnPlayTV').onclick = () => dispararPlayer(streamId, 'live', '', titulo);
+            
+            document.getElementById('sheetOverlay').classList.add('active');
+            document.getElementById('bottomSheet').classList.add('active');
+            history.pushState({ modalOpen: true, type: 'tv' }, null, "");
+        }
+
         function fecharSheetTV() { document.getElementById('sheetOverlay').classList.remove('active'); document.getElementById('bottomSheet').classList.remove('active'); }
 
+        // O TRUQUE MESTRE DA API PARA TV FUNCIONAR 100% SEM MEXER NO VERCEL BACKEND
         async function dispararPlayer(id, tipo, ext, titulo) {
             if(tipo === 'series') { alert(`Série: ${titulo}\n(O painel de episódios será feito na próxima fase!)`); return; }
 
@@ -468,12 +479,13 @@
                     const data = await res.json();
                     urlFinal = data.url;
                 } else if (tipo === 'live') {
-                    const res = await fetch(`/api/iptv?action=get_live_url&stream_id=${id}`);
+                    // Pega o link como se fosse filme, mas usa o replace para arrumar o caminho para TV nativa (.ts)!
+                    const res = await fetch(`/api/iptv?action=get_movie_url&stream_id=${id}&extension=ts`);
                     const data = await res.json();
-                    urlFinal = data.url;
+                    if(data.url) urlFinal = data.url.replace('/movie/', '/'); 
                 }
 
-                if (!urlFinal) throw new Error("A Vercel não retornou o link. (Canal Offline)");
+                if (!urlFinal) throw new Error("A Vercel não retornou o link.");
 
                 if (window.AndroidApp) {
                     window.AndroidApp.abrirVideoNativo(urlFinal);
@@ -485,7 +497,7 @@
                     setTimeout(() => { btn.innerHTML = textoOriginal; }, 1500);
                 }
             } catch (e) {
-                alert(e.message.includes("Canal Offline") ? "Este canal parece estar desligado no servidor neste momento." : "Erro ao aceder à API.");
+                alert("Erro ao aceder à API: " + e.message);
                 btn.innerHTML = textoOriginal;
             }
         }
@@ -497,7 +509,6 @@
             } else if (document.getElementById('bottomSheet').classList.contains('active')) {
                 fecharSheetTV();
             } else if (!document.getElementById('view-home').classList.contains('active')) {
-                // Se estiver em Ver Todos, Buscar ou TV, volta para a Home
                 mudarAba('view-home', document.getElementById('nav-home'));
             }
         });
