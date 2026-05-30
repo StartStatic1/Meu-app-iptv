@@ -7,14 +7,20 @@ export default async function handler(req, res) {
 
     const { action, category_id, stream_id, extension } = req.query;
 
-    // NOVAS CREDENCIAIS: Servidor Kavru
     const baseUrl = "http://kavru.com:80";
     const username = "558396043519";
     const password = "64537505";
 
+    // GERA LINK DE FILME
     if (action === "get_movie_url" && stream_id) {
         const ext = extension || "mp4";
         const streamUrl = `${baseUrl}/movie/${username}/${password}/${stream_id}.${ext}`;
+        return res.status(200).json({ url: streamUrl });
+    }
+
+    // GERA LINK DE TV AO VIVO (Novo)
+    if (action === "get_live_url" && stream_id) {
+        const streamUrl = `${baseUrl}/${username}/${password}/${stream_id}.ts`;
         return res.status(200).json({ url: streamUrl });
     }
 
