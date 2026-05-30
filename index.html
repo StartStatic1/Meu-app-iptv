@@ -4,16 +4,26 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>StreamFlix</title>
+    <!-- Ícones -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         /* Paleta Disney+ (Azul Espacial e Azul Neon) */
         :root { 
-            --bg-top: #1a1d29; /* Azul bem escuro */
-            --bg-bottom: #040714; /* Quase preto azulado */
-            --accent: #00e5ff; /* Azul Ciano Neon */
+            --bg-top: #1a1d29; 
+            --bg-bottom: #040714; 
+            --accent: #00e5ff; 
             --glass: rgba(26, 29, 41, 0.85);
             --text: #f9f9f9; 
             --text-muted: #8f98b0;
+        }
+
+        /* Blindagem Anti-Cópia e Toque Nativo */
+        * {
+            -webkit-touch-callout: none; 
+            -webkit-user-select: none; 
+            user-select: none;
+            -webkit-tap-highlight-color: transparent; 
+            box-sizing: border-box;
         }
 
         body { 
@@ -25,13 +35,13 @@
         }
         
         /* Logo Flutuante no Topo */
-        .header { position: absolute; top: 0; width: 100%; padding: 15px; z-index: 10; text-align: center; background: linear-gradient(to bottom, rgba(4,7,20,0.8), transparent); box-sizing: border-box; }
+        .header { position: absolute; top: 0; width: 100%; padding: 15px; z-index: 10; text-align: center; background: linear-gradient(to bottom, rgba(4,7,20,0.8), transparent); }
         .header-logo { font-size: 22px; font-weight: 900; color: #fff; letter-spacing: 1px; margin: 0; }
         .header-logo span { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.6); }
 
         /* Banner Destaque */
         .hero { position: relative; width: 100%; height: 55vh; background: url('https://image.tmdb.org/t/p/original/8rpDcsfLJypbO6vtecsmREy9O8C.jpg') center/cover; border-radius: 0 0 20px 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        .hero-gradient { position: absolute; bottom: 0; width: 100%; height: 80%; background: linear-gradient(to top, var(--bg-top) 0%, transparent 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; box-sizing: border-box; border-radius: 0 0 20px 20px;}
+        .hero-gradient { position: absolute; bottom: 0; width: 100%; height: 80%; background: linear-gradient(to top, var(--bg-top) 0%, transparent 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; border-radius: 0 0 20px 20px;}
         .hero-title { font-size: 28px; font-weight: 900; margin: 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.9); }
         .hero-tags { font-size: 12px; color: #ccc; font-weight: 600; margin-bottom: 15px; }
         
@@ -47,11 +57,11 @@
         .carousel::-webkit-scrollbar { display: none; }
         
         /* Cartões de Filmes/Séries (Verticais) */
-        .card-movie { flex: 0 0 110px; height: 165px; border-radius: 8px; background-color: #2a2d3e; scroll-snap-align: start; overflow: hidden; border: 2px solid transparent; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .card-movie { flex: 0 0 110px; height: 165px; border-radius: 8px; background-color: #2a2d3e; scroll-snap-align: start; overflow: hidden; transition: 0.3s; box-shadow: 0 4px 10px rgba(0,0,0,0.3); cursor: pointer; }
         .card-movie img { width: 100%; height: 100%; object-fit: cover; }
         
         /* Cartões de TV Ao Vivo (Horizontais) */
-        .card-tv { flex: 0 0 140px; height: 80px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; }
+        .card-tv { flex: 0 0 140px; height: 80px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; }
         .card-tv img { width: 50%; height: auto; object-fit: contain; }
         .live-badge { position: absolute; top: 5px; right: 5px; background: red; color: white; font-size: 8px; font-weight: bold; padding: 2px 5px; border-radius: 4px; }
 
@@ -61,15 +71,31 @@
         .nav-item.active { color: var(--text); }
         .nav-item.active i { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.8); transform: scale(1.1); }
         .nav-item span { font-size: 10px; font-weight: 600; }
+
+        /* NOVO: Bottom Sheet (Menu que sobe) */
+        .bottom-sheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1999; opacity: 0; pointer-events: none; transition: 0.3s ease; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px); }
+        .bottom-sheet-overlay.active { opacity: 1; pointer-events: all; }
+        
+        .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--bg-top); border-radius: 24px 24px 0 0; z-index: 2000; padding: 20px 20px 30px 20px; transition: bottom 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.1); box-shadow: 0 -10px 40px rgba(0,0,0,0.6); border-top: 1px solid rgba(255,255,255,0.05); }
+        .bottom-sheet.active { bottom: 0; }
+        
+        .sheet-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto 20px; }
+        .sheet-title { font-size: 20px; font-weight: 800; margin: 0 0 10px 0; color: #fff; }
+        .sheet-synopsis { font-size: 12px; color: var(--text-muted); line-height: 1.5; margin-bottom: 20px; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        .sheet-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; cursor: pointer; transition: 0.2s; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.3); }
+        .sheet-btn:active { transform: scale(0.97); }
     </style>
 </head>
 <body>
 
+    <!-- Topo -->
     <div class="header">
         <h1 class="header-logo">Stream<span>Flix</span></h1>
     </div>
 
-    <div class="hero">
+    <!-- Destaque Principal -->
+    <div class="hero" onclick="abrirSheet('O Resgate 2', 'Após sobreviver a uma missão mortal em Dhaka, Tyler Rake é recrutado para resgatar a família de um implacável mafioso.')">
         <div class="hero-gradient">
             <div class="hero-tags">Ação • Lançamento 2026</div>
             <h1 class="hero-title">O Resgate 2</h1>
@@ -78,30 +104,39 @@
         </div>
     </div>
 
+    <!-- Carrossel de Filmes -->
     <div class="section-title"><i class="fas fa-film"></i> Filmes Adicionados</div>
     <div class="carousel">
-        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+1" alt=""></div>
-        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+2" alt=""></div>
+        <div class="card-movie" onclick="abrirSheet('Homem-Aranha', 'Peter Parker lida com as consequências de suas escolhas e do multiverso abrindo brechas perigosas.')">
+            <img src="https://via.placeholder.com/220x330/111/fff?text=Homem+Aranha" alt="">
+        </div>
+        <div class="card-movie" onclick="abrirSheet('Duna: Parte 2', 'Paul Atreides se une a Chani e aos Fremen em uma guerra de vingança contra os conspiradores.')">
+            <img src="https://via.placeholder.com/220x330/111/fff?text=Duna+2" alt="">
+        </div>
         <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+3" alt=""></div>
         <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+4" alt=""></div>
         <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Filme+5" alt=""></div>
     </div>
 
+    <!-- Carrossel de Séries -->
     <div class="section-title"><i class="fas fa-tv"></i> Séries em Alta</div>
     <div class="carousel">
-        <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Serie+1" alt=""></div>
+        <div class="card-movie" onclick="abrirSheet('The Last of Us', 'Joel e Ellie atravessam um Estados Unidos pós-apocalíptico enfrentando monstros e humanos cruéis.')">
+            <img src="https://via.placeholder.com/220x330/111/fff?text=The+Last+of+Us" alt="">
+        </div>
         <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Serie+2" alt=""></div>
         <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Serie+3" alt=""></div>
         <div class="card-movie"><img src="https://via.placeholder.com/220x330/111/fff?text=Serie+4" alt=""></div>
     </div>
 
+    <!-- Carrossel de TV Ao Vivo -->
     <div class="section-title"><i class="fas fa-broadcast-tower"></i> TV Ao Vivo</div>
     <div class="carousel">
-        <div class="card-tv">
+        <div class="card-tv" onclick="abrirSheet('TV Globo', 'Programação Ao Vivo do canal aberto. Transmissão nacional sem atrasos.')">
             <div class="live-badge">AO VIVO</div>
             <img src="https://via.placeholder.com/100x50/333/fff?text=Globo" alt="">
         </div>
-        <div class="card-tv">
+        <div class="card-tv" onclick="abrirSheet('SBT Ao Vivo', 'Entretenimento, auditorio e novelas no ar agora.')">
             <div class="live-badge">AO VIVO</div>
             <img src="https://via.placeholder.com/100x50/333/fff?text=SBT" alt="">
         </div>
@@ -111,6 +146,7 @@
         </div>
     </div>
 
+    <!-- Barra de Navegação Inferior -->
     <div class="bottom-nav">
         <div class="nav-item active">
             <i class="fas fa-home"></i>
@@ -134,5 +170,53 @@
         </div>
     </div>
 
+    <!-- Fundo escuro do Bottom Sheet -->
+    <div class="bottom-sheet-overlay" id="sheetOverlay" onclick="fecharSheet()"></div>
+
+    <!-- O Painel que sobe -->
+    <div class="bottom-sheet" id="bottomSheet">
+        <div class="sheet-handle"></div>
+        <h2 class="sheet-title" id="sheetTitle">Nome do Filme</h2>
+        <p class="sheet-synopsis" id="sheetSynopsis">Sinopse do conteúdo...</p>
+        
+        <button class="sheet-btn" id="sheetPlayBtn" onclick="chamarPlayerNativo()">
+            <i class="fas fa-play"></i> Assistir Agora
+        </button>
+    </div>
+
+    <!-- SCRIPTS MÁGICOS -->
+    <script>
+        // Função para abrir o painel
+        function abrirSheet(titulo, sinopse) {
+            document.getElementById('sheetTitle').innerText = titulo;
+            document.getElementById('sheetSynopsis').innerText = sinopse || "Sinopse não disponível no momento.";
+            
+            document.getElementById('sheetOverlay').classList.add('active');
+            document.getElementById('bottomSheet').classList.add('active');
+            
+            // Adiciona estado no histórico (para o botão voltar do Android funcionar)
+            history.pushState({ modalOpen: true }, null, "");
+        }
+
+        // Função para fechar o painel
+        function fecharSheet() {
+            document.getElementById('sheetOverlay').classList.remove('active');
+            document.getElementById('bottomSheet').classList.remove('active');
+        }
+
+        // Função do Play que vai chamar o Java
+        function chamarPlayerNativo() {
+            fecharSheet();
+            alert("Em breve: O Android vai pegar o link do IPTV e abrir o player externo aqui!");
+            // Exemplo da ponte: window.AndroidApp.abrirVideoNativo(url_do_video);
+        }
+
+        // Intercepta o botão "Voltar" do celular
+        window.addEventListener('popstate', function(event) {
+            if (document.getElementById('bottomSheet').classList.contains('active')) {
+                fecharSheet();
+            }
+        });
+    </script>
 </body>
 </html>
