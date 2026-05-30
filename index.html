@@ -283,7 +283,7 @@
             <i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
         </div>
         <div class="server-warn">
-            * Estes servidores abrem anúncios em popups externos. Feche as abas dos anúncios para voltar para cá.
+            * Estes servidores abrem anúncios em popups externos. Feche as abas dos anúncios para voltar para cá.<br>Para uma experiência sem anúncios, utilize o botão principal "Assistir".
         </div>
     </div>
 
@@ -300,7 +300,7 @@
             <div class="dp-meta" id="dpMeta">Categoria</div>
             
             <div class="action-container" id="boxAcoes">
-                <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir no VLC</button>
+                <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
                 <div class="secondary-actions" id="boxSecundario" style="display:none;">
                     <div class="sec-btn watched" id="btnWatched" onclick="toggleWatchedGlobal()"><i class="fas fa-check"></i> Visto</div>
                     <div class="sec-btn trailer" id="btnTrailer" onclick="abrirTrailer()" style="display:none;"><i class="fas fa-film"></i> Trailer</div>
@@ -765,6 +765,9 @@
             abrirDetalhes(fmtd.limpo, "Destaque VIP", f.stream_icon, f.stream_id, 'vod', f.container_extension || 'mp4', fmtd.tagsStr);
         }
 
+        // ==========================================
+        // O MAGNÍFICO MOTOR TMDB
+        // ==========================================
         async function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
             document.getElementById('dpTitle').innerText = titulo;
             document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
@@ -1039,6 +1042,7 @@
 
             frame.src = finalUrl;
             modal.style.display = 'flex';
+            
             history.replaceState({ view: 'embed' }, null, "");
         }
 
