@@ -1,37 +1,41 @@
 // api/iptv.js
 
 export default async function handler(req, res) {
-    // 1. Libera o CORS para que qualquer navegador (inclusive o Chrome) possa ler os dados
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
     res.setHeader('Content-Type', 'application/json');
 
-    // 2. Pega os parâmetros enviados pelo seu HTML (ex: action=get_live_streams)
-    const { action } = req.query;
+    // Recebe o que o aplicativo quer fazer (ex: get_live_categories, get_live_streams) e o ID da pasta
+    const { action, category_id } = req.query;
 
-    // 3. Credenciais protegidas no servidor (Ninguém do lado de fora consegue ver)
-    const baseUrl = "http://bnewsc.top";
+    // O seu novo host que funcionou perfeitamente
+    const baseUrl = "http://bnewsc.top:80";
     const username = "reginaldobr";
     const password = "432334xc";
 
-    // 4. Monta a URL final para a API do Xtream Codes
+    // Usando a API JSON (player_api.php) para evitar o limite de 4.5MB da Vercel
     let targetUrl = `${baseUrl}/player_api.php?username=${username}&password=${password}`;
+
+    // Adiciona as ações dinamicamente no link
     if (action) {
         targetUrl += `&action=${action}`;
     }
+    if (category_id) {
+        targetUrl += `&category_id=${category_id}`;
+    }
 
     try {
-        // 5. Faz a requisição ao servidor IPTV
         const response = await fetch(targetUrl);
+        
+        // Se a resposta não for OK, dispara erro
         if (!response.ok) {
-            return res.status(response.status).json({ error: "Erro na resposta do servidor IPTV" });
+            return res.status(response.status).json({ error: "Erro no servidor Xtream" });
         }
 
-        // 6. Entrega os dados limpos em JSON para o seu aplicativo
         const data = await response.json();
         return res.status(200).json(data);
 
     } catch (error) {
-        return res.status(500).json({ error: "Falha ao conectar ao servidor IPTV: " + error.message });
+        return res.status(500).json({ error: "Falha na comunicação: " + error.message });
     }
 }
