@@ -595,6 +595,10 @@
         }
 
         async function initApp() {
+            // SEMPRE esconder skeleton primeiro, mesmo que dê erro depois
+            document.getElementById('loading-state').style.display = 'none';
+            document.getElementById('conteudo-real').style.display = 'block';
+
             try {
                 let htmlConstruido = "";
                 const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
@@ -614,8 +618,6 @@
                     }
                 }
 
-                document.getElementById('loading-state').style.display = 'none';
-                document.getElementById('conteudo-real').style.display = 'block';
                 document.getElementById('conteudo-dinamico').innerHTML = htmlConstruido;
 
                 setTimeout(async () => {
@@ -637,7 +639,10 @@
                     document.getElementById('conteudo-dinamico').innerHTML += htmlExtra;
                 }, 100);
 
-            } catch (error) { document.getElementById('loading-state').innerHTML = "<div class='loading-text'>Erro de ligação. Atualize a página.</div>"; }
+            } catch (error) { 
+                console.error('initApp error:', error);
+                document.getElementById('conteudo-dinamico').innerHTML = "<div class='loading-text' style='padding:40px 20px;text-align:center;'><i class='fas fa-exclamation-triangle' style='font-size:30px;color:var(--accent);margin-bottom:15px;display:block;'></i><h3 style='color:#fff;margin:0 0 10px;'>Erro de Conexão</h3><p style='color:var(--text-muted);font-size:13px;margin:0 0 20px;'>Não foi possível carregar o catálogo.</p><button onclick='location.reload()' style='padding:12px 30px;background:var(--accent);color:#000;border:none;border-radius:8px;font-weight:bold;cursor:pointer;'><i class='fas fa-redo'></i> Tentar Novamente</button></div>"; 
+            }
         }
 
         function gerarCarrosselHTML(nomePasta, catId, tipo, icone, lista) {
