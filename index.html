@@ -319,7 +319,7 @@
             <i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
         </div>
         <div class="server-warn">
-            * Estes servidores abrem anúncios em popups externos. Feche as abas dos anúncios para voltar para cá.<br>Para uma experiência sem anúncios, utilize o botão principal "Assistir".
+            * Feche as abas extras caso os servidores abram popups. <br>Para uma experiência nativa, utilize o botão principal "Assistir".
         </div>
     </div>
 
@@ -445,17 +445,11 @@
         }
 
         // ==========================================
-        // WHATSAPP (CORREÇÃO DA TELA BRANCA NO ANDROID)
+        // CORREÇÃO DO WHATSAPP (Abre direto no app nativo)
         // ==========================================
         function abrirWhatsAppVip() {
-            // Em WebViews do Android, a forma mais segura de abrir links externos sem erro de schema é injetar um <a> tag.
-            let a = document.createElement('a');
-            a.href = 'https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87';
-            a.target = '_blank';
-            a.rel = 'noopener noreferrer';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            // Utilizando o intent:// igual apps como o VLC para forçar a abertura
+            window.location.href = "intent://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87#Intent;package=com.whatsapp;scheme=https;end;";
         }
 
         async function fazerLoginVip() {
@@ -490,7 +484,7 @@
         }
 
         // ==========================================
-        // MONETIZAÇÃO - MONETAG SCRIPT INJECTION
+        // MONETIZAÇÃO - APENAS PUSH, SEM DIRECT LINKS OCULTOS
         // ==========================================
         function injetarAnuncios() {
             if(localStorage.getItem('push_accepted') !== 'true') {
@@ -513,20 +507,6 @@
             document.head.appendChild(s);
             
             mostrarToast("Notificações e Lançamentos ativados!");
-        }
-
-        // Esta função atira o clique para a Monetag sem quebrar a Webview
-        function dispararDirectLink() {
-            const isVip = localStorage.getItem('streamflix_vip') === 'true';
-            if(!isVip) {
-                let a = document.createElement('a');
-                a.href = 'https://omg10.com/4/11081875';
-                a.target = '_blank';
-                a.rel = 'noopener noreferrer';
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-            }
         }
 
         async function initApp() {
@@ -676,25 +656,26 @@
         }
 
         // ==========================================
-        // CORREÇÃO DOS NOMES DA TV (NÃO APAGA TUDO)
+        // CORREÇÃO DOS NOMES DA TV (Mantém as localidades e qualidades na string final)
         // ==========================================
         function processarTV(nomeBruto) {
             let nomeLimpo = nomeBruto || "Canal";
             const tags = [];
-            const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/i);
-            if(estado) tags.push(estado[0].toUpperCase());
-
+            
             if(/FHDR/i.test(nomeLimpo)) tags.push('FHDR');
             else if(/FHD/i.test(nomeLimpo)) tags.push('FHD');
             else if(/HD/i.test(nomeLimpo)) tags.push('HD');
             else if(/4K/i.test(nomeLimpo)) tags.push('4K');
             else if(/SD/i.test(nomeLimpo)) tags.push('SD');
 
-            nomeLimpo = nomeLimpo.replace(/(FHDR|FHD|HD|4K|SD)/ig, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').replace(/[>-\|*•]/g, '').replace(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/ig, '').replace(/\s+/g, ' ').trim();
+            const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/i);
+            if(estado) tags.push(estado[0].toUpperCase());
+
+            // Apenas removemos os caracteres estranhos. NÃO removemos mais as Siglas ou a Qualidade do nome visível!
+            nomeLimpo = nomeLimpo.replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').replace(/[>-\|*•]/g, '').replace(/\s+/g, ' ').trim();
             
-            // SE A LIMPEZA APAGAR O NOME TODO (ex: [FHD] GLOBO SP), ELE RECUPERA O ORIGINAL
             if (!nomeLimpo || nomeLimpo.length < 2) {
-                nomeLimpo = nomeBruto.replace(/\[.*?\]|\(.*?\)/g, '').replace(/[>-\|*•]/g, '').trim();
+                nomeLimpo = nomeBruto.replace(/[>-\|*•]/g, '').trim();
             }
             
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
@@ -1198,8 +1179,6 @@
         }
 
         function abrirPlayerWeb(servidor) {
-            dispararDirectLink(); // Aciona o Anúncio
-
             if(!currentTmdbId) return;
             fecharMenuServidores();
 
@@ -1258,8 +1237,6 @@
         }
 
         async function dispararPlayer(id, tipo, ext, titulo) {
-            dispararDirectLink(); // Aciona o Anúncio
-
             const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
             if(btn) {
                 btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`;
