@@ -92,7 +92,16 @@
         .sheet-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto 20px; }
         .sheet-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; text-transform: uppercase; cursor: pointer; }
 
-        /* PÁGINAS DE SOBREPOSIÇÃO E LAYOUT DE BOTÕES AJUSTADO */
+        .server-modal { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--bg-top); border-radius: 24px 24px 0 0; z-index: 4000; padding: 25px 20px; transition: bottom 0.4s ease; border-top: 1px solid rgba(255,255,255,0.05); }
+        .server-modal.active { bottom: 0; }
+        .server-title { font-size: 16px; font-weight: 800; color: #fff; margin: 0 0 20px 0; text-align: center;}
+        .server-btn { width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer; transition: 0.2s;}
+        .server-btn:active { background: rgba(255,255,255,0.15); transform: scale(0.98);}
+        .server-btn.em { border-left: 4px solid var(--accent); }
+        .server-btn.ep { border-left: 4px solid #00e676; }
+        .server-btn.bf { border-left: 4px solid #ff0055; }
+        .server-warn { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 15px; line-height: 1.4;}
+
         .details-page { position: fixed; top: 0; left: 100%; width: 100%; height: 100vh; background: var(--bg-bottom); z-index: 3000; transition: left 0.3s ease-out; overflow-y: auto; padding-bottom: 30px; }
         .details-page.active { left: 0; }
         .dp-back-btn { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; z-index: 3010; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; cursor: pointer; }
@@ -105,7 +114,6 @@
         .dp-director { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; font-style: italic;}
         .dp-meta { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 20px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;}
         
-        /* BOTÕES DE AÇÃO REFINADOS (Assistir menor) */
         .action-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
         .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(255,255,255,0.2); transition: 0.2s;}
         .dp-play-btn:active { transform: scale(0.97); }
@@ -141,19 +149,9 @@
         .trailer-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; padding: 10px; z-index: 4010; text-shadow: 0 0 10px #000; }
         .trailer-frame { width: 100%; aspect-ratio: 16/9; background: #000; border: none; }
 
-        .server-modal { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--bg-top); border-radius: 24px 24px 0 0; z-index: 4000; padding: 25px 20px; transition: bottom 0.4s ease; border-top: 1px solid rgba(255,255,255,0.05); }
-        .server-modal.active { bottom: 0; }
-        .server-title { font-size: 16px; font-weight: 800; color: #fff; margin: 0 0 20px 0; text-align: center;}
-        .server-btn { width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer; transition: 0.2s;}
-        .server-btn:active { background: rgba(255,255,255,0.15); transform: scale(0.98);}
-        .server-btn.em { border-left: 4px solid var(--accent); }
-        .server-btn.ep { border-left: 4px solid #00e676; }
-        .server-btn.bf { border-left: 4px solid #ff0055; }
-        .server-warn { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 15px; line-height: 1.4;}
-
-        /* BLINDAGEM IFRAME - Permite popups mas bloqueia redirecionamento geral */
-        .embed-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 4500; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .embed-frame { width: 100%; aspect-ratio: 16/9; background: #000; border: none; z-index: 4501; }
+        /* CORREÇÃO DO EMBED MODAL: Tela cheia, sem restrição 16:9, e sem sandbox no HTML */
+        .embed-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 4500; display: none; flex-direction: column; padding-top: 60px; box-sizing: border-box; }
+        .embed-frame { width: 100%; height: 100%; background: #000; border: none; z-index: 4501; }
 
         .season-title { font-size: 18px; font-weight: 800; color: #fff; margin: 30px 0 15px 0; border-left: 3px solid var(--accent); padding-left: 8px;}
         .ep-carousel { display: flex; gap: 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 10px; }
@@ -304,7 +302,7 @@
                 <div class="secondary-actions" id="boxSecundario" style="display:none;">
                     <div class="sec-btn watched" id="btnWatched" onclick="toggleWatchedGlobal()"><i class="fas fa-check"></i> Visto</div>
                     <div class="sec-btn trailer" id="btnTrailer" onclick="abrirTrailer()" style="display:none;"><i class="fas fa-film"></i> Trailer</div>
-                    <div class="sec-btn web" id="btnAltServer" onclick="abrirMenuServidores()"><i class="fas fa-server"></i> Web Player</div>
+                    <div class="sec-btn web" id="btnAltServer" onclick="abrirMenuServidores()"><i class="fas fa-server"></i> Web</div>
                 </div>
             </div>
             
@@ -349,7 +347,7 @@
 
     <div class="embed-modal" id="embedModal">
         <i class="fas fa-times trailer-close" onclick="history.back()"></i>
-        <iframe id="embedFrame" class="embed-frame" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe>
+        <iframe id="embedFrame" class="embed-frame" allowfullscreen></iframe>
     </div>
 
     <script>
@@ -447,18 +445,8 @@
 
         function esc(str) { return (str || '').toString().replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
         function limparNomePasta(nome) { return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Séries\s*\|\s*/i, '').trim(); }
-
-        function pastaValida(nome) {
-            if (!nome) return false;
-            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR', 'TESTE'];
-            return !proibidos.some(p => nome.toUpperCase().includes(p));
-        }
-
-        function pastaTVValida(nome) {
-            if (!nome) return false;
-            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO', 'CÂMERA'];
-            return !proibidos.some(p => nome.toUpperCase().includes(p));
-        }
+        function pastaValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR', 'TESTE']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
+        function pastaTVValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO', 'CÂMERA']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
 
         function processarTitulo(nomeBruto, nomePasta) {
             let nomeLimpo = nomeBruto || "Sem Título";
@@ -765,9 +753,6 @@
             abrirDetalhes(fmtd.limpo, "Destaque VIP", f.stream_icon, f.stream_id, 'vod', f.container_extension || 'mp4', fmtd.tagsStr);
         }
 
-        // ==========================================
-        // O MAGNÍFICO MOTOR TMDB
-        // ==========================================
         async function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
             document.getElementById('dpTitle').innerText = titulo;
             document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
@@ -1103,6 +1088,7 @@
         }
 
         window.addEventListener('popstate', function(event) {
+            if(event.state && event.state.view === 'embed') { return; }
             if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); } 
             else if (document.getElementById('embedModal').style.display === 'flex') { fecharEmbed(); } 
             else if (document.getElementById('serverModal').classList.contains('active')) { fecharMenuServidores(); }
