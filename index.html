@@ -16,6 +16,9 @@
 
         * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
 
+        /* CORREÇÃO 1: Teclado travando ao apagar - inputs isolados para seleção de texto */
+        input, textarea { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
+
         body { 
             margin: 0; padding: 0; background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
             background-attachment: fixed; color: var(--text); font-family: 'Segoe UI', sans-serif; 
@@ -182,6 +185,7 @@
         #toast-msg { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.92); color: #fff; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; border: 1px solid rgba(255,255,255,0.1); max-width: 90%; text-align: center; }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -199,6 +203,27 @@
         <button onclick="aceitarPush()" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Entendi</button>
     </div>
 
+    <!-- NOVO: Modal de bloqueio a cada 10 min para não-VIP -->
+    <div id="adBlockModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:5000; justify-content:center; align-items:center; flex-direction:column; padding:20px; text-align:center;">
+        <div style="background:var(--bg-top); padding:30px; border-radius:15px; width:100%; max-width:350px; border:1px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
+            <i class="fas fa-clock" style="font-size:40px; color:var(--accent); margin-bottom:15px;"></i>
+            <h2 style="color:#fff; margin:0 0 10px; font-weight:900;">Continue Assistindo</h2>
+            <p style="color:#ccc; font-size:13px; margin-bottom:20px; line-height:1.5;">Assista ao anúncio ou entre no nosso Telegram VIP para continuar sem interrupções.</p>
+
+            <button onclick="assistirAnuncioAdBlock()" style="width:100%; padding:15px; border-radius:8px; background:var(--accent); color:#000; font-weight:900; font-size:14px; border:none; margin-bottom:12px; cursor:pointer; text-transform:uppercase;">
+                <i class="fas fa-play"></i> Assistir Anúncio
+            </button>
+
+            <button onclick="abrirTelegramVip(); fecharAdBlock();" style="width:100%; padding:15px; border-radius:8px; background:#0088cc; color:#fff; font-weight:900; font-size:14px; border:none; margin-bottom:12px; cursor:pointer; text-transform:uppercase;">
+                <i class="fab fa-telegram"></i> Entrar no Telegram VIP
+            </button>
+
+            <button onclick="fecharAdBlock()" style="width:100%; padding:12px; border-radius:8px; background:rgba(255,255,255,0.1); color:#fff; font-weight:700; font-size:12px; border:none; cursor:pointer;">
+                Fechar e Continuar
+            </button>
+        </div>
+    </div>
+
     <div class="embed-modal" id="vipModal" style="padding:20px; align-items:center; z-index:3900; background: rgba(0,0,0,0.95); display:none;" onclick="if(event.target === this) fecharModalVip()">
         <div style="background:var(--bg-top); padding:25px; border-radius:15px; width:100%; max-width:350px; text-align:center; border: 1px solid gold; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <i class="fas fa-times" onclick="event.stopPropagation(); fecharModalVip()" style="position:absolute; right:15px; top:15px; color:#fff; font-size:20px; cursor:pointer;"></i>
@@ -213,7 +238,8 @@
 
             <hr style="border-color:rgba(255,255,255,0.05); margin-bottom:20px;">
             <p style="color:#8f98b0; font-size:12px; margin-bottom:10px;">Ainda não é VIP?</p>
-            <button onclick="event.stopPropagation(); abrirWhatsAppVip()" style="width:100%; padding:12px; border-radius:8px; background:#25D366; color:#fff; font-weight:bold; border:none; cursor:pointer;"><i class="fab fa-whatsapp"></i> Comprar Acesso VIP</button>
+            <!-- CORREÇÃO 3: WhatsApp substituído por Telegram -->
+            <button onclick="event.stopPropagation(); abrirTelegramVip()" style="width:100%; padding:12px; border-radius:8px; background:#0088cc; color:#fff; font-weight:bold; border:none; cursor:pointer;"><i class="fab fa-telegram"></i> Entrar no Telegram VIP</button>
         </div>
     </div>
 
@@ -439,41 +465,57 @@
             if(history.state && history.state.view === 'vip') history.back();
         }
 
-        function abrirWhatsAppVip() {
-            // Força o sistema Android a abrir o aplicativo do WhatsApp via intent
-            const intentUrl = "intent://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87#Intent;scheme=https;package=com.whatsapp;end;";
-            window.location.href = intentUrl;
+        // CORREÇÃO 3: WhatsApp removido, Telegram adicionado
+        function abrirTelegramVip() {
+            window.location.href = "https://t.me/streamflixofc";
         }
 
+        // CORREÇÃO 2: Botão travado no "Verificando..." - garantido que sempre volta ao normal
         async function fazerLoginVip() {
             const email = document.getElementById('vipEmail').value.trim();
             const senha = document.getElementById('vipSenha').value.trim();
             const btn = document.getElementById('btnLoginBtn');
             const msg = document.getElementById('vipMsg');
 
-            if(!email || !senha) { msg.innerText = "Preencha os campos."; msg.style.display = 'block'; return; }
-            
+            if(!email || !senha) { 
+                msg.innerText = "Preencha os campos."; 
+                msg.style.display = 'block'; 
+                return; 
+            }
+
+            // Bloqueia botão e mostra loading
+            btn.innerText = "Verificando...";
+            btn.disabled = true;
+            msg.style.display = 'none';
+
             try {
                 if(!window.supabase) throw new Error("Erro de internet. A biblioteca não carregou.");
 
-                btn.innerText = "Verificando...";
                 const supa = getSupabase(); 
                 const { data, error } = await supa.from('streamflix_users').select('*').eq('email', email).eq('senha', senha);
 
                 if(error) throw error;
-                
+
                 if(data && data.length > 0) {
                     if(data[0].status === 'VIP') {
                         localStorage.setItem('streamflix_vip', 'true');
                         mostrarToast("Bem-vindo! Anúncios desativados.");
                         setTimeout(() => location.reload(), 1500);
-                    } else { msg.innerText = "Sua conta não tem status VIP."; msg.style.display = 'block'; }
-                } else { msg.innerText = "E-mail ou senha incorretos."; msg.style.display = 'block'; }
+                    } else { 
+                        msg.innerText = "Sua conta não tem status VIP."; 
+                        msg.style.display = 'block'; 
+                    }
+                } else { 
+                    msg.innerText = "E-mail ou senha incorretos."; 
+                    msg.style.display = 'block'; 
+                }
             } catch(e) { 
                 msg.innerText = e.message; 
                 msg.style.display = 'block'; 
             } finally {
-                if (btn.innerText === "Verificando...") btn.innerText = "Entrar na Conta VIP";
+                // SEMPRE restaura o botão, em qualquer cenário
+                btn.innerText = "Entrar na Conta VIP";
+                btn.disabled = false;
             }
         }
 
@@ -507,19 +549,58 @@
             document.getElementById('pushPromptModal').style.display = 'none';
             localStorage.setItem('push_accepted', 'true');
 
-            let s = document.createElement('script');
-            s.src = 'https://al5sm.com/tag.min.js';
-            s.setAttribute('data-zone', '11081852');
-            s.async = true;
-            document.head.appendChild(s);
-            
+            // Abre o link de anúncio omg10
+            window.open('https://omg10.com/4/11081875', '_blank');
+
             mostrarToast("Notificações e Lançamentos ativados!");
+        }
+
+        // ==========================================
+        // NOVO: SISTEMA DE POP-UP A CADA 10 MINUTOS
+        // ==========================================
+        let adBlockTimer = null;
+
+        function iniciarAdBlockTimer() {
+            // Se for VIP, não inicia
+            if(localStorage.getItem('streamflix_vip') === 'true') return;
+            // Limpa timer anterior se existir
+            if(adBlockTimer) clearTimeout(adBlockTimer);
+
+            adBlockTimer = setTimeout(() => {
+                // Verifica novamente se não virou VIP durante a espera
+                if(localStorage.getItem('streamflix_vip') !== 'true') {
+                    const modal = document.getElementById('adBlockModal');
+                    if(modal) {
+                        modal.style.display = 'flex';
+                        document.body.classList.add('no-scroll');
+                    }
+                }
+            }, 600000); // 600.000 ms = 10 minutos
+        }
+
+        function fecharAdBlock() {
+            const modal = document.getElementById('adBlockModal');
+            if(modal) modal.style.display = 'none';
+            document.body.classList.remove('no-scroll');
+            // Reinicia o ciclo de 10 minutos
+            iniciarAdBlockTimer();
+        }
+
+        function assistirAnuncioAdBlock() {
+            // Abre o link de anúncio omg10 em nova aba
+            window.open('https://omg10.com/4/11081875', '_blank');
+            mostrarToast("Anúncio carregado! Obrigado pelo apoio.");
+            fecharAdBlock();
         }
 
         async function initApp() {
             verificarStatusVip();
             const isVip = localStorage.getItem('streamflix_vip') === 'true';
-            if(!isVip) { injetarAnuncios(); } 
+            if(!isVip) { 
+                injetarAnuncios(); 
+                // Inicia o timer de 10 minutos para não-VIP
+                iniciarAdBlockTimer();
+            } 
 
             try {
                 let htmlConstruido = "";
@@ -640,7 +721,7 @@
         }
 
         function esc(str) { 
-            return (str || '').toString().replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;'); 
+            return (str || '').toString().replace(/\\/g, '\\\\').replace(/'/g, "\'").replace(/"/g, '&quot;'); 
         }
         function limparNomePasta(nome) { return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Séries\s*\|\s*/i, '').trim(); }
         function pastaValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR', 'TESTE']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
@@ -662,32 +743,24 @@
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
-        // ==========================================
-        // CORREÇÃO DOS NOMES DA TV (Preserva 100% o nome original e só tira FHD/HD)
-        // ==========================================
         function processarTV(nomeBruto) {
             let nomeLimpo = nomeBruto || "Canal";
             const tags = [];
-            
-            // 1. Extrai a Tag de Qualidade
+
             if(/FHDR/i.test(nomeLimpo)) tags.push('FHDR');
             else if(/FHD/i.test(nomeLimpo)) tags.push('FHD');
             else if(/HD/i.test(nomeLimpo)) tags.push('HD');
             else if(/4K/i.test(nomeLimpo)) tags.push('4K');
             else if(/SD/i.test(nomeLimpo)) tags.push('SD');
 
-            // 2. Extrai Sigla do Estado apenas para adicionar no crachá colorido (sem apagar do nome)
             const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/i);
             if(estado && !tags.includes(estado[0].toUpperCase())) tags.push(estado[0].toUpperCase());
 
-            // 3. APENAS APAGA a qualidade do texto (ex: [FHD], (HD), etc.)
             nomeLimpo = nomeLimpo.replace(/\[(FHDR|FHD|HD|4K|SD)\]/ig, '');
             nomeLimpo = nomeLimpo.replace(/\((FHDR|FHD|HD|4K|SD)\)/ig, '');
             nomeLimpo = nomeLimpo.replace(/\b(FHDR|FHD|HD|4K|SD)\b/ig, '');
-
-            // 4. Limpa espaços duplos e sujeira que sobra ANTES do nome, mas mantém caracteres no MEIO do nome
             nomeLimpo = nomeLimpo.replace(/^[\s\|\-]+|[\s\|\-]+$/g, '').replace(/\s+/g, ' ').trim();
-            
+
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
@@ -1077,7 +1150,7 @@
 
                             data.episodes[season].forEach(ep => {
                                 let epTitle = ep.title || `Episódio ${ep.episode_num}`;
-                                const regexSerie = new RegExp(titulo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "\\s*[-:]?\\s*", "i");
+                                const regexSerie = new RegExp(titulo.replace(/[.*+?^${}()|[\]\\]/g, '\$&') + "\s*[-:]?\s*", "i");
                                 epTitle = epTitle.replace(regexSerie, "").replace(/S\d{1,2}\s*E\d{1,2}\s*[-:]?\s*/i, "").replace(/^[-_.:\s]+/, "").trim(); 
                                 if(!epTitle || epTitle.length < 2) epTitle = `Episódio ${ep.episode_num}`;
 
@@ -1190,7 +1263,7 @@
 
         function abrirPlayerWeb(servidor) {
             if(!currentTmdbId) return;
-            
+
             document.getElementById('serverModal').classList.remove('active');
             document.getElementById('sheetOverlay').classList.remove('active');
 
@@ -1212,7 +1285,7 @@
             frame.src = finalUrl;
             modal.style.display = 'flex';
             document.body.classList.add('no-scroll');
-            
+
             if(history.state && history.state.view === 'servermenu') {
                 history.replaceState({ view: 'embed' }, null, "");
             } else {
