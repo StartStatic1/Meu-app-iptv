@@ -178,7 +178,6 @@
         .loading-text { text-align: center; color: var(--text-muted); font-size: 12px; width: 100%; padding: 20px; }
     </style>
 <base target="_blank">
-<base target="_blank">
 </head>
 <body>
 
@@ -389,16 +388,7 @@
         // LIGAÇÃO SUPABASE MÁGICA
         const supaUrl = 'https://gkujbjpvphuvrejpvvtz.supabase.co';
         const supaKey = 'sb_publishable_C9FMCjUyZnlzhINK2KZXWQ_ahpGu0yy';
-        let supabase = null;
-        try {
-            if (window.supabase && window.supabase.createClient) {
-                supabase = window.supabase.createClient(supaUrl, supaKey);
-            } else {
-                console.warn('Supabase CDN não carregou');
-            }
-        } catch(e) {
-            console.warn('Erro Supabase:', e);
-        }
+        const supabase = window.supabase.createClient(supaUrl, supaKey);
 
         let heroFilmes = [];
         let heroIndex = 0;
@@ -429,7 +419,6 @@
         function fecharModalVip() { document.getElementById('vipModal').style.display = 'none'; }
         
         function abrirWhatsAppVip() {
-            // Pode alterar este link depois para o seu número real
             window.open('https://wa.me/5511999999999?text=Olá!%20Quero%20ser%20VIP%20no%20StreamFlix.', '_blank');
         }
 
@@ -652,23 +641,9 @@
             return html;
         }
 
-        async function fetchComTimeout(url, timeoutMs = 8000) {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-            try {
-                const res = await fetch(url, { signal: controller.signal });
-                clearTimeout(timeoutId);
-                if(!res.ok) throw new Error('HTTP ' + res.status);
-                return res;
-            } catch(e) {
-                clearTimeout(timeoutId);
-                throw e;
-            }
-        }
-
         async function garantirBancoCarregado() {
-            if(!bancoFilmes) { const resF = await fetchComTimeout('/api/iptv?action=get_vod_streams'); bancoFilmes = await resF.json(); }
-            if(!bancoSeries) { const resS = await fetchComTimeout('/api/iptv?action=get_series'); bancoSeries = await resS.json(); }
+            if(!bancoFilmes) { const resF = await fetch('/api/iptv?action=get_vod_streams'); bancoFilmes = await resF.json(); }
+            if(!bancoSeries) { const resS = await fetch('/api/iptv?action=get_series'); bancoSeries = await resS.json(); }
         }
 
         function mudarAba(idView, btn, originHistory = false) {
@@ -705,7 +680,7 @@
 
             try {
                 let html = "";
-                const res = await fetchComTimeout(`/api/iptv?action=${endpoint}`);
+                const res = await fetch(`/api/iptv?action=${endpoint}`);
                 const cats = await res.json();
                 const validas = cats.filter(c => tipo === 'live' ? pastaTVValida(c.category_name) : pastaValida(c.category_name));
 
@@ -744,6 +719,8 @@
                     }
                 }
 
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('conteudo-real').style.display = 'block';
                 document.getElementById('conteudo-dinamico').innerHTML = htmlConstruido;
 
                 setTimeout(async () => {
@@ -765,10 +742,7 @@
                     document.getElementById('conteudo-dinamico').innerHTML += htmlExtra;
                 }, 100);
 
-            } catch (error) { 
-                console.error('initApp error:', error);
-                document.getElementById('conteudo-dinamico').innerHTML = "<div class='loading-text' style='padding:40px 20px;'><i class='fas fa-exclamation-triangle' style='font-size:30px; color:var(--accent); margin-bottom:15px; display:block;'></i><h3 style='color:#fff; margin:0 0 10px;'>Erro de Conexão</h3><p style='color:var(--text-muted); font-size:13px; margin:0 0 20px;'>Não foi possível carregar o catálogo. Verifique sua internet.</p><button onclick='location.reload()' style='padding:12px 30px; background:var(--accent); color:#000; border:none; border-radius:8px; font-weight:bold; cursor:pointer;'><i class='fas fa-redo'></i> Tentar Novamente</button></div>"; 
-            }
+            } catch (error) { document.getElementById('loading-state').innerHTML = "<div class='loading-text'>Erro de ligação. Atualize a página.</div>"; }
         }
 
         function gerarCarrosselHTML(nomePasta, catId, tipo, icone, lista) {
@@ -1211,7 +1185,11 @@
             document.body.style.overflow = '';
         }
 
-        
+        function fecharEmbedWeb() {
+            document.getElementById('embedModal').style.display = 'none';
+            document.getElementById('embedFrame').src = '';
+            document.body.style.overflow = '';
+        }
 
         function fecharDetalhes() { document.getElementById('detailsPage').classList.remove('active'); }
         function fecharAtor() { document.getElementById('actorModal').classList.remove('active'); }
@@ -1267,14 +1245,14 @@
         }
 
         window.addEventListener('popstate', function(event) {
-            if(document.getElementById('vipModal').style.display === 'flex') { fecharModalVip(); return; }
-            if(document.getElementById('embedModal').style.display === 'flex') { fecharEmbed(); return; }
+            if(event.state && event.state.view === 'vip') { fecharModalVip(); return; }
             if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); return; } 
-            if(document.getElementById('serverModal').classList.contains('active')) { fecharMenuServidores(); return; }
-            if(document.getElementById('actorModal').classList.contains('active')) { fecharAtor(); return; } 
-            if(document.getElementById('detailsPage').classList.contains('active')) { fecharDetalhes(); return; } 
-            if(document.getElementById('bottomSheet').classList.contains('active')) { fecharSheetTV(); return; } 
-            if(event.state && event.state.view && event.state.view.startsWith('view-')) { mudarAba(event.state.view, null, true); return; } 
+            if (document.getElementById('embedModal').style.display === 'flex') { fecharEmbed(); return; } 
+            if (document.getElementById('serverModal').classList.contains('active')) { fecharMenuServidores(); return; }
+            if (document.getElementById('actorModal').classList.contains('active')) { fecharAtor(); return; } 
+            if (document.getElementById('detailsPage').classList.contains('active')) { fecharDetalhes(); return; } 
+            if (document.getElementById('bottomSheet').classList.contains('active')) { fecharSheetTV(); return; } 
+            if (event.state && event.state.view) { mudarAba(event.state.view, null, true); return; } 
             mudarAba('view-home', document.getElementById('nav-home'), true);
         });
 
