@@ -28,7 +28,7 @@
         .header-history-btn { position: absolute; right: 20px; color: #fff; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px;}
         .header-history-btn:active { transform: scale(0.9); color: var(--accent); }
         
-        /* COROA VIP DO LADO DIREITO PARA NÃO ESMAGAR A SETA */
+        /* COROA VIP MOVIDA PARA A DIREITA (ANTES DO HISTÓRICO) */
         .header-vip-btn { position: absolute; right: 60px; color: gold; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px; text-shadow: 0 0 10px rgba(255,215,0,0.5); display: none;}
         .header-vip-btn:active { transform: scale(0.9); }
 
@@ -431,8 +431,8 @@
         function fecharModalVip() { document.getElementById('vipModal').style.display = 'none'; }
         
         function abrirWhatsAppVip() {
-            const intentUrl = "intent://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87#Intent;scheme=https;package=com.whatsapp;end;";
-            window.location.href = intentUrl;
+            // REDIRECIONAMENTO LIMPO E FIXO PARA WHATSAPP
+            window.location.href = 'https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87';
         }
 
         async function fazerLoginVip() {
@@ -442,6 +442,7 @@
             const msg = document.getElementById('vipMsg');
             
             if(!email || !senha) { msg.innerText = "Preencha os campos."; msg.style.display = 'block'; return; }
+            if(!window.supabase) { msg.innerText = "Aguarde o servidor..."; msg.style.display = 'block'; return; }
             
             btn.innerText = "Aguarde...";
             try {
@@ -515,21 +516,16 @@
             document.getElementById('pushPromptModal').style.display = 'none';
             localStorage.setItem('push_accepted', 'true');
             
-            // A sua solução PRO injetando o script nativamente
-            const s = document.createElement('script');
-            s.async = true;
-            s.setAttribute('data-zone', '11081852');
-            s.src = 'https://al5sm.com/tag.min.js';
-            document.head.appendChild(s);
+            injetarOnClick(); // Injeta a sua lógica oficial
         }
 
         function dispararDirectLink() {
             const isVip = localStorage.getItem('streamflix_vip') === 'true';
             if(!isVip) {
+                // Truque blindado: O Intent forçado abre o anúncio fora do App (no Chrome)!
+                // Assim o seu utilizador NÃO perde a tela do filme nem volta para a Home ao fechar o anúncio.
                 const a = document.createElement('a');
-                a.href = 'https://omg10.com/4/11081875';
-                a.target = '_blank';
-                a.rel = 'noopener noreferrer';
+                a.href = "intent://omg10.com/4/11081875#Intent;scheme=https;action=android.intent.action.VIEW;end;";
                 document.body.appendChild(a);
                 a.click();
                 document.body.removeChild(a);
@@ -1201,10 +1197,12 @@
                 else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
             }
 
-            frame.src = finalUrl;
-            modal.style.display = 'flex';
-            
-            history.replaceState({ view: 'embed' }, null, "");
+            // Dá um atraso mínimo para o iframe carregar sem conflitar com o anúncio
+            setTimeout(() => {
+                frame.src = finalUrl;
+                modal.style.display = 'flex';
+                history.replaceState({ view: 'embed' }, null, "");
+            }, 300);
         }
 
         function fecharEmbed() {
@@ -1263,8 +1261,11 @@
                 } else {
                     const urlLimpa = urlFinal.replace(/^https?:\/\//, '');
                     const intentUrl = `intent://${urlLimpa}#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end;`;
-                    window.location.href = intentUrl;
-                    if(btn) setTimeout(() => { btn.innerHTML = `<i class="fas fa-play"></i> Assistir`; }, 1500);
+                    // Dá 500ms de vantagem para o anúncio abrir antes de puxar o vídeo
+                    setTimeout(() => {
+                        window.location.href = intentUrl;
+                        if(btn) btn.innerHTML = `<i class="fas fa-play"></i> Assistir`;
+                    }, 500);
                 }
             } catch (e) {
                 alert("Erro ao aceder à API: " + e.message);
