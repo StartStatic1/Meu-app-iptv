@@ -75,3 +75,5 @@ export default async function handler(req, res) {
     // Se o código chegou até aqui, significa que os 3 servidores (Kavru, rnplay07 e bnewsc) caíram ao mesmo tempo.
     return res.status(500).json({ error: erroFinal });
 }
+
+Nota estrutura do apk está em outro repositório que talvez não precise mexer acho....
