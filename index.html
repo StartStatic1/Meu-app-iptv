@@ -209,7 +209,6 @@
             <hr style="border-color:rgba(255,255,255,0.05); margin-bottom:20px;">
             <p style="color:#8f98b0; font-size:12px; margin-bottom:10px;">Ainda não é VIP?</p>
             <button onclick="abrirWhatsAppVip()" style="width:100%; padding:12px; border-radius:8px; background:#25D366; color:#fff; font-weight:bold; border:none; cursor:pointer;"><i class="fab fa-whatsapp"></i> Comprar Acesso VIP</button>
-            <button onclick="logoutVip()" style="width:100%; padding:10px; border-radius:8px; background:rgba(255,255,255,0.1); color:#ff3d00; font-weight:bold; border:1px solid rgba(255,255,255,0.1); cursor:pointer; margin-top:10px; font-size:12px;"><i class="fas fa-sign-out-alt"></i> Sair da Conta VIP</button>
         </div>
     </div>
 
@@ -394,29 +393,11 @@
         try {
             if (window.supabase && window.supabase.createClient) {
                 supabase = window.supabase.createClient(supaUrl, supaKey);
-                console.log('Supabase inicializado com Publishable key');
             } else {
-                console.warn('Supabase CDN não carregou. Modo offline ativado.');
+                console.warn('Supabase CDN não carregou');
             }
         } catch(e) {
-            console.warn('Erro ao inicializar Supabase:', e);
-        }
-
-        // Teste rápido de conexão com Supabase
-        async function testarConexaoSupabase() {
-            if(!supabase) return false;
-            try {
-                const { error } = await supabase.from('streamflix_users').select('count', { count: 'exact', head: true });
-                if(error) {
-                    console.warn('Supabase connection test failed:', error);
-                    return false;
-                }
-                console.log('Supabase connection OK');
-                return true;
-            } catch(e) {
-                console.warn('Supabase connection test error:', e);
-                return false;
-            }
+            console.warn('Erro Supabase:', e);
         }
 
         let heroFilmes = [];
@@ -446,73 +427,6 @@
             history.pushState({ view: 'vip' }, null, "");
         }
         function fecharModalVip() { document.getElementById('vipModal').style.display = 'none'; }
-
-        function switchVipTab(tab) {
-            document.getElementById('vipFormLogin').style.display = tab === 'login' ? 'block' : 'none';
-            document.getElementById('vipFormCadastro').style.display = tab === 'cadastro' ? 'block' : 'none';
-            document.getElementById('tabLogin').style.background = tab === 'login' ? 'gold' : 'transparent';
-            document.getElementById('tabLogin').style.color = tab === 'login' ? '#000' : '#ccc';
-            document.getElementById('tabCadastro').style.background = tab === 'cadastro' ? '#00e676' : 'transparent';
-            document.getElementById('tabCadastro').style.color = tab === 'cadastro' ? '#000' : '#ccc';
-            document.getElementById('vipMsg').style.display = 'none';
-        }
-
-        async function cadastrarVip() {
-            const email = document.getElementById('vipEmailCad').value.trim();
-            const senha = document.getElementById('vipSenhaCad').value;
-            const confirm = document.getElementById('vipSenhaCadConfirm').value;
-            const btn = document.getElementById('btnCadastroBtn');
-            const msg = document.getElementById('vipMsg');
-
-            if(!email || !senha) { msg.innerText = "Preencha todos os campos."; msg.style.display = 'block'; return; }
-            if(senha !== confirm) { msg.innerText = "As senhas não coincidem."; msg.style.display = 'block'; return; }
-            if(senha.length < 4) { msg.innerText = "Senha muito curta (mín. 4 caracteres)."; msg.style.display = 'block'; return; }
-
-            if(!supabase) { msg.innerText = "Servidor indisponível."; msg.style.display = 'block'; return; }
-
-            btn.innerText = "Criando...";
-            msg.style.display = 'none';
-
-            try {
-                // Verificar se email já existe
-                const { data: existente } = await supabase.from('streamflix_users').select('email').eq('email', email);
-                if(existente && existente.length > 0) {
-                    msg.innerText = "Este e-mail já está cadastrado. Use 'Entrar'.";
-                    msg.style.display = 'block';
-                    btn.innerText = "Criar Conta VIP";
-                    return;
-                }
-
-                // Inserir novo usuário
-                const { error } = await supabase.from('streamflix_users').insert([{ 
-                    email: email, 
-                    senha: senha, 
-                    status: 'VIP',
-                    created_at: new Date().toISOString()
-                }]);
-
-                if(error) {
-                    console.error('Cadastro error:', error);
-                    msg.innerText = "Erro ao criar conta: " + (error.message || "Tente novamente");
-                    msg.style.display = 'block';
-                    btn.innerText = "Criar Conta VIP";
-                    return;
-                }
-
-                // Login automático após cadastro
-                localStorage.setItem('streamflix_vip', 'true');
-                localStorage.setItem('streamflix_vip_email', email);
-                alert("Conta VIP criada com sucesso! Bem-vindo!");
-                fecharModalVip();
-                verificarStatusVip();
-
-            } catch(e) {
-                console.error('Cadastro exception:', e);
-                msg.innerText = "Erro de conexão: " + (e.message || "Verifique sua internet");
-                msg.style.display = 'block';
-                btn.innerText = "Criar Conta VIP";
-            }
-        }
         
         function abrirWhatsAppVip() {
             // Pode alterar este link depois para o seu número real
@@ -555,8 +469,6 @@
 
         function verificarStatusVip() {
             const isVip = localStorage.getItem('streamflix_vip') === 'true';
-            const vipEmail = localStorage.getItem('streamflix_vip_email');
-
             if(isVip) {
                 document.getElementById('btnOpenVip').style.display = 'none';
                 document.getElementById('pushPromptModal').style.display = 'none';
@@ -565,15 +477,6 @@
                 document.getElementById('btnOpenVip').style.display = 'block';
                 injetarAnuncios();
             }
-        }
-
-        // Função para logout VIP
-        function logoutVip() {
-            localStorage.removeItem('streamflix_vip');
-            localStorage.removeItem('streamflix_vip_email');
-            verificarStatusVip();
-            alert('VIP desativado. Recarregando...');
-            location.reload();
         }
 
         // ==========================================
@@ -749,8 +652,7 @@
             return html;
         }
 
-        // Helper para fetch com timeout (evita espera eterna)
-        async function fetchComTimeout(url, timeoutMs = 10000) {
+        async function fetchComTimeout(url, timeoutMs = 8000) {
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
             try {
@@ -817,10 +719,7 @@
                     </div>`;
                 });
                 document.getElementById(divId).innerHTML = html;
-            } catch(e) { 
-                console.error('Erro carregar categorias:', e);
-                document.getElementById(divId).innerHTML = "<div class='loading-text'><i class='fas fa-exclamation-triangle'></i> Erro ao carregar. <button onclick='location.reload()' style='margin-top:10px;padding:6px 15px;background:var(--accent);color:#000;border:none;border-radius:6px;font-size:11px;font-weight:bold;'>Recarregar</button></div>"; 
-            }
+            } catch(e) { document.getElementById(divId).innerHTML = "<div class='loading-text'>Erro ao carregar lista.</div>"; }
         }
 
         async function initApp() {
@@ -828,7 +727,8 @@
             
             try {
                 let htmlConstruido = "";
-                
+                const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
+                const vodCats = await resVodCats.json();
                 const pastasFilmes = vodCats.filter(c => pastaValida(c.category_name)).sort((a,b) => {
                     const pri = /LANÇA|AÇÃO|COMÉDIA|TERROR/i;
                     return pri.test(b.category_name) - pri.test(a.category_name);
@@ -866,8 +766,8 @@
                 }, 100);
 
             } catch (error) { 
-                console.error('Erro initApp:', error);
-                document.getElementById('conteudo-dinamico').innerHTML = "<div class='loading-text'><i class='fas fa-exclamation-triangle'></i> Erro ao carregar conteúdo. Verifique sua conexão.<br><button onclick='location.reload()' style='margin-top:10px;padding:8px 20px;background:var(--accent);color:#000;border:none;border-radius:8px;font-weight:bold;'>Tentar Novamente</button></div>"; 
+                console.error('initApp error:', error);
+                document.getElementById('conteudo-dinamico').innerHTML = "<div class='loading-text' style='padding:40px 20px;'><i class='fas fa-exclamation-triangle' style='font-size:30px; color:var(--accent); margin-bottom:15px; display:block;'></i><h3 style='color:#fff; margin:0 0 10px;'>Erro de Conexão</h3><p style='color:var(--text-muted); font-size:13px; margin:0 0 20px;'>Não foi possível carregar o catálogo. Verifique sua internet.</p><button onclick='location.reload()' style='padding:12px 30px; background:var(--accent); color:#000; border:none; border-radius:8px; font-weight:bold; cursor:pointer;'><i class='fas fa-redo'></i> Tentar Novamente</button></div>"; 
             }
         }
 
@@ -1367,7 +1267,6 @@
         }
 
         window.addEventListener('popstate', function(event) {
-            // Fechar modais na ordem correta (do mais alto z-index para o mais baixo)
             if(document.getElementById('vipModal').style.display === 'flex') { fecharModalVip(); return; }
             if(document.getElementById('embedModal').style.display === 'flex') { fecharEmbed(); return; }
             if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); return; } 
@@ -1375,12 +1274,7 @@
             if(document.getElementById('actorModal').classList.contains('active')) { fecharAtor(); return; } 
             if(document.getElementById('detailsPage').classList.contains('active')) { fecharDetalhes(); return; } 
             if(document.getElementById('bottomSheet').classList.contains('active')) { fecharSheetTV(); return; } 
-
-            // Navegação entre abas
-            if(event.state && event.state.view && event.state.view.startsWith('view-')) { 
-                mudarAba(event.state.view, null, true); 
-                return; 
-            }
+            if(event.state && event.state.view && event.state.view.startsWith('view-')) { mudarAba(event.state.view, null, true); return; } 
             mudarAba('view-home', document.getElementById('nav-home'), true);
         });
 
