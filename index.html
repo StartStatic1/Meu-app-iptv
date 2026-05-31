@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>StreamFlix</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    
     <style>
         :root { 
             --bg-top: #1a1d29; --bg-bottom: #040714; --accent: #00e5ff; 
@@ -25,6 +27,8 @@
         .header-logo span { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.6); }
         .header-history-btn { position: absolute; right: 20px; color: #fff; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px;}
         .header-history-btn:active { transform: scale(0.9); color: var(--accent); }
+        
+        /* BOTÃO VIP */
         .header-vip-btn { position: absolute; left: 20px; color: gold; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px; text-shadow: 0 0 10px rgba(255,215,0,0.5); display: none;}
         .header-vip-btn:active { transform: scale(0.9); }
 
@@ -60,6 +64,8 @@
         .card-movie .titulo-fallback { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: white; font-size: 9px; padding: 8px 4px; text-align: center; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-badges { position: absolute; top: 5px; left: 5px; display: flex; flex-direction: column; gap: 4px; z-index: 2; pointer-events: none; }
         
+        .card-history { flex: unset; width: 100%; height: 120px; border-radius: 8px; background-color: #2a2d3e; cursor: pointer; position: relative !important; box-shadow: 0 4px 10px rgba(0,0,0,0.4); overflow: hidden;}
+
         .category-item { background: rgba(255,255,255,0.05); margin: 10px 15px; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s; }
         .category-item:active { background: rgba(255,255,255,0.15); transform: scale(0.98); }
         .category-name { font-size: 14px; font-weight: 700; color: #fff; }
@@ -95,7 +101,16 @@
         .sheet-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto 20px; }
         .sheet-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; text-transform: uppercase; cursor: pointer; }
 
-        /* PÁGINAS DE SOBREPOSIÇÃO E LAYOUT DE BOTÕES AJUSTADO */
+        .server-modal { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--bg-top); border-radius: 24px 24px 0 0; z-index: 4000; padding: 25px 20px; transition: bottom 0.4s ease; border-top: 1px solid rgba(255,255,255,0.05); }
+        .server-modal.active { bottom: 0; }
+        .server-title { font-size: 16px; font-weight: 800; color: #fff; margin: 0 0 20px 0; text-align: center;}
+        .server-btn { width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer; transition: 0.2s;}
+        .server-btn:active { background: rgba(255,255,255,0.15); transform: scale(0.98);}
+        .server-btn.em { border-left: 4px solid var(--accent); }
+        .server-btn.ep { border-left: 4px solid #00e676; }
+        .server-btn.bf { border-left: 4px solid #ff0055; }
+        .server-warn { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 15px; line-height: 1.4;}
+
         .details-page { position: fixed; top: 0; left: 100%; width: 100%; height: 100vh; background: var(--bg-bottom); z-index: 3000; transition: left 0.3s ease-out; overflow-y: auto; padding-bottom: 30px; }
         .details-page.active { left: 0; }
         .dp-back-btn { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; z-index: 3010; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; cursor: pointer; }
@@ -108,7 +123,6 @@
         .dp-director { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; font-style: italic;}
         .dp-meta { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 20px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;}
         
-        /* BOTÕES DE AÇÃO REFINADOS (Assistir menor) */
         .action-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
         .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(255,255,255,0.2); transition: 0.2s;}
         .dp-play-btn:active { transform: scale(0.97); }
@@ -144,17 +158,6 @@
         .trailer-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; padding: 10px; z-index: 4010; text-shadow: 0 0 10px #000; }
         .trailer-frame { width: 100%; aspect-ratio: 16/9; background: #000; border: none; }
 
-        .server-modal { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--bg-top); border-radius: 24px 24px 0 0; z-index: 4000; padding: 25px 20px; transition: bottom 0.4s ease; border-top: 1px solid rgba(255,255,255,0.05); }
-        .server-modal.active { bottom: 0; }
-        .server-title { font-size: 16px; font-weight: 800; color: #fff; margin: 0 0 20px 0; text-align: center;}
-        .server-btn { width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer; transition: 0.2s;}
-        .server-btn:active { background: rgba(255,255,255,0.15); transform: scale(0.98);}
-        .server-btn.em { border-left: 4px solid var(--accent); }
-        .server-btn.ep { border-left: 4px solid #00e676; }
-        .server-btn.bf { border-left: 4px solid #ff0055; }
-        .server-warn { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 15px; line-height: 1.4;}
-
-        /* BLINDAGEM IFRAME - Fullscreen corrigido */
         .embed-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 4500; display: none; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
         .embed-frame { width: 100%; height: 100%; background: #000; border: none; z-index: 4501; }
 
@@ -177,37 +180,37 @@
         .loading-text { text-align: center; color: var(--text-muted); font-size: 12px; width: 100%; padding: 20px; }
     </style>
 <base target="_blank">
-<base target="_blank">
 </head>
 <body>
 
-    <!-- MODAL PUSH -->
+    <div class="header">
+        <i class="fas fa-crown header-vip-btn" id="btnOpenVip" onclick="abrirModalVip()"></i>
+        <h1 class="header-logo">Stream<span>Flix</span></h1>
+        <i class="fas fa-bookmark header-history-btn" onclick="mudarAba('view-historico', null)"></i>
+    </div>
+
     <div id="pushPromptModal" style="display:none; position:fixed; bottom:80px; left:5%; width:90%; background:linear-gradient(45deg, #00e5ff, #0055ff); padding:15px; border-radius:12px; z-index:5000; box-shadow:0 5px 15px rgba(0,229,255,0.4); text-align:center;">
         <h3 style="margin:0 0 5px; color:#fff; font-size:16px;"><i class="fas fa-bell" style="color:gold;"></i> Lançamentos Exclusivos</h3>
         <p style="margin:0 0 10px; color:#fff; font-size:12px;">Para ser avisado quando um novo filme dublado chegar ao catálogo, clique em "PERMITIR" no aviso do seu ecrã!</p>
         <button onclick="document.getElementById('pushPromptModal').style.display='none'" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Entendi</button>
     </div>
 
-    <!-- MODAL VIP -->
     <div class="embed-modal" id="vipModal" style="display:none; padding:20px; align-items:center; z-index:9999; background: rgba(0,0,0,0.95);">
         <div style="background:var(--bg-top); padding:25px; border-radius:15px; width:100%; max-width:350px; text-align:center; border: 1px solid gold; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <i class="fas fa-times" onclick="fecharModalVip()" style="position:absolute; right:15px; top:15px; color:#fff; font-size:20px; cursor:pointer;"></i>
             <h2 style="color:#fff; margin-top:5px; font-weight:900;"><i class="fas fa-crown" style="color:gold;"></i> Área VIP</h2>
-            <p style="color:#ccc; font-size:13px; margin-bottom:25px;">Faça login para remover todos os anúncios e navegar com velocidade máxima.</p>
+            <p style="color:#ccc; font-size:13px; margin-bottom:25px;">Faça login para remover anúncios e navegar com velocidade máxima.</p>
+            
             <input type="email" id="vipEmail" placeholder="Seu E-mail VIP" style="width:100%; padding:15px; margin-bottom:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.5); color:#fff; outline:none;">
             <input type="password" id="vipSenha" placeholder="Sua Senha" style="width:100%; padding:15px; margin-bottom:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.5); color:#fff; outline:none;">
+            
             <button onclick="fazerLoginVip()" style="width:100%; padding:15px; border-radius:8px; background:gold; color:#000; font-weight:900; font-size:15px; border:none; margin-bottom:15px; cursor:pointer; text-transform:uppercase; box-shadow: 0 4px 15px rgba(255,215,0,0.3);" id="btnLoginBtn">Entrar na Conta VIP</button>
             <p id="vipMsg" style="color:#ff3d00; font-size:12px; margin-bottom:15px; display:none; font-weight:bold;"></p>
+            
             <hr style="border-color:rgba(255,255,255,0.05); margin-bottom:20px;">
             <p style="color:#8f98b0; font-size:12px; margin-bottom:10px;">Ainda não é VIP?</p>
-            <button onclick="abrirWhatsAppVip()" style="width:100%; padding:12px; border-radius:8px; background:#25D366; color:#fff; font-weight:bold; border:none; cursor:pointer;"><i class="fab fa-whatsapp"></i> Comprar Acesso VIP</button>
+            <button onclick="window.open('https://wa.me/5511999999999?text=Quero%20ser%20VIP%20no%20StreamFlix', '_blank')" style="width:100%; padding:12px; border-radius:8px; background:#25D366; color:#fff; font-weight:bold; border:none; cursor:pointer;"><i class="fab fa-whatsapp"></i> Comprar Acesso VIP</button>
         </div>
-    </div>
-
-    <div class="header">
-        <i class="fas fa-crown header-vip-btn" id="btnOpenVip" onclick="abrirModalVip()"></i>
-        <h1 class="header-logo">Stream<span>Flix</span></h1>
-        <i class="fas fa-bookmark header-history-btn" onclick="mudarAba('view-historico', null)"></i>
     </div>
 
     <div id="view-home" class="view active">
@@ -403,6 +406,126 @@
         
         let currentStreamData = {}; 
 
+        // ==========================================
+        // LÓGICA VIP & SUPABASE (CARREGAMENTO PREGUIÇOSO)
+        // ==========================================
+        function abrirModalVip() { 
+            document.getElementById('vipModal').style.display = 'flex'; 
+            history.pushState({ view: 'vip' }, null, "");
+        }
+        function fecharModalVip() { document.getElementById('vipModal').style.display = 'none'; }
+        
+        async function fazerLoginVip() {
+            const email = document.getElementById('vipEmail').value;
+            const senha = document.getElementById('vipSenha').value;
+            const btn = document.getElementById('btnLoginBtn');
+            const msg = document.getElementById('vipMsg');
+            
+            if(!email || !senha) { msg.innerText = "Preencha os campos."; msg.style.display = 'block'; return; }
+            if(!window.supabase) { msg.innerText = "Aguarde o servidor..."; msg.style.display = 'block'; return; }
+            
+            btn.innerText = "Aguarde...";
+            try {
+                const supabaseClient = window.supabase.createClient('https://gkujbjpvphuvrejpvvtz.supabase.co', 'sb_publishable_C9FMCjUyZnlzhINK2KZXWQ_ahpGu0yy');
+                const { data, error } = await supabaseClient.from('streamflix_users').select('*').eq('email', email).eq('senha', senha);
+                
+                if(error) throw error;
+                if(data && data.length > 0) {
+                    if(data[0].status === 'VIP') {
+                        localStorage.setItem('streamflix_vip', 'true');
+                        alert("Bem-vindo! Anúncios desativados.");
+                        location.reload(); // Recarrega para limpar tudo
+                    } else { msg.innerText = "Conta não tem status VIP."; msg.style.display = 'block'; }
+                } else { msg.innerText = "Dados incorretos."; msg.style.display = 'block'; }
+            } catch(e) { msg.innerText = "Erro de servidor."; msg.style.display = 'block'; }
+            btn.innerText = "Entrar";
+        }
+
+        // ==========================================
+        // SISTEMA DE MONETIZAÇÃO
+        // ==========================================
+        function injetarAnuncios() {
+            console.log("Modo Grátis Iniciado.");
+            document.getElementById('btnOpenVip').style.display = 'block';
+            
+            setTimeout(() => { document.getElementById('pushPromptModal').style.display = 'block'; }, 4000);
+
+            // Injetamos os scripts criando um IFRAME invisível para não quebrar a página principal
+            const adContainer = document.createElement('iframe');
+            adContainer.style.display = 'none';
+            document.body.appendChild(adContainer);
+            const adDoc = adContainer.contentWindow.document;
+            adDoc.open();
+            adDoc.write(`
+                <html><head></head><body>
+                <script>(function(s){s.dataset.zone='11081852',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))<\/script>
+                <script src="https://5gvci.com/act/files/tag.min.js?z=11081853" data-cfasync="false" async><\/script>
+                <script src="https://5gvci.com/act/files/tag.min.js?z=11081861" data-cfasync="false" async><\/script>
+                </body></html>
+            `);
+            adDoc.close();
+        }
+
+        function dispararDirectLink() {
+            const isVip = localStorage.getItem('streamflix_vip') === 'true';
+            if(!isVip) window.open('https://omg10.com/4/11081875', '_blank');
+        }
+
+        // ==========================================
+        // INICIALIZAÇÃO SEGURA DA PÁGINA
+        // ==========================================
+        async function initApp() {
+            const isVip = localStorage.getItem('streamflix_vip') === 'true';
+            if(!isVip) { injetarAnuncios(); } // Só puxa os anúncios se não for VIP
+            
+            try {
+                let htmlConstruido = "";
+                const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
+                const vodCats = await resVodCats.json();
+                const pastasFilmes = vodCats.filter(c => pastaValida(c.category_name)).sort((a,b) => {
+                    const pri = /LANÇA|AÇÃO|COMÉDIA|TERROR/i;
+                    return pri.test(b.category_name) - pri.test(a.category_name);
+                }).slice(0, 5); 
+
+                if(pastasFilmes.length > 0) {
+                    const res1 = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastasFilmes[0].category_id}`);
+                    const filmes1 = await res1.json();
+                    if(filmes1 && filmes1.length > 0) {
+                        heroFilmes = filmes1.slice(0, 5);
+                        iniciarHeroSlider(limparNomePasta(pastasFilmes[0].category_name));
+                        htmlConstruido += gerarCarrosselHTML(limparNomePasta(pastasFilmes[0].category_name), pastasFilmes[0].category_id, 'vod', 'film', filmes1.slice(5, 20));
+                    }
+                }
+
+                document.getElementById('loading-state').style.display = 'none';
+                document.getElementById('conteudo-real').style.display = 'block';
+                document.getElementById('conteudo-dinamico').innerHTML = htmlConstruido;
+
+                setTimeout(async () => {
+                    let htmlExtra = "";
+                    for(let i = 1; i < pastasFilmes.length; i++) {
+                        const res = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastasFilmes[i].category_id}`);
+                        const filmes = await res.json();
+                        if(filmes && filmes.length > 0) htmlExtra += gerarCarrosselHTML(limparNomePasta(pastasFilmes[i].category_name), pastasFilmes[i].category_id, 'vod', 'film', filmes.slice(0, 15));
+                    }
+
+                    const resSerieCats = await fetch('/api/iptv?action=get_series_categories');
+                    const serieCats = await resSerieCats.json();
+                    const pastasSeries = serieCats.filter(c => pastaValida(c.category_name)).slice(0, 2);
+                    for(let i = 0; i < pastasSeries.length; i++) {
+                        const res = await fetch(`/api/iptv?action=get_series&category_id=${pastasSeries[i].category_id}`);
+                        const series = await res.json();
+                        if(series && series.length > 0) htmlExtra += gerarCarrosselHTML(limparNomePasta(pastasSeries[i].category_name), pastasSeries[i].category_id, 'series', 'tv', series.slice(0, 15));
+                    }
+                    document.getElementById('conteudo-dinamico').innerHTML += htmlExtra;
+                }, 100);
+
+            } catch (error) { document.getElementById('loading-state').innerHTML = "<div class='loading-text'>Erro de ligação. Atualize a página.</div>"; }
+        }
+
+        // ==========================================
+        // SISTEMA DE HISTÓRICO INTELIGENTE
+        // ==========================================
         function getWatchedList() {
             try { return JSON.parse(localStorage.getItem('streamflix_watched_v2')) || {}; } 
             catch(e) { return {}; }
@@ -465,10 +588,10 @@
 
             items.forEach(item => {
                 html += `
-                <div class="card-movie card-tv" style="height: 120px;" onclick="dispararPlayer('${item.id}', '${item.type}', '${item.ext}', '${esc(item.title)}')">
+                <div class="card-history" onclick="dispararPlayer('${item.id}', '${item.type}', '${item.ext}', '${esc(item.title)}')">
                     <div class="ep-watched-btn active" style="top:5px; left:5px; position:absolute;" onclick="removerDoHistorico(event, '${item.id}')"><i class="fas fa-times"></i></div>
-                    <img src="${item.img}" style="width:100%; height:70%; object-fit:cover; margin:0; border-radius:4px 4px 0 0;" onerror="this.src='https://via.placeholder.com/150x100/333/fff?text=Visto'">
-                    <div class="titulo-tv" style="padding: 5px; height: 30%; display:flex; align-items:center; justify-content:center;">${item.title}</div>
+                    <img src="${item.img}" style="width:100%; height:75%; object-fit:cover; margin:0;" onerror="this.src='https://via.placeholder.com/150x100/333/fff?text=Visto'">
+                    <div class="titulo-tv" style="padding: 5px; height: 25%; display:flex; align-items:center; justify-content:center;">${item.title}</div>
                 </div>`;
             });
             container.innerHTML = html;
@@ -476,18 +599,8 @@
 
         function esc(str) { return (str || '').toString().replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
         function limparNomePasta(nome) { return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Séries\s*\|\s*/i, '').trim(); }
-
-        function pastaValida(nome) {
-            if (!nome) return false;
-            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR', 'TESTE'];
-            return !proibidos.some(p => nome.toUpperCase().includes(p));
-        }
-
-        function pastaTVValida(nome) {
-            if (!nome) return false;
-            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO', 'CÂMERA'];
-            return !proibidos.some(p => nome.toUpperCase().includes(p));
-        }
+        function pastaValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR', 'TESTE']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
+        function pastaTVValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO', 'CÂMERA']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
 
         function processarTitulo(nomeBruto, nomePasta) {
             let nomeLimpo = nomeBruto || "Sem Título";
@@ -592,85 +705,6 @@
                 });
                 document.getElementById(divId).innerHTML = html;
             } catch(e) { document.getElementById(divId).innerHTML = "<div class='loading-text'>Erro ao carregar lista.</div>"; }
-        }
-
-        async function initApp() {
-            // SEMPRE esconder skeleton primeiro, mesmo que dê erro depois
-            document.getElementById('loading-state').style.display = 'none';
-            document.getElementById('conteudo-real').style.display = 'block';
-
-            // DEBUG: Mostrar status no conteúdo
-            const debugDiv = document.createElement('div');
-            debugDiv.id = 'sf-debug';
-            debugDiv.style.cssText = 'position:fixed;bottom:100px;left:10px;right:10px;background:rgba(0,0,0,0.9);color:#0f0;font-family:monospace;font-size:11px;padding:10px;z-index:99999;border-radius:8px;max-height:150px;overflow-y:auto;';
-            document.body.appendChild(debugDiv);
-
-            function log(msg) {
-                console.log('[SF]', msg);
-                const d = document.getElementById('sf-debug');
-                if(d) d.innerHTML += '<div>• ' + msg + '</div>';
-            }
-
-            log('🚀 initApp iniciado');
-
-            try {
-                let htmlConstruido = "";
-                log('📡 Fetching /api/iptv?action=get_vod_categories...');
-
-                const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
-                log('📡 Response status: ' + resVodCats.status + ' ' + resVodCats.statusText);
-
-                if(!resVodCats.ok) {
-                    throw new Error('HTTP ' + resVodCats.status);
-                }
-
-                const vodCats = await resVodCats.json();
-                log('📡 JSON recebido: ' + (Array.isArray(vodCats) ? vodCats.length + ' categorias' : 'NÃO É ARRAY'));
-
-                if(!Array.isArray(vodCats) || vodCats.length === 0) {
-                    throw new Error('Resposta vazia ou inválida');
-                }
-                const pastasFilmes = vodCats.filter(c => pastaValida(c.category_name)).sort((a,b) => {
-                    const pri = /LANÇA|AÇÃO|COMÉDIA|TERROR/i;
-                    return pri.test(b.category_name) - pri.test(a.category_name);
-                }).slice(0, 5); 
-
-                if(pastasFilmes.length > 0) {
-                    const res1 = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastasFilmes[0].category_id}`);
-                    const filmes1 = await res1.json();
-                    if(filmes1 && filmes1.length > 0) {
-                        heroFilmes = filmes1.slice(0, 5);
-                        iniciarHeroSlider(limparNomePasta(pastasFilmes[0].category_name));
-                        htmlConstruido += gerarCarrosselHTML(limparNomePasta(pastasFilmes[0].category_name), pastasFilmes[0].category_id, 'vod', 'film', filmes1.slice(5, 20));
-                    }
-                }
-
-                document.getElementById('conteudo-dinamico').innerHTML = htmlConstruido;
-
-                setTimeout(async () => {
-                    let htmlExtra = "";
-                    for(let i = 1; i < pastasFilmes.length; i++) {
-                        const res = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastasFilmes[i].category_id}`);
-                        const filmes = await res.json();
-                        if(filmes && filmes.length > 0) htmlExtra += gerarCarrosselHTML(limparNomePasta(pastasFilmes[i].category_name), pastasFilmes[i].category_id, 'vod', 'film', filmes.slice(0, 15));
-                    }
-
-                    const resSerieCats = await fetch('/api/iptv?action=get_series_categories');
-                    const serieCats = await resSerieCats.json();
-                    const pastasSeries = serieCats.filter(c => pastaValida(c.category_name)).slice(0, 2);
-                    for(let i = 0; i < pastasSeries.length; i++) {
-                        const res = await fetch(`/api/iptv?action=get_series&category_id=${pastasSeries[i].category_id}`);
-                        const series = await res.json();
-                        if(series && series.length > 0) htmlExtra += gerarCarrosselHTML(limparNomePasta(pastasSeries[i].category_name), pastasSeries[i].category_id, 'series', 'tv', series.slice(0, 15));
-                    }
-                    document.getElementById('conteudo-dinamico').innerHTML += htmlExtra;
-                }, 100);
-
-            } catch (error) { 
-                console.error('initApp error:', error);
-                log('❌ ERRO: ' + error.message);
-                document.getElementById('conteudo-dinamico').innerHTML = "<div class='loading-text' style='padding:40px 20px;text-align:center;'><i class='fas fa-exclamation-triangle' style='font-size:30px;color:var(--accent);margin-bottom:15px;display:block;'></i><h3 style='color:#fff;margin:0 0 10px;'>Erro: " + error.message + "</h3><p style='color:var(--text-muted);font-size:13px;margin:0 0 20px;'>Verifique o console para mais detalhes.</p><button onclick='location.reload()' style='padding:12px 30px;background:var(--accent);color:#000;border:none;border-radius:8px;font-weight:bold;cursor:pointer;'><i class='fas fa-redo'></i> Tentar Novamente</button></div>"; 
-            }
         }
 
         function gerarCarrosselHTML(nomePasta, catId, tipo, icone, lista) {
@@ -827,9 +861,6 @@
             abrirDetalhes(fmtd.limpo, "Destaque VIP", f.stream_icon, f.stream_id, 'vod', f.container_extension || 'mp4', fmtd.tagsStr);
         }
 
-        // ==========================================
-        // O MAGNÍFICO MOTOR TMDB
-        // ==========================================
         async function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
             document.getElementById('dpTitle').innerText = titulo;
             document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
@@ -1084,6 +1115,8 @@
         }
 
         function abrirPlayerWeb(servidor) {
+            dispararDirectLink(); // GATILHO MONETAG: Antes do iframe abrir, lança o pop-under
+            
             if(!currentTmdbId) return;
             fecharMenuServidores();
             
@@ -1135,6 +1168,8 @@
         function fecharSheetTV() { document.getElementById('sheetOverlay').classList.remove('active'); document.getElementById('bottomSheet').classList.remove('active'); }
 
         async function dispararPlayer(id, tipo, ext, titulo) {
+            dispararDirectLink(); // GATILHO MONETAG: Antes do vídeo abrir, lança o pop-under
+            
             const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
             if(btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`;
 
@@ -1171,124 +1206,20 @@
             }
         }
 
-        // ==========================================
-        // SUPABASE + SISTEMA VIP + ADS
-        // ==========================================
-        const supaUrl = 'https://gkujbjpvphuvrejpvvtz.supabase.co';
-        const supaKey = 'sb_publishable_C9FMCjUyZnlzhINK2KZXWQ_ahpGu0yy';
-        let supabase = null;
-
-        try {
-            if (window.supabase && window.supabase.createClient) {
-                supabase = window.supabase.createClient(supaUrl, supaKey);
-            }
-        } catch(e) { console.warn('Supabase:', e); }
-
-        // --- SISTEMA VIP ---
-        function abrirModalVip() { 
-            document.getElementById('vipModal').style.display = 'flex'; 
-            history.pushState({ view: 'vip' }, null, "");
-        }
-        function fecharModalVip() { document.getElementById('vipModal').style.display = 'none'; }
-
-        function abrirWhatsAppVip() {
-            window.open('https://wa.me/5511999999999?text=Olá!%20Quero%20ser%20VIP%20no%20StreamFlix.', '_blank');
-        }
-
-        async function fazerLoginVip() {
-            const email = document.getElementById('vipEmail').value;
-            const senha = document.getElementById('vipSenha').value;
-            const btn = document.getElementById('btnLoginBtn');
-            const msg = document.getElementById('vipMsg');
-
-            if(!email || !senha) { msg.innerText = "Preencha todos os campos."; msg.style.display = 'block'; return; }
-            if(!supabase) { msg.innerText = "Servidor indisponível."; msg.style.display = 'block'; return; }
-
-            btn.innerText = "Aguarde...";
-            msg.style.display = 'none';
-
-            try {
-                const { data, error } = await supabase.from('streamflix_users').select('*').eq('email', email).eq('senha', senha);
-                if(error) { msg.innerText = "Erro: " + (error.message || "Servidor"); msg.style.display = 'block'; btn.innerText = "Entrar na Conta VIP"; return; }
-                if(data && data.length > 0 && data[0].status === 'VIP') {
-                    localStorage.setItem('streamflix_vip', 'true');
-                    alert("Bem-vindo! Anúncios desativados.");
-                    fecharModalVip();
-                    verificarStatusVip();
-                } else {
-                    msg.innerText = "E-mail ou senha incorretos.";
-                    msg.style.display = 'block';
-                }
-            } catch(e) {
-                msg.innerText = "Erro de conexão.";
-                msg.style.display = 'block';
-            }
-            btn.innerText = "Entrar na Conta VIP";
-        }
-
-        function verificarStatusVip() {
-            const isVip = localStorage.getItem('streamflix_vip') === 'true';
-            if(isVip) {
-                document.getElementById('btnOpenVip').style.display = 'none';
-                document.getElementById('pushPromptModal').style.display = 'none';
-            } else {
-                document.getElementById('btnOpenVip').style.display = 'block';
-                injetarAnuncios();
-            }
-        }
-
-        // --- MOTOR DE ANÚNCIOS ---
-        function injetarAnuncios() {
-            console.log("Modo Grátis: Carregando publicidade...");
-            setTimeout(() => {
-                document.getElementById('pushPromptModal').style.display = 'block';
-            }, 3000);
-
-            try {
-                const s1 = document.createElement('script');
-                s1.innerHTML = `(function(s){s.dataset.zone='11081852',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
-                document.body.appendChild(s1);
-            } catch(e){}
-
-            try {
-                const s2 = document.createElement('script');
-                s2.src = 'https://5gvci.com/act/files/tag.min.js?z=11081853';
-                s2.setAttribute('data-cfasync', 'false');
-                s2.async = true;
-                document.body.appendChild(s2);
-            } catch(e){}
-
-            try {
-                const s3 = document.createElement('script');
-                s3.src = 'https://5gvci.com/act/files/tag.min.js?z=11081861';
-                s3.setAttribute('data-cfasync', 'false');
-                s3.async = true;
-                document.body.appendChild(s3);
-            } catch(e){}
-        }
-
-        function dispararDirectLink() {
-            if(localStorage.getItem('streamflix_vip') !== 'true') {
-                window.open('https://omg10.com/4/11081875', '_blank');
-            }
-        }
-
-        // --- POPSTATE ATUALIZADO ---
         window.addEventListener('popstate', function(event) {
-            if(document.getElementById('vipModal').style.display === 'flex') { fecharModalVip(); return; }
-            if(document.getElementById('embedModal').style.display === 'flex') { fecharEmbed(); return; }
+            if(event.state && event.state.view === 'vip') { fecharModalVip(); return; }
             if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); return; } 
-            if(document.getElementById('serverModal').classList.contains('active')) { fecharMenuServidores(); return; }
-            if(document.getElementById('actorModal').classList.contains('active')) { fecharAtor(); return; } 
-            if(document.getElementById('detailsPage').classList.contains('active')) { fecharDetalhes(); return; } 
-            if(document.getElementById('bottomSheet').classList.contains('active')) { fecharSheetTV(); return; } 
-            if(event.state && event.state.view) { mudarAba(event.state.view, null, true); return; } 
+            if (document.getElementById('embedModal').style.display === 'flex') { fecharEmbed(); return; } 
+            if (document.getElementById('serverModal').classList.contains('active')) { fecharMenuServidores(); return; }
+            if (document.getElementById('actorModal').classList.contains('active')) { fecharAtor(); return; } 
+            if (document.getElementById('detailsPage').classList.contains('active')) { fecharDetalhes(); return; } 
+            if (document.getElementById('bottomSheet').classList.contains('active')) { fecharSheetTV(); return; } 
+            if (event.state && event.state.view) { mudarAba(event.state.view, null, true); return; } 
             mudarAba('view-home', document.getElementById('nav-home'), true);
         });
 
         window.onload = () => {
             history.replaceState({ view: 'view-home' }, null, "");
-            verificarStatusVip();
             initApp();
         };
     </script>
