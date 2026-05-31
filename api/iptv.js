@@ -1,5 +1,5 @@
 // api/iptv.js — MOTOR 8.0 (BLINDADO + CACHE + FALLBACK STREAMS)
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
     res.setHeader('Content-Type', 'application/json');
@@ -87,4 +87,4 @@ export default async function handler(req, res) {
     }
 
     return res.status(500).json({ error: erroFinal });
-}
+};
