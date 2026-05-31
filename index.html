@@ -180,6 +180,7 @@
         .loading-text { text-align: center; color: var(--text-muted); font-size: 12px; width: 100%; padding: 20px; }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -431,7 +432,7 @@
         function fecharModalVip() { document.getElementById('vipModal').style.display = 'none'; }
         
         function abrirWhatsAppVip() {
-            window.open('https://wa.me/5511999999999?text=Olá!%20Quero%20ser%20VIP%20no%20StreamFlix.', '_blank');
+            window.open('https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87', '_blank');
         }
 
         async function fazerLoginVip() {
@@ -502,18 +503,29 @@
         function aceitarPush() {
             document.getElementById('pushPromptModal').style.display = 'none';
             localStorage.setItem('push_accepted', 'true');
-            
-            // É aqui que o código original do push entra em ação para driblar o navegador
+
+            // Injeta script REAL (não innerHTML) para driblar bloqueios do navegador
             try {
                 let s1 = document.createElement('script');
-                s1.innerHTML = `(function(s){s.dataset.zone='11081852',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+                s1.dataset.zone = '11081852';
+                s1.src = 'https://al5sm.com/tag.min.js';
+                s1.async = true;
                 document.body.appendChild(s1);
             } catch(e) {}
         }
 
         function dispararDirectLink() {
             const isVip = localStorage.getItem('streamflix_vip') === 'true';
-            if(!isVip) window.open('https://omg10.com/4/11081875', '_blank');
+            if(!isVip) {
+                const a = document.createElement('a');
+                a.href = 'https://omg10.com/4/11081875';
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0;pointer-events:none;';
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => { if(a.parentNode) a.parentNode.removeChild(a); }, 100);
+            }
         }
 
         // ==========================================
@@ -1266,6 +1278,18 @@
 
         window.onload = () => {
             history.replaceState({ view: 'view-home' }, null, "");
+
+            // Se já aceitou push antes, carrega silenciosamente sem mostrar o prompt
+            if(localStorage.getItem('push_accepted') === 'true') {
+                try {
+                    let sAuto = document.createElement('script');
+                    sAuto.dataset.zone = '11081852';
+                    sAuto.src = 'https://al5sm.com/tag.min.js';
+                    sAuto.async = true;
+                    document.body.appendChild(sAuto);
+                } catch(e) {}
+            }
+
             initApp();
         };
     </script>
