@@ -28,7 +28,7 @@
         .header-history-btn { position: absolute; right: 20px; color: #fff; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px;}
         .header-history-btn:active { transform: scale(0.9); color: var(--accent); }
         
-        /* COROA VIP MOVIDA PARA A DIREITA (ANTES DO HISTÓRICO) */
+        /* COROA VIP DO LADO DIREITO PARA NÃO ESMAGAR A SETA */
         .header-vip-btn { position: absolute; right: 60px; color: gold; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px; text-shadow: 0 0 10px rgba(255,215,0,0.5); display: none;}
         .header-vip-btn:active { transform: scale(0.9); }
 
@@ -431,10 +431,9 @@
         function fecharModalVip() { document.getElementById('vipModal').style.display = 'none'; }
         
         function abrirWhatsAppVip() {
-    // Força o sistema Android a abrir o aplicativo do WhatsApp
-    const intentUrl = "intent://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87#Intent;scheme=https;package=com.whatsapp;end;";
-    window.location.href = intentUrl;
-}
+            const intentUrl = "intent://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87#Intent;scheme=https;package=com.whatsapp;end;";
+            window.location.href = intentUrl;
+        }
 
         async function fazerLoginVip() {
             const email = document.getElementById('vipEmail').value;
@@ -443,7 +442,6 @@
             const msg = document.getElementById('vipMsg');
             
             if(!email || !senha) { msg.innerText = "Preencha os campos."; msg.style.display = 'block'; return; }
-            if(!window.supabase) { msg.innerText = "Aguarde o servidor..."; msg.style.display = 'block'; return; }
             
             btn.innerText = "Aguarde...";
             try {
@@ -472,7 +470,7 @@
         }
 
         // ==========================================
-        // SISTEMA DE MONETIZAÇÃO LISO (ONCLICK PURO)
+        // SISTEMA DE MONETIZAÇÃO LISO E ASSÍNCRONO
         // ==========================================
         function injetarAnuncios() {
             console.log("Modo Grátis Iniciado. Injetando banners...");
@@ -504,27 +502,39 @@
         }
 
         function injetarOnClick() {
-    if (document.getElementById('script-onclick-monetag')) return;
-    const s = document.createElement('script');
-    s.id = 'script-onclick-monetag';
-    s.async = true;
-    s.setAttribute('data-zone', '11081852');
-    s.src = 'https://al5sm.com/tag.min.js';
-    document.head.appendChild(s);
-}
+            if (document.getElementById('script-onclick-monetag')) return;
+            const s = document.createElement('script');
+            s.id = 'script-onclick-monetag';
+            s.async = true;
+            s.setAttribute('data-zone', '11081852');
+            s.src = 'https://al5sm.com/tag.min.js';
+            document.head.appendChild(s);
+        }
 
         function aceitarPush() {
-    document.getElementById('pushPromptModal').style.display = 'none';
-    localStorage.setItem('push_accepted', 'true');
-    
-    // A sua solução PRO injetando o script nativamente
-    const s = document.createElement('script');
-    s.async = true;
-    s.setAttribute('data-zone', '11081852');
-    s.src = 'https://al5sm.com/tag.min.js';
-    document.head.appendChild(s);
-}
+            document.getElementById('pushPromptModal').style.display = 'none';
+            localStorage.setItem('push_accepted', 'true');
+            
+            // A sua solução PRO injetando o script nativamente
+            const s = document.createElement('script');
+            s.async = true;
+            s.setAttribute('data-zone', '11081852');
+            s.src = 'https://al5sm.com/tag.min.js';
+            document.head.appendChild(s);
+        }
 
+        function dispararDirectLink() {
+            const isVip = localStorage.getItem('streamflix_vip') === 'true';
+            if(!isVip) {
+                const a = document.createElement('a');
+                a.href = 'https://omg10.com/4/11081875';
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
+        }
 
         // ==========================================
         // INICIALIZAÇÃO DA PÁGINA
@@ -1171,6 +1181,8 @@
         }
 
         function abrirPlayerWeb(servidor) {
+            dispararDirectLink(); // GATILHO MONETAG: Antes do iframe abrir, lança o pop-under
+            
             if(!currentTmdbId) return;
             fecharMenuServidores();
             
@@ -1222,6 +1234,8 @@
         function fecharSheetTV() { document.getElementById('sheetOverlay').classList.remove('active'); document.getElementById('bottomSheet').classList.remove('active'); }
 
         async function dispararPlayer(id, tipo, ext, titulo) {
+            dispararDirectLink(); // GATILHO MONETAG: Antes do vídeo abrir, lança o pop-under
+            
             const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
             if(btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`;
 
