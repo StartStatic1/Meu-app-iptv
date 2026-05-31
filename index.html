@@ -599,10 +599,37 @@
             document.getElementById('loading-state').style.display = 'none';
             document.getElementById('conteudo-real').style.display = 'block';
 
+            // DEBUG: Mostrar status no conteúdo
+            const debugDiv = document.createElement('div');
+            debugDiv.id = 'sf-debug';
+            debugDiv.style.cssText = 'position:fixed;bottom:100px;left:10px;right:10px;background:rgba(0,0,0,0.9);color:#0f0;font-family:monospace;font-size:11px;padding:10px;z-index:99999;border-radius:8px;max-height:150px;overflow-y:auto;';
+            document.body.appendChild(debugDiv);
+
+            function log(msg) {
+                console.log('[SF]', msg);
+                const d = document.getElementById('sf-debug');
+                if(d) d.innerHTML += '<div>• ' + msg + '</div>';
+            }
+
+            log('🚀 initApp iniciado');
+
             try {
                 let htmlConstruido = "";
+                log('📡 Fetching /api/iptv?action=get_vod_categories...');
+
                 const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
+                log('📡 Response status: ' + resVodCats.status + ' ' + resVodCats.statusText);
+
+                if(!resVodCats.ok) {
+                    throw new Error('HTTP ' + resVodCats.status);
+                }
+
                 const vodCats = await resVodCats.json();
+                log('📡 JSON recebido: ' + (Array.isArray(vodCats) ? vodCats.length + ' categorias' : 'NÃO É ARRAY'));
+
+                if(!Array.isArray(vodCats) || vodCats.length === 0) {
+                    throw new Error('Resposta vazia ou inválida');
+                }
                 const pastasFilmes = vodCats.filter(c => pastaValida(c.category_name)).sort((a,b) => {
                     const pri = /LANÇA|AÇÃO|COMÉDIA|TERROR/i;
                     return pri.test(b.category_name) - pri.test(a.category_name);
@@ -641,7 +668,8 @@
 
             } catch (error) { 
                 console.error('initApp error:', error);
-                document.getElementById('conteudo-dinamico').innerHTML = "<div class='loading-text' style='padding:40px 20px;text-align:center;'><i class='fas fa-exclamation-triangle' style='font-size:30px;color:var(--accent);margin-bottom:15px;display:block;'></i><h3 style='color:#fff;margin:0 0 10px;'>Erro de Conexão</h3><p style='color:var(--text-muted);font-size:13px;margin:0 0 20px;'>Não foi possível carregar o catálogo.</p><button onclick='location.reload()' style='padding:12px 30px;background:var(--accent);color:#000;border:none;border-radius:8px;font-weight:bold;cursor:pointer;'><i class='fas fa-redo'></i> Tentar Novamente</button></div>"; 
+                log('❌ ERRO: ' + error.message);
+                document.getElementById('conteudo-dinamico').innerHTML = "<div class='loading-text' style='padding:40px 20px;text-align:center;'><i class='fas fa-exclamation-triangle' style='font-size:30px;color:var(--accent);margin-bottom:15px;display:block;'></i><h3 style='color:#fff;margin:0 0 10px;'>Erro: " + error.message + "</h3><p style='color:var(--text-muted);font-size:13px;margin:0 0 20px;'>Verifique o console para mais detalhes.</p><button onclick='location.reload()' style='padding:12px 30px;background:var(--accent);color:#000;border:none;border-radius:8px;font-weight:bold;cursor:pointer;'><i class='fas fa-redo'></i> Tentar Novamente</button></div>"; 
             }
         }
 
