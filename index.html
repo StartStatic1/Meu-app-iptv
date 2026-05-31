@@ -6,7 +6,7 @@
     <title>StreamFlix</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 
     <style>
         :root { 
@@ -158,7 +158,6 @@
         .trailer-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; padding: 10px; z-index: 4502; text-shadow: 0 0 10px #000; }
         .trailer-frame { width: 100%; height: 100%; background: #000; border: none; }
 
-        /* MUDANÇA PARA O IFRAME ABRIR EM TELA CHEIA SEM CORTAR */
         .embed-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 3800; display: none; overflow: hidden; }
         .embed-frame { width: 100%; height: 100%; background: #000; border: none; }
 
@@ -410,29 +409,24 @@
         let currentEpisode = 1;
 
         let currentStreamData = {}; 
-        let supabase = null;
 
         // ==========================================
-        // BANCO DE DADOS VIP (SUPABASE)
+        // VARIÁVEL GLOBAL DO SUPABASE CORRIGIDA
         // ==========================================
+        let meuSupabase = null;
+
         function getSupabase() {
-            if(!supabase) {
+            if(!meuSupabase) {
                 const supaUrl = 'https://gkujbjpvphuvrejpvvtz.supabase.co';
                 const supaKey = 'sb_publishable_C9FMCjUyZnlzhINK2KZXWQ_ahpGu0yy';
-                supabase = window.supabase.createClient(supaUrl, supaKey);
+                meuSupabase = window.supabase.createClient(supaUrl, supaKey);
             }
-            return supabase;
+            return meuSupabase;
         }
 
-        function mostrarToast(msg) {
-            let t = document.getElementById('toast-msg');
-            if(!t) return;
-            t.innerText = msg;
-            t.style.opacity = '1';
-            clearTimeout(t._timer);
-            t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3500);
-        }
-
+        // ==========================================
+        // SISTEMA VIP (LOGIN E BLOQUEIO DE ADS)
+        // ==========================================
         function abrirModalVip() { 
             document.getElementById('vipModal').style.display = 'flex'; 
             document.body.classList.add('no-scroll');
@@ -445,44 +439,51 @@
             if(history.state && history.state.view === 'vip') history.back();
         }
 
-        // ==========================================
-        // CORREÇÃO DO WHATSAPP (Abre direto sem erro de Intent)
-        // Como o Android WebView interceptou até o link seguro e crashou,
-        // O método "target=_top" força a abertura FORA do sandbox.
-        // ==========================================
         function abrirWhatsAppVip() {
-            let a = document.createElement('a');
-            a.href = 'https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87';
-            a.target = '_top'; // Quebra o bloqueio de Webview Forçado
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
+            // Força o sistema Android a abrir o aplicativo do WhatsApp via intent
+            const intentUrl = "intent://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87#Intent;scheme=https;package=com.whatsapp;end;";
+            window.location.href = intentUrl;
         }
 
         async function fazerLoginVip() {
-            const email = document.getElementById('vipEmail').value;
-            const senha = document.getElementById('vipSenha').value;
+            const email = document.getElementById('vipEmail').value.trim();
+            const senha = document.getElementById('vipSenha').value.trim();
             const btn = document.getElementById('btnLoginBtn');
             const msg = document.getElementById('vipMsg');
 
             if(!email || !senha) { msg.innerText = "Preencha os campos."; msg.style.display = 'block'; return; }
-            if(!window.supabase) { msg.innerText = "Aguarde o servidor..."; msg.style.display = 'block'; return; }
-
-            btn.innerText = "Aguarde...";
+            
             try {
+                if(!window.supabase) throw new Error("Erro de internet. A biblioteca não carregou.");
+
+                btn.innerText = "Verificando...";
                 const supa = getSupabase(); 
                 const { data, error } = await supa.from('streamflix_users').select('*').eq('email', email).eq('senha', senha);
 
                 if(error) throw error;
+                
                 if(data && data.length > 0) {
                     if(data[0].status === 'VIP') {
                         localStorage.setItem('streamflix_vip', 'true');
                         mostrarToast("Bem-vindo! Anúncios desativados.");
                         setTimeout(() => location.reload(), 1500);
-                    } else { msg.innerText = "Conta não tem status VIP."; msg.style.display = 'block'; }
-                } else { msg.innerText = "Dados incorretos."; msg.style.display = 'block'; }
-            } catch(e) { msg.innerText = "Erro de servidor."; msg.style.display = 'block'; }
-            btn.innerText = "Entrar na Conta VIP";
+                    } else { msg.innerText = "Sua conta não tem status VIP."; msg.style.display = 'block'; }
+                } else { msg.innerText = "E-mail ou senha incorretos."; msg.style.display = 'block'; }
+            } catch(e) { 
+                msg.innerText = e.message; 
+                msg.style.display = 'block'; 
+            } finally {
+                if (btn.innerText === "Verificando...") btn.innerText = "Entrar na Conta VIP";
+            }
+        }
+
+        function mostrarToast(msg) {
+            let t = document.getElementById('toast-msg');
+            if(!t) return;
+            t.innerText = msg;
+            t.style.opacity = '1';
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3500);
         }
 
         function verificarStatusVip() {
