@@ -445,11 +445,12 @@
         }
 
         // ==========================================
-        // CORREÇÃO DO WHATSAPP (Abre direto no app nativo)
+        // CORREÇÃO DO WHATSAPP (Abre direto sem erro de Intent)
         // ==========================================
         function abrirWhatsAppVip() {
-            // Utilizando o intent:// igual apps como o VLC para forçar a abertura
-            window.location.href = "intent://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87#Intent;package=com.whatsapp;scheme=https;end;";
+            // Em Webviews que bloqueiam intent:// o ideal é usar o link web padrão.
+            // O próprio Android converte e aciona o WhatsApp instalado, e se não tiver instalado, abre na web.
+            window.location.href = 'https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87';
         }
 
         async function fazerLoginVip() {
@@ -484,7 +485,7 @@
         }
 
         // ==========================================
-        // MONETIZAÇÃO - APENAS PUSH, SEM DIRECT LINKS OCULTOS
+        // MONETIZAÇÃO - APENAS PUSH
         // ==========================================
         function injetarAnuncios() {
             if(localStorage.getItem('push_accepted') !== 'true') {
@@ -499,7 +500,6 @@
             document.getElementById('pushPromptModal').style.display = 'none';
             localStorage.setItem('push_accepted', 'true');
 
-            // Injeta a Tag Nativa da Monetag Exatamente após a interação do utilizador
             let s = document.createElement('script');
             s.src = 'https://al5sm.com/tag.min.js';
             s.setAttribute('data-zone', '11081852');
@@ -656,12 +656,13 @@
         }
 
         // ==========================================
-        // CORREÇÃO DOS NOMES DA TV (Mantém as localidades e qualidades na string final)
+        // CORREÇÃO DOS NOMES DA TV (Preserva interior e regiões)
         // ==========================================
         function processarTV(nomeBruto) {
             let nomeLimpo = nomeBruto || "Canal";
             const tags = [];
             
+            // Puxa as tags para as Badges
             if(/FHDR/i.test(nomeLimpo)) tags.push('FHDR');
             else if(/FHD/i.test(nomeLimpo)) tags.push('FHD');
             else if(/HD/i.test(nomeLimpo)) tags.push('HD');
@@ -669,13 +670,18 @@
             else if(/SD/i.test(nomeLimpo)) tags.push('SD');
 
             const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/i);
-            if(estado) tags.push(estado[0].toUpperCase());
+            if(estado && !tags.includes(estado[0].toUpperCase())) tags.push(estado[0].toUpperCase());
 
-            // Apenas removemos os caracteres estranhos. NÃO removemos mais as Siglas ou a Qualidade do nome visível!
-            nomeLimpo = nomeLimpo.replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').replace(/[>-\|*•]/g, '').replace(/\s+/g, ' ').trim();
+            // Remove APENAS as tags de qualidade de dentro do texto (preservando o resto)
+            nomeLimpo = nomeLimpo.replace(/\[(FHDR|FHD|HD|4K|SD)\]/ig, '');
+            nomeLimpo = nomeLimpo.replace(/\((FHDR|FHD|HD|4K|SD)\)/ig, '');
+            nomeLimpo = nomeLimpo.replace(/\b(FHDR|FHD|HD|4K|SD)\b/ig, '');
+
+            // Limpa hifens, pipes, e barras sobrando no começo e no final
+            nomeLimpo = nomeLimpo.replace(/^[>-\|*•\s]+|[>-\|*•\s]+$/g, '').replace(/\s+/g, ' ').trim();
             
             if (!nomeLimpo || nomeLimpo.length < 2) {
-                nomeLimpo = nomeBruto.replace(/[>-\|*•]/g, '').trim();
+                nomeLimpo = nomeBruto.replace(/[>-\|*•]/g, '').trim(); // Fallback de emergência
             }
             
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
@@ -1178,9 +1184,13 @@
             if(history.state && history.state.view === 'servermenu') history.back();
         }
 
+        // CORREÇÃO DO CONFLITO DE HISTÓRICO NO WEB PLAYER
         function abrirPlayerWeb(servidor) {
             if(!currentTmdbId) return;
-            fecharMenuServidores();
+            
+            // Remove as classes do DOM SEM acionar o history.back()
+            document.getElementById('serverModal').classList.remove('active');
+            document.getElementById('sheetOverlay').classList.remove('active');
 
             const modal = document.getElementById('embedModal');
             const frame = document.getElementById('embedFrame');
@@ -1200,7 +1210,13 @@
             frame.src = finalUrl;
             modal.style.display = 'flex';
             document.body.classList.add('no-scroll');
-            history.pushState({ view: 'embed' }, null, "");
+            
+            // Substitui o estado atual da URL em vez de encavalar dois modais
+            if(history.state && history.state.view === 'servermenu') {
+                history.replaceState({ view: 'embed' }, null, "");
+            } else {
+                history.pushState({ view: 'embed' }, null, "");
+            }
         }
 
         function fecharEmbedWeb() {
@@ -1299,7 +1315,8 @@
 
             document.getElementById('sheetOverlay').onclick = function() {
                 if(document.getElementById('serverModal').classList.contains('active')) {
-                    fecharMenuServidores();
+                    // Sem mexer no histórico aqui, o history.back fará isso sozinho
+                    history.back();
                 } else if(document.getElementById('bottomSheet').classList.contains('active')) {
                     fecharSheetTV();
                 }
