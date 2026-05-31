@@ -187,6 +187,12 @@
         <i class="fas fa-bookmark header-history-btn" onclick="mudarAba('view-historico', null)"></i>
     </div>
 
+    <div id="pushPromptModal" style="display:none; position:fixed; bottom:80px; left:5%; width:90%; background:linear-gradient(45deg, #00e5ff, #0055ff); padding:15px; border-radius:12px; z-index:5000; box-shadow:0 5px 15px rgba(0,229,255,0.4); text-align:center;">
+        <h3 style="margin:0 0 5px; color:#fff; font-size:16px;"><i class="fas fa-bell" style="color:gold;"></i> Lançamentos Exclusivos</h3>
+        <p style="margin:0 0 10px; color:#fff; font-size:12px;">Para ser avisado quando um novo filme dublado chegar ao catálogo, clique em "PERMITIR" no aviso do seu ecrã!</p>
+        <button onclick="document.getElementById('pushPromptModal').style.display='none'" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Entendi</button>
+    </div>
+
     <div class="embed-modal" id="vipModal" style="display:none; padding:20px; align-items:center; z-index:9999; background: rgba(0,0,0,0.95);">
         <div style="background:var(--bg-top); padding:25px; border-radius:15px; width:100%; max-width:350px; text-align:center; border: 1px solid gold; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <i class="fas fa-times" onclick="fecharModalVip()" style="position:absolute; right:15px; top:15px; color:#fff; font-size:20px; cursor:pointer;"></i>
@@ -372,7 +378,7 @@
     </div>
 
     <div class="embed-modal" id="embedModal">
-        <i class="fas fa-times trailer-close" onclick="history.back()" style="z-index: 4502;"></i>
+        <i class="fas fa-times trailer-close" onclick="fecharEmbedWeb()" style="z-index: 4502;"></i>
         <iframe id="embedFrame" class="embed-frame" allowfullscreen></iframe>
     </div>
 
@@ -455,17 +461,57 @@
             const isVip = localStorage.getItem('streamflix_vip') === 'true';
             if(isVip) {
                 document.getElementById('btnOpenVip').style.display = 'none';
-                // O UTILIZADOR É VIP! Não injetar scripts.
+                document.getElementById('pushPromptModal').style.display = 'none';
+                // O UTILIZADOR É VIP!
             } else {
                 document.getElementById('btnOpenVip').style.display = 'block';
-                // O UTILIZADOR É FREE! (Aqui entra a Monetag)
                 injetarAnuncios();
             }
         }
 
+        // ==========================================
+        // MOTOR DE ANÚNCIOS INVISÍVEIS MONETAG (Modo Free)
+        // ==========================================
         function injetarAnuncios() {
-            // AQUI É ONDE VAMOS COLAR OS SEUS CÓDIGOS DA MONETAG NA PRÓXIMA ETAPA!
-            console.log("Modo Grátis: Anúncios Ativados.");
+            console.log("Modo Grátis: Carregando publicidade...");
+            
+            // 1. A Isca do Push (Mostra após 3 segundos para não assustar)
+            setTimeout(() => {
+                document.getElementById('pushPromptModal').style.display = 'block';
+            }, 3000);
+
+            // Script Push Oficial Monetag
+            try {
+                const s1 = document.createElement('script');
+                s1.innerHTML = `(function(s){s.dataset.zone='11081852',s.src='https://al5sm.com/tag.min.js'})([document.documentElement, document.body].filter(Boolean).pop().appendChild(document.createElement('script')))`;
+                document.body.appendChild(s1);
+            } catch(e){}
+
+            // Script In-Page Push 1
+            try {
+                const s2 = document.createElement('script');
+                s2.src = 'https://5gvci.com/act/files/tag.min.js?z=11081853';
+                s2.setAttribute('data-cfasync', 'false');
+                s2.async = true;
+                document.body.appendChild(s2);
+            } catch(e){}
+
+            // Script In-Page Push 2
+            try {
+                const s3 = document.createElement('script');
+                s3.src = 'https://5gvci.com/act/files/tag.min.js?z=11081861';
+                s3.setAttribute('data-cfasync', 'false');
+                s3.async = true;
+                document.body.appendChild(s3);
+            } catch(e){}
+        }
+
+        // Esta função é chamada SOMENTE nos botões de Play se o cliente for FREE.
+        function dispararDirectLink() {
+            const isVip = localStorage.getItem('streamflix_vip') === 'true';
+            if(!isVip) {
+                window.open('https://omg10.com/4/11081875', '_blank');
+            }
         }
 
         // ==========================================
@@ -653,7 +699,7 @@
         }
 
         async function initApp() {
-            verificarStatusVip(); // <-- VERIFICA VIP AO ABRIR O APP
+            verificarStatusVip(); // <-- VERIFICA VIP AO ABRIR
             
             try {
                 let htmlConstruido = "";
@@ -1108,6 +1154,8 @@
         }
 
         function abrirPlayerWeb(servidor) {
+            dispararDirectLink(); // GATILHO MONETAG: Antes do iframe abrir, lança o pop-under
+            
             if(!currentTmdbId) return;
             fecharMenuServidores();
             
@@ -1135,6 +1183,13 @@
         function fecharEmbed() {
             document.getElementById('embedModal').style.display = 'none';
             document.getElementById('embedFrame').src = '';
+            document.body.style.overflow = '';
+        }
+
+        function fecharEmbedWeb() {
+            document.getElementById('embedModal').style.display = 'none';
+            document.getElementById('embedFrame').src = '';
+            document.body.style.overflow = '';
         }
 
         function fecharDetalhes() { document.getElementById('detailsPage').classList.remove('active'); }
@@ -1152,6 +1207,8 @@
         function fecharSheetTV() { document.getElementById('sheetOverlay').classList.remove('active'); document.getElementById('bottomSheet').classList.remove('active'); }
 
         async function dispararPlayer(id, tipo, ext, titulo) {
+            dispararDirectLink(); // GATILHO MONETAG: Antes do vídeo abrir, lança o pop-under
+            
             const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
             if(btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`;
 
@@ -1190,14 +1247,14 @@
 
         window.addEventListener('popstate', function(event) {
             if(event.state && event.state.view === 'vip') { fecharModalVip(); return; }
-            if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); } 
-            else if (document.getElementById('embedModal').style.display === 'flex') { fecharEmbed(); } 
-            else if (document.getElementById('serverModal').classList.contains('active')) { fecharMenuServidores(); }
-            else if (document.getElementById('actorModal').classList.contains('active')) { fecharAtor(); } 
-            else if (document.getElementById('detailsPage').classList.contains('active')) { fecharDetalhes(); } 
-            else if (document.getElementById('bottomSheet').classList.contains('active')) { fecharSheetTV(); } 
-            else if (event.state && event.state.view) { mudarAba(event.state.view, null, true); } 
-            else { mudarAba('view-home', document.getElementById('nav-home'), true); }
+            if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); return; } 
+            if (document.getElementById('embedModal').style.display === 'flex') { fecharEmbed(); return; } 
+            if (document.getElementById('serverModal').classList.contains('active')) { fecharMenuServidores(); return; }
+            if (document.getElementById('actorModal').classList.contains('active')) { fecharAtor(); return; } 
+            if (document.getElementById('detailsPage').classList.contains('active')) { fecharDetalhes(); return; } 
+            if (document.getElementById('bottomSheet').classList.contains('active')) { fecharSheetTV(); return; } 
+            if (event.state && event.state.view) { mudarAba(event.state.view, null, true); return; } 
+            mudarAba('view-home', document.getElementById('nav-home'), true);
         });
 
         window.onload = () => {
