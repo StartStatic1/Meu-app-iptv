@@ -182,7 +182,6 @@
         #toast-msg { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.92); color: #fff; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; border: 1px solid rgba(255,255,255,0.1); max-width: 90%; text-align: center; }
     </style>
 <base target="_blank">
-<base target="_blank">
 </head>
 <body>
 
@@ -196,8 +195,8 @@
 
     <div id="pushPromptModal" style="display:none; position:fixed; bottom:80px; left:5%; width:90%; background:linear-gradient(45deg, #00e5ff, #0055ff); padding:15px; border-radius:12px; z-index:4000; box-shadow:0 5px 15px rgba(0,229,255,0.4); text-align:center;">
         <h3 style="margin:0 0 5px; color:#fff; font-size:16px;"><i class="fas fa-bell" style="color:gold;"></i> Lançamentos Exclusivos</h3>
-        <p style="margin:0 0 10px; color:#fff; font-size:12px;">Ative as notificações para ser avisado quando novos filmes dublados chegarem ao catálogo!</p>
-        <button onclick="aceitarPush()" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Ativar Agora</button>
+        <p style="margin:0 0 10px; color:#fff; font-size:12px;">Ative as notificações para ser avisado quando novos filmes chegarem ao catálogo!</p>
+        <button onclick="aceitarPush()" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Entendi</button>
     </div>
 
     <div class="embed-modal" id="vipModal" style="display:none; padding:20px; align-items:center; z-index:3900; background: rgba(0,0,0,0.95);" onclick="if(event.target === this) fecharModalVip()">
@@ -412,6 +411,9 @@
         let currentStreamData = {}; 
         let supabase = null;
 
+        // ==========================================
+        // BANCO DE DADOS VIP (SUPABASE)
+        // ==========================================
         function getSupabase() {
             if(!supabase) {
                 const supaUrl = 'https://gkujbjpvphuvrejpvvtz.supabase.co';
@@ -442,16 +444,18 @@
             if(history.state && history.state.view === 'vip') history.back();
         }
 
+        // ==========================================
+        // WHATSAPP (CORREÇÃO DA TELA BRANCA NO ANDROID)
+        // ==========================================
         function abrirWhatsAppVip() {
-            const url = 'https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87';
-            try {
-                const win = window.open(url, '_blank');
-                if(!win || win.closed || typeof win.closed === 'undefined') {
-                    window.location.href = url;
-                }
-            } catch(e) {
-                window.location.href = url;
-            }
+            // Em WebViews do Android, a forma mais segura de abrir links externos sem erro de schema é injetar um <a> tag.
+            let a = document.createElement('a');
+            a.href = 'https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87';
+            a.target = '_blank';
+            a.rel = 'noopener noreferrer';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         async function fazerLoginVip() {
@@ -485,59 +489,44 @@
             document.getElementById('btnOpenVip').style.display = isVip ? 'none' : 'block';
         }
 
+        // ==========================================
+        // MONETIZAÇÃO - MONETAG SCRIPT INJECTION
+        // ==========================================
         function injetarAnuncios() {
-            console.log("Modo Grátis Iniciado. Banners serão carregados em breve...");
-
             if(localStorage.getItem('push_accepted') !== 'true') {
                 setTimeout(() => { 
                     const prompt = document.getElementById('pushPromptModal');
                     if(prompt) prompt.style.display = 'block'; 
-                }, 5000);
-            } else {
-                injetarOnClick();
+                }, 3000);
             }
-
-            // Carrega banners de forma assíncrona e segura após 4s para não travar o boot
-            setTimeout(() => {
-                try {
-                    let s2 = document.createElement('script');
-                    s2.src = 'https://5gvci.com/act/files/tag.min.js?z=11081853';
-                    s2.setAttribute('data-cfasync', 'false');
-                    s2.async = true;
-                    s2.onerror = () => console.log('Banner 1 falhou silenciosamente');
-                    document.body.appendChild(s2);
-
-                    let s3 = document.createElement('script');
-                    s3.src = 'https://5gvci.com/act/files/tag.min.js?z=11081861';
-                    s3.setAttribute('data-cfasync', 'false');
-                    s3.async = true;
-                    s3.onerror = () => console.log('Banner 2 falhou silenciosamente');
-                    document.body.appendChild(s3);
-                } catch(e) {}
-            }, 4000);
-        }
-
-        function injetarOnClick() {
-            if (document.getElementById('script-onclick-monetag')) return;
-            const s = document.createElement('script');
-            s.id = 'script-onclick-monetag';
-            s.async = true;
-            s.setAttribute('data-zone', '11081852');
-            s.src = 'https://al5sm.com/tag.min.js';
-            s.onerror = () => console.log('OnClick script falhou silenciosamente');
-            document.body.appendChild(s);
         }
 
         function aceitarPush() {
             document.getElementById('pushPromptModal').style.display = 'none';
             localStorage.setItem('push_accepted', 'true');
 
-            if ('Notification' in window && 'requestPermission' in Notification) {
-                Notification.requestPermission().catch(() => {});
-            }
+            // Injeta a Tag Nativa da Monetag Exatamente após a interação do utilizador
+            let s = document.createElement('script');
+            s.src = 'https://al5sm.com/tag.min.js';
+            s.setAttribute('data-zone', '11081852');
+            s.async = true;
+            document.head.appendChild(s);
+            
+            mostrarToast("Notificações e Lançamentos ativados!");
+        }
 
-            injetarOnClick();
-            mostrarToast("Notificações ativadas!");
+        // Esta função atira o clique para a Monetag sem quebrar a Webview
+        function dispararDirectLink() {
+            const isVip = localStorage.getItem('streamflix_vip') === 'true';
+            if(!isVip) {
+                let a = document.createElement('a');
+                a.href = 'https://omg10.com/4/11081875';
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            }
         }
 
         async function initApp() {
@@ -686,6 +675,9 @@
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
+        // ==========================================
+        // CORREÇÃO DOS NOMES DA TV (NÃO APAGA TUDO)
+        // ==========================================
         function processarTV(nomeBruto) {
             let nomeLimpo = nomeBruto || "Canal";
             const tags = [];
@@ -699,6 +691,12 @@
             else if(/SD/i.test(nomeLimpo)) tags.push('SD');
 
             nomeLimpo = nomeLimpo.replace(/(FHDR|FHD|HD|4K|SD)/ig, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').replace(/[>-\|*•]/g, '').replace(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/ig, '').replace(/\s+/g, ' ').trim();
+            
+            // SE A LIMPEZA APAGAR O NOME TODO (ex: [FHD] GLOBO SP), ELE RECUPERA O ORIGINAL
+            if (!nomeLimpo || nomeLimpo.length < 2) {
+                nomeLimpo = nomeBruto.replace(/\[.*?\]|\(.*?\)/g, '').replace(/[>-\|*•]/g, '').trim();
+            }
+            
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
@@ -725,7 +723,6 @@
         }
 
         function mudarAba(idView, btn, originHistory = false) {
-            // Limpa o hero interval se sair da home para economizar bateria
             if(idView !== 'view-home' && heroInterval) {
                 clearInterval(heroInterval);
                 heroInterval = null;
@@ -1089,7 +1086,7 @@
 
                             data.episodes[season].forEach(ep => {
                                 let epTitle = ep.title || `Episódio ${ep.episode_num}`;
-                                const regexSerie = new RegExp(titulo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "\s*[-:]?\s*", "i");
+                                const regexSerie = new RegExp(titulo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "\\s*[-:]?\\s*", "i");
                                 epTitle = epTitle.replace(regexSerie, "").replace(/S\d{1,2}\s*E\d{1,2}\s*[-:]?\s*/i, "").replace(/^[-_.:\s]+/, "").trim(); 
                                 if(!epTitle || epTitle.length < 2) epTitle = `Episódio ${ep.episode_num}`;
 
@@ -1201,6 +1198,8 @@
         }
 
         function abrirPlayerWeb(servidor) {
+            dispararDirectLink(); // Aciona o Anúncio
+
             if(!currentTmdbId) return;
             fecharMenuServidores();
 
@@ -1259,6 +1258,8 @@
         }
 
         async function dispararPlayer(id, tipo, ext, titulo) {
+            dispararDirectLink(); // Aciona o Anúncio
+
             const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
             if(btn) {
                 btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`;
@@ -1269,17 +1270,17 @@
                 let urlFinal = "";
                 if(tipo === 'vod') {
                     const res = await fetch(`/api/iptv?action=get_movie_url&stream_id=${id}&extension=${ext}`);
-                    if(!res.ok) throw new Error("Servidor indisponível (HTTP " + res.status + ")");
+                    if(!res.ok) throw new Error("Servidor indisponível");
                     const data = await res.json();
                     urlFinal = data.url;
                 } else if (tipo === 'live') {
                     const res = await fetch(`/api/iptv?action=get_live_url&stream_id=${id}`);
-                    if(!res.ok) throw new Error("Servidor indisponível (HTTP " + res.status + ")");
+                    if(!res.ok) throw new Error("Servidor indisponível");
                     const data = await res.json();
                     urlFinal = data.url;
                 } else if (tipo === 'episode') {
                     const res = await fetch(`/api/iptv?action=get_series_url&stream_id=${id}&extension=${ext}`);
-                    if(!res.ok) throw new Error("Servidor indisponível (HTTP " + res.status + ")");
+                    if(!res.ok) throw new Error("Servidor indisponível");
                     const data = await res.json();
                     urlFinal = data.url;
                 }
@@ -1319,7 +1320,6 @@
         window.onload = () => {
             history.replaceState({ view: 'view-home' }, null, "");
 
-            // Define o comportamento do overlay de forma inteligente
             document.getElementById('sheetOverlay').onclick = function() {
                 if(document.getElementById('serverModal').classList.contains('active')) {
                     fecharMenuServidores();
