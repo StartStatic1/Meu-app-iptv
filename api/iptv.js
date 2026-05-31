@@ -1,23 +1,36 @@
-// api/iptv.js — MOTOR 8.0 (BLINDADO + CACHE + FALLBACK STREAMS)
+// api/iptv.js — MOTOR 8.0 (SERVIDORES OFUSCADOS + CACHE + FALLBACK)
+// Servidores codificados em Base64 para ofuscação
+const SERVIDORES_B64 = 'W3sidXJsIjogImh0dHA6Ly9rYXZydS5jb206ODAiLCAidXNlciI6ICI1NTgzOTYwNDM1MTkiLCAicGFzcyI6ICI2NDUzNzUwNSJ9LCB7InVybCI6ICJodHRwOi8vcm5wbGF5MDcudmlwOjgwIiwgInVzZXIiOiAiOTQxMzk0NDQxIiwgInBhc3MiOiAiOTAzMjI4ODcyIn0sIHsidXJsIjogImh0dHA6Ly9ibmV3c2MudG9wOjgwIiwgInVzZXIiOiAicmVnaW5hbGRvYnIiLCAicGFzcyI6ICI0MzIzMzR4YyJ9XQ==';
+
+function decodeServidores() {
+    try {
+        const json = Buffer.from(SERVIDORES_B64, 'base64').toString('utf8');
+        return JSON.parse(json);
+    } catch (e) {
+        return [];
+    }
+}
+
 module.exports = async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
     res.setHeader('Content-Type', 'application/json');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
 
     const { action, category_id, stream_id, series_id, extension } = req.query;
 
-    // 1. SERVIDORES VIA ENV (configure no painel da Vercel)
-    const servidores = [
-        { url: process.env.IPTV_S1_URL, user: process.env.IPTV_S1_USER, pass: process.env.IPTV_S1_PASS },
-        { url: process.env.IPTV_S2_URL, user: process.env.IPTV_S2_USER, pass: process.env.IPTV_S2_PASS },
-        { url: process.env.IPTV_S3_URL, user: process.env.IPTV_S3_USER, pass: process.env.IPTV_S3_PASS }
-    ].filter(s => s.url && s.user && s.pass);
+    // 1. DECODIFICAR SERVIDORES
+    const servidores = decodeServidores();
 
     if (servidores.length === 0) {
-        return res.status(500).json({ error: "Nenhum servidor IPTV configurado nas ENV vars." });
+        return res.status(500).json({ error: "Erro ao decodificar servidores." });
     }
 
-    // 2. CACHE SIMPLES (TTL 5 minutos para listas)
+    // 2. CACHE SIMPLES (TTL 5 minutos)
     const CACHE_TTL = 5 * 60 * 1000;
     if (!global.cacheIptv) global.cacheIptv = new Map();
     const cacheKey = `${action}_${category_id}_${series_id}_${stream_id}`;
@@ -26,7 +39,7 @@ module.exports = async function handler(req, res) {
         return res.status(200).json(cached.data);
     }
 
-    // 3. GERAR LINKS DE STREAM COM FALLBACK (retorna url + urls[])
+    // 3. GERAR LINKS DE STREAM COM FALLBACK
     const ext = extension || "mp4";
     const buildStreamUrls = (pathTemplate) => {
         return servidores.map(s => {
@@ -58,7 +71,7 @@ module.exports = async function handler(req, res) {
         return res.status(200).json(data);
     }
 
-    // 4. BUSCAR DADOS COM FALLBACK (listas, categorias, info)
+    // 4. BUSCAR DADOS COM FALLBACK
     let erroFinal = "Todos os servidores falharam.";
 
     for (let i = 0; i < servidores.length; i++) {
