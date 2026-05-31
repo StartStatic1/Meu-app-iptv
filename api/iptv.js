@@ -1,4 +1,4 @@
-// api/iptv.js - MOTOR 7.0 (SISTEMA DE FALLBACK)
+// api/iptv.js — MOTOR 8.0 (BLINDADO + CACHE + FALLBACK STREAMS)
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -6,72 +6,85 @@ export default async function handler(req, res) {
 
     const { action, category_id, stream_id, series_id, extension } = req.query;
 
-    // A ARMA SECRETA: LISTA DE SERVIDORES
-    // O sistema tentará o Principal. Se falhar, tenta o Backup 1, depois o Backup 2.
+    // 1. SERVIDORES VIA ENV (configure no painel da Vercel)
     const servidores = [
-        { url: "http://kavru.com:80", user: "558396043519", pass: "64537505" },   // Principal
-        { url: "http://rnplay07.vip:80", user: "941394441", pass: "903228872" },   // Backup 1
-        { url: "http://bnewsc.top:80", user: "reginaldobr", pass: "432334xc" }    // Backup 2
-    ];
+        { url: process.env.IPTV_S1_URL, user: process.env.IPTV_S1_USER, pass: process.env.IPTV_S1_PASS },
+        { url: process.env.IPTV_S2_URL, user: process.env.IPTV_S2_USER, pass: process.env.IPTV_S2_PASS },
+        { url: process.env.IPTV_S3_URL, user: process.env.IPTV_S3_USER, pass: process.env.IPTV_S3_PASS }
+    ].filter(s => s.url && s.user && s.pass);
 
-    // ==========================================
-    // FUNÇÃO: GERAR LINKS DE REPRODUÇÃO DIRETOS
-    // ==========================================
+    if (servidores.length === 0) {
+        return res.status(500).json({ error: "Nenhum servidor IPTV configurado nas ENV vars." });
+    }
+
+    // 2. CACHE SIMPLES (TTL 5 minutos para listas)
+    const CACHE_TTL = 5 * 60 * 1000;
+    if (!global.cacheIptv) global.cacheIptv = new Map();
+    const cacheKey = `${action}_${category_id}_${series_id}_${stream_id}`;
+    const cached = global.cacheIptv.get(cacheKey);
+    if (cached && (Date.now() - cached.ts < CACHE_TTL)) {
+        return res.status(200).json(cached.data);
+    }
+
+    // 3. GERAR LINKS DE STREAM COM FALLBACK (retorna url + urls[])
+    const ext = extension || "mp4";
+    const buildStreamUrls = (pathTemplate) => {
+        return servidores.map(s => {
+            return pathTemplate
+                .replace('{URL}', s.url)
+                .replace('{USER}', s.user)
+                .replace('{PASS}', s.pass)
+                .replace('{ID}', stream_id)
+                .replace('{EXT}', ext);
+        });
+    };
+
     if (action === "get_movie_url" && stream_id) {
-        // Retorna o link do servidor Principal. 
-        // (Nota: Links diretos de VOD não testam falha de conexão na API, o teste ocorre no próprio App nativo)
-        const ext = extension || "mp4";
-        const svr = servidores[0];
-        return res.status(200).json({ url: `${svr.url}/movie/${svr.user}/${svr.pass}/${stream_id}.${ext}` });
+        const urls = buildStreamUrls('{URL}/movie/{USER}/{PASS}/{ID}.{EXT}');
+        const data = { url: urls[0], urls: urls };
+        global.cacheIptv.set(cacheKey, { data, ts: Date.now() });
+        return res.status(200).json(data);
     }
-
     if (action === "get_live_url" && stream_id) {
-        const svr = servidores[0];
-        return res.status(200).json({ url: `${svr.url}/${svr.user}/${svr.pass}/${stream_id}.ts` });
+        const urls = buildStreamUrls('{URL}/{USER}/{PASS}/{ID}.ts');
+        const data = { url: urls[0], urls: urls };
+        global.cacheIptv.set(cacheKey, { data, ts: Date.now() });
+        return res.status(200).json(data);
     }
-
     if (action === "get_series_url" && stream_id) {
-        const ext = extension || "mp4";
-        const svr = servidores[0];
-        return res.status(200).json({ url: `${svr.url}/series/${svr.user}/${svr.pass}/${stream_id}.${ext}` });
+        const urls = buildStreamUrls('{URL}/series/{USER}/{PASS}/{ID}.{EXT}');
+        const data = { url: urls[0], urls: urls };
+        global.cacheIptv.set(cacheKey, { data, ts: Date.now() });
+        return res.status(200).json(data);
     }
 
-    // ==========================================
-    // FUNÇÃO: BUSCAR DADOS (COM SISTEMA FALLBACK)
-    // ==========================================
+    // 4. BUSCAR DADOS COM FALLBACK (listas, categorias, info)
     let erroFinal = "Todos os servidores falharam.";
 
-    // Loop Inteligente: Tenta um servidor de cada vez
     for (let i = 0; i < servidores.length; i++) {
         const svr = servidores[i];
         let targetUrl = `${svr.url}/player_api.php?username=${svr.user}&password=${svr.pass}`;
-
         if (action) targetUrl += `&action=${action}`;
         if (category_id) targetUrl += `&category_id=${category_id}`;
         if (series_id) targetUrl += `&series_id=${series_id}`;
 
         try {
-            // Aborta a tentativa se o servidor demorar mais de 6 segundos (para não congelar o telemóvel)
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 6000);
-
             const response = await fetch(targetUrl, { signal: controller.signal });
             clearTimeout(timeoutId);
 
             if (response.ok) {
                 const data = await response.json();
-                // Se respondeu certinho, devolve para o telemóvel e PARA o loop. Sucesso!
+                global.cacheIptv.set(cacheKey, { data, ts: Date.now() });
                 return res.status(200).json(data);
             } else {
-                erroFinal = `Servidor ${i + 1} retornou Erro ${response.status}`;
-                console.log(erroFinal); // Falhou, vai tentar o próximo...
+                erroFinal = `Servidor ${i+1} erro ${response.status}`;
             }
-        } catch (error) {
-            erroFinal = `Servidor ${i + 1} Offline ou Demorou muito.`;
-            console.log(erroFinal); // Falhou, vai tentar o próximo...
+        } catch (e) {
+            erroFinal = `Servidor ${i+1} offline`;
         }
     }
 
-    // Se o código chegou até aqui, significa que os 3 servidores (Kavru, rnplay07 e bnewsc) caíram ao mesmo tempo.
     return res.status(500).json({ error: erroFinal });
 }
