@@ -73,7 +73,7 @@
 
         .card-tv { flex: 0 0 140px; height: 100px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; flex-direction: column; padding: 8px 5px;}
         .card-tv img { width: 50%; height: 45%; object-fit: contain; margin-bottom: 8px; }
-        .card-tv .titulo-tv { font-size: 10px; font-weight: bold; text-align: center; color: #ccc; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; } 
+        .card-tv .titulo-tv { font-size: 10px; font-weight: bold; text-align: center; color: #ccc; width: 100%; white-space: normal; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2;} 
         .live-badge { position: absolute; top: 5px; right: 5px; background: #e50914; color: white; font-size: 7px; font-weight: bold; padding: 2px 4px; border-radius: 3px; }
 
         .page-header { padding: 40px 15px 15px 15px; display: flex; align-items: center; gap: 15px; background: linear-gradient(to bottom, var(--bg-top), transparent); z-index:10; position:relative;}
@@ -154,12 +154,13 @@
         .actor-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
         .actor-bio { font-size: 13px; color: #ccc; line-height: 1.5; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        .trailer-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 3600; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .trailer-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; padding: 10px; z-index: 4010; text-shadow: 0 0 10px #000; }
-        .trailer-frame { width: 100%; aspect-ratio: 16/9; background: #000; border: none; }
+        .trailer-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 3600; display: none; }
+        .trailer-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; padding: 10px; z-index: 4502; text-shadow: 0 0 10px #000; }
+        .trailer-frame { width: 100%; height: 100%; background: #000; border: none; }
 
-        .embed-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3800; display: none; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
-        .embed-frame { width: 100%; height: 100%; background: #000; border: none; z-index: 3801; }
+        /* MUDANÇA PARA O IFRAME ABRIR EM TELA CHEIA SEM CORTAR */
+        .embed-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 3800; display: none; overflow: hidden; }
+        .embed-frame { width: 100%; height: 100%; background: #000; border: none; }
 
         .season-title { font-size: 18px; font-weight: 800; color: #fff; margin: 30px 0 15px 0; border-left: 3px solid var(--accent); padding-left: 8px;}
         .ep-carousel { display: flex; gap: 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 10px; }
@@ -199,7 +200,7 @@
         <button onclick="aceitarPush()" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Entendi</button>
     </div>
 
-    <div class="embed-modal" id="vipModal" style="display:none; padding:20px; align-items:center; z-index:3900; background: rgba(0,0,0,0.95);" onclick="if(event.target === this) fecharModalVip()">
+    <div class="embed-modal" id="vipModal" style="padding:20px; align-items:center; z-index:3900; background: rgba(0,0,0,0.95); display:none;" onclick="if(event.target === this) fecharModalVip()">
         <div style="background:var(--bg-top); padding:25px; border-radius:15px; width:100%; max-width:350px; text-align:center; border: 1px solid gold; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <i class="fas fa-times" onclick="event.stopPropagation(); fecharModalVip()" style="position:absolute; right:15px; top:15px; color:#fff; font-size:20px; cursor:pointer;"></i>
             <h2 style="color:#fff; margin-top:5px; font-weight:900;"><i class="fas fa-crown" style="color:gold;"></i> Área VIP</h2>
@@ -380,12 +381,12 @@
 
     <div class="trailer-modal" id="trailerModal">
         <i class="fas fa-times trailer-close" onclick="history.back()"></i>
-        <iframe id="trailerFrame" class="trailer-frame" allowfullscreen></iframe>
+        <iframe id="trailerFrame" class="trailer-frame" allowfullscreen="true"></iframe>
     </div>
 
     <div class="embed-modal" id="embedModal">
-        <i class="fas fa-times trailer-close" onclick="fecharEmbedWeb()" style="z-index: 4502;"></i>
-        <iframe id="embedFrame" class="embed-frame" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe>
+        <i class="fas fa-times trailer-close" onclick="fecharEmbedWeb()"></i>
+        <iframe id="embedFrame" class="embed-frame" allow="fullscreen; autoplay; encrypted-media; picture-in-picture" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe>
     </div>
 
     <script>
@@ -446,11 +447,16 @@
 
         // ==========================================
         // CORREÇÃO DO WHATSAPP (Abre direto sem erro de Intent)
+        // Como o Android WebView interceptou até o link seguro e crashou,
+        // O método "target=_top" força a abertura FORA do sandbox.
         // ==========================================
         function abrirWhatsAppVip() {
-            // Em Webviews que bloqueiam intent:// o ideal é usar o link web padrão.
-            // O próprio Android converte e aciona o WhatsApp instalado, e se não tiver instalado, abre na web.
-            window.location.href = 'https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87';
+            let a = document.createElement('a');
+            a.href = 'https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87';
+            a.target = '_top'; // Quebra o bloqueio de Webview Forçado
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
         }
 
         async function fazerLoginVip() {
@@ -656,33 +662,30 @@
         }
 
         // ==========================================
-        // CORREÇÃO DOS NOMES DA TV (Preserva interior e regiões)
+        // CORREÇÃO DOS NOMES DA TV (Preserva 100% o nome original e só tira FHD/HD)
         // ==========================================
         function processarTV(nomeBruto) {
             let nomeLimpo = nomeBruto || "Canal";
             const tags = [];
             
-            // Puxa as tags para as Badges
+            // 1. Extrai a Tag de Qualidade
             if(/FHDR/i.test(nomeLimpo)) tags.push('FHDR');
             else if(/FHD/i.test(nomeLimpo)) tags.push('FHD');
             else if(/HD/i.test(nomeLimpo)) tags.push('HD');
             else if(/4K/i.test(nomeLimpo)) tags.push('4K');
             else if(/SD/i.test(nomeLimpo)) tags.push('SD');
 
+            // 2. Extrai Sigla do Estado apenas para adicionar no crachá colorido (sem apagar do nome)
             const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/i);
             if(estado && !tags.includes(estado[0].toUpperCase())) tags.push(estado[0].toUpperCase());
 
-            // Remove APENAS as tags de qualidade de dentro do texto (preservando o resto)
+            // 3. APENAS APAGA a qualidade do texto (ex: [FHD], (HD), etc.)
             nomeLimpo = nomeLimpo.replace(/\[(FHDR|FHD|HD|4K|SD)\]/ig, '');
             nomeLimpo = nomeLimpo.replace(/\((FHDR|FHD|HD|4K|SD)\)/ig, '');
             nomeLimpo = nomeLimpo.replace(/\b(FHDR|FHD|HD|4K|SD)\b/ig, '');
 
-            // Limpa hifens, pipes, e barras sobrando no começo e no final
-            nomeLimpo = nomeLimpo.replace(/^[>-\|*•\s]+|[>-\|*•\s]+$/g, '').replace(/\s+/g, ' ').trim();
-            
-            if (!nomeLimpo || nomeLimpo.length < 2) {
-                nomeLimpo = nomeBruto.replace(/[>-\|*•]/g, '').trim(); // Fallback de emergência
-            }
+            // 4. Limpa espaços duplos e sujeira que sobra ANTES do nome, mas mantém caracteres no MEIO do nome
+            nomeLimpo = nomeLimpo.replace(/^[\s\|\-]+|[\s\|\-]+$/g, '').replace(/\s+/g, ' ').trim();
             
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
@@ -1184,11 +1187,9 @@
             if(history.state && history.state.view === 'servermenu') history.back();
         }
 
-        // CORREÇÃO DO CONFLITO DE HISTÓRICO NO WEB PLAYER
         function abrirPlayerWeb(servidor) {
             if(!currentTmdbId) return;
             
-            // Remove as classes do DOM SEM acionar o history.back()
             document.getElementById('serverModal').classList.remove('active');
             document.getElementById('sheetOverlay').classList.remove('active');
 
@@ -1211,7 +1212,6 @@
             modal.style.display = 'flex';
             document.body.classList.add('no-scroll');
             
-            // Substitui o estado atual da URL em vez de encavalar dois modais
             if(history.state && history.state.view === 'servermenu') {
                 history.replaceState({ view: 'embed' }, null, "");
             } else {
@@ -1315,7 +1315,6 @@
 
             document.getElementById('sheetOverlay').onclick = function() {
                 if(document.getElementById('serverModal').classList.contains('active')) {
-                    // Sem mexer no histórico aqui, o history.back fará isso sozinho
                     history.back();
                 } else if(document.getElementById('bottomSheet').classList.contains('active')) {
                     fecharSheetTV();
