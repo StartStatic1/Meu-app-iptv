@@ -56,7 +56,7 @@ module.exports = async function handler(req, res) {
 
     // 3. GERAR LINKS DE STREAM (RETORNA TODOS OS LINKS DE FALLBACK)
     const ext = extension || "mp4";
-    
+
     if (action === "get_movie_url" && stream_id) {
         const urls = servidores.map(s => 
             `${s.url}/movie/${s.user}/${s.pass}/${stream_id}.${ext}`
@@ -65,7 +65,7 @@ module.exports = async function handler(req, res) {
         setCache(cacheKey, data);
         return res.status(200).json(data);
     }
-    
+
     if (action === "get_live_url" && stream_id) {
         const urls = servidores.map(s => 
             `${s.url}/${s.user}/${s.pass}/${stream_id}.ts`
@@ -74,7 +74,7 @@ module.exports = async function handler(req, res) {
         setCache(cacheKey, data);
         return res.status(200).json(data);
     }
-    
+
     if (action === "get_series_url" && stream_id) {
         const urls = servidores.map(s => 
             `${s.url}/series/${s.user}/${s.pass}/${stream_id}.${ext}`
@@ -98,7 +98,7 @@ module.exports = async function handler(req, res) {
             // REMOVIDO: AbortController com 6s que matava a request
             // O Vercel já tem timeout próprio (10s hobby, 60s+ pro)
             const response = await fetch(targetUrl);
-            
+
             if (response.ok) {
                 const data = await response.json();
                 setCache(cacheKey, data);
