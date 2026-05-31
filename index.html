@@ -504,14 +504,14 @@
         }
 
         function injetarOnClick() {
-            if (document.getElementById('script-onclick-monetag')) return; // Evita duplicar
-            let s1 = document.createElement('script');
-            s1.id = 'script-onclick-monetag';
-            s1.dataset.zone = '11081852';
-            s1.src = 'https://al5sm.com/tag.min.js';
-            s1.async = true;
-            document.head.appendChild(s1);
-        }
+    if (document.getElementById('script-onclick-monetag')) return;
+    const s = document.createElement('script');
+    s.id = 'script-onclick-monetag';
+    s.async = true;
+    s.setAttribute('data-zone', '11081852');
+    s.src = 'https://al5sm.com/tag.min.js';
+    document.head.appendChild(s);
+}
 
         function aceitarPush() {
     document.getElementById('pushPromptModal').style.display = 'none';
