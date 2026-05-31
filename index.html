@@ -431,8 +431,10 @@
         function fecharModalVip() { document.getElementById('vipModal').style.display = 'none'; }
         
         function abrirWhatsAppVip() {
-            window.open('https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87', '_blank');
-        }
+    // Força o sistema Android a abrir o aplicativo do WhatsApp
+    const intentUrl = "intent://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87#Intent;scheme=https;package=com.whatsapp;end;";
+    window.location.href = intentUrl;
+}
 
         async function fazerLoginVip() {
             const email = document.getElementById('vipEmail').value;
