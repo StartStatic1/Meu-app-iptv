@@ -76,4 +76,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: erroFinal });
 }
 
-Nota estrutura do apk está em outro repositório que talvez não precise mexer acho....
