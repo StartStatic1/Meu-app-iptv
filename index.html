@@ -146,7 +146,7 @@
         .actor-bio { font-size: 13px; color: #ccc; line-height: 1.5; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
         .trailer-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.95); z-index: 4000; display: none; flex-direction: column; justify-content: center; align-items: center; }
-        .trailer-close { position: fixed; top: 10px; right: 10px; color: #fff; font-size: 20px; cursor: pointer; z-index: 4010; background: rgba(0,0,0,0.6); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: opacity 0.3s; }
+        .trailer-close { position: fixed; top: 10px; right: 10px; color: #fff; font-size: 20px; cursor: pointer; z-index: 5000; background: rgba(0,0,0,0.6); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: opacity 0.3s; }
         .trailer-frame { width: 100%; height: 100%; background: #000; border: none; }
 
         /* CORREÇÃO DO EMBED MODAL: Tela cheia, sem restrição 16:9, e sem sandbox no HTML */
@@ -503,8 +503,8 @@
         }
 
         async function garantirBancoCarregado() {
-            if(!bancoFilmes) { const resF = await fetchTimeout('/api/iptv?action=get_vod_streams'); bancoFilmes = await resF.json(); }
-            if(!bancoSeries) { const resS = await fetchTimeout('/api/iptv?action=get_series'); bancoSeries = await resS.json(); }
+            if(!bancoFilmes) { const resF = await fetch('/api/iptv?action=get_vod_streams'); bancoFilmes = await resF.json(); }
+            if(!bancoSeries) { const resS = await fetch('/api/iptv?action=get_series'); bancoSeries = await resS.json(); }
         }
 
         function mudarAba(idView, btn, originHistory = false) {
@@ -541,7 +541,7 @@
 
             try {
                 let html = "";
-                const res = await fetchTimeout(`/api/iptv?action=${endpoint}`);
+                const res = await fetch(`/api/iptv?action=${endpoint}`);
                 const cats = await res.json();
                 const validas = cats.filter(c => tipo === 'live' ? pastaTVValida(c.category_name) : pastaValida(c.category_name));
 
@@ -561,11 +561,7 @@
         async function initApp() {
             try {
                 let htmlConstruido = "";
-                const fetchTimeout = (url, ms=4000) => Promise.race([
-                    fetch(url),
-                    new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), ms))
-                ]);
-                const resVodCats = await fetchTimeout('/api/iptv?action=get_vod_categories');
+                const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
                 const vodCats = await resVodCats.json();
                 const pastasFilmes = vodCats.filter(c => pastaValida(c.category_name)).sort((a,b) => {
                     const pri = /LANÇA|AÇÃO|COMÉDIA|TERROR/i;
@@ -573,7 +569,7 @@
                 }).slice(0, 5); 
 
                 if(pastasFilmes.length > 0) {
-                    const res1 = await fetchTimeout(`/api/iptv?action=get_vod_streams&category_id=${pastasFilmes[0].category_id}`);
+                    const res1 = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastasFilmes[0].category_id}`);
                     const filmes1 = await res1.json();
                     if(filmes1 && filmes1.length > 0) {
                         heroFilmes = filmes1.slice(0, 5);
@@ -589,16 +585,16 @@
                 setTimeout(async () => {
                     let htmlExtra = "";
                     for(let i = 1; i < pastasFilmes.length; i++) {
-                        const res = await fetchTimeout(`/api/iptv?action=get_vod_streams&category_id=${pastasFilmes[i].category_id}`);
+                        const res = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastasFilmes[i].category_id}`);
                         const filmes = await res.json();
                         if(filmes && filmes.length > 0) htmlExtra += gerarCarrosselHTML(limparNomePasta(pastasFilmes[i].category_name), pastasFilmes[i].category_id, 'vod', 'film', filmes.slice(0, 15));
                     }
 
-                    const resSerieCats = await fetchTimeout('/api/iptv?action=get_series_categories');
+                    const resSerieCats = await fetch('/api/iptv?action=get_series_categories');
                     const serieCats = await resSerieCats.json();
                     const pastasSeries = serieCats.filter(c => pastaValida(c.category_name)).slice(0, 2);
                     for(let i = 0; i < pastasSeries.length; i++) {
-                        const res = await fetchTimeout(`/api/iptv?action=get_series&category_id=${pastasSeries[i].category_id}`);
+                        const res = await fetch(`/api/iptv?action=get_series&category_id=${pastasSeries[i].category_id}`);
                         const series = await res.json();
                         if(series && series.length > 0) htmlExtra += gerarCarrosselHTML(limparNomePasta(pastasSeries[i].category_name), pastasSeries[i].category_id, 'series', 'tv', series.slice(0, 15));
                     }
@@ -643,7 +639,7 @@
                 if(tipo === 'series') action = 'get_series';
                 else if(tipo === 'live') action = 'get_live_streams';
 
-                const res = await fetchTimeout(`/api/iptv?action=${action}&category_id=${catId}`);
+                const res = await fetch(`/api/iptv?action=${action}&category_id=${catId}`);
                 const listaCompleta = await res.json();
 
                 let htmlGrade = "";
@@ -687,7 +683,7 @@
             divResultados.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> A procurar canal...</div>`;
 
             timeoutBusca = setTimeout(async () => {
-                if(!bancoTV) { try { const res = await fetchTimeout('/api/iptv?action=get_live_streams'); bancoTV = await res.json(); } catch(e) { return; } }
+                if(!bancoTV) { try { const res = await fetch('/api/iptv?action=get_live_streams'); bancoTV = await res.json(); } catch(e) { return; } }
                 const resultados = bancoTV.filter(c => c.name && c.name.toLowerCase().includes(query)).slice(0, 50);
                 if(resultados.length === 0) { divResultados.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Nenhum canal encontrado.</p>`; return; }
 
@@ -897,7 +893,7 @@
                 boxEpisodios.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A montar temporadas...</p>';
                 
                 try {
-                    const res = await fetchTimeout(`/api/iptv?action=get_series_info&series_id=${id}`);
+                    const res = await fetch(`/api/iptv?action=get_series_info&series_id=${id}`);
                     const data = await res.json();
                     
                     if(data && data.episodes && Object.keys(data.episodes).length > 0) {
@@ -1118,15 +1114,14 @@
         document.addEventListener('MSFullscreenChange', handleFullscreenChange);
 
         window.addEventListener('popstate', function(event) {
-            if(event.state && event.state.view === 'embed') { return; }
-            if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); } 
-            else if (document.getElementById('embedModal').style.display === 'flex') { fecharEmbed(); } 
-            else if (document.getElementById('serverModal').classList.contains('active')) { fecharMenuServidores(); }
-            else if (document.getElementById('actorModal').classList.contains('active')) { fecharAtor(); } 
-            else if (document.getElementById('detailsPage').classList.contains('active')) { fecharDetalhes(); } 
-            else if (document.getElementById('bottomSheet').classList.contains('active')) { fecharSheetTV(); } 
-            else if (event.state && event.state.view) { mudarAba(event.state.view, null, true); } 
-            else { mudarAba('view-home', document.getElementById('nav-home'), true); }
+            if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); return; } 
+            if (document.getElementById('embedModal').style.display === 'flex') { fecharEmbed(); return; } 
+            if (document.getElementById('serverModal').classList.contains('active')) { fecharMenuServidores(); return; }
+            if (document.getElementById('actorModal').classList.contains('active')) { fecharAtor(); return; } 
+            if (document.getElementById('detailsPage').classList.contains('active')) { fecharDetalhes(); return; } 
+            if (document.getElementById('bottomSheet').classList.contains('active')) { fecharSheetTV(); return; } 
+            if (event.state && event.state.view) { mudarAba(event.state.view, null, true); return; } 
+            mudarAba('view-home', document.getElementById('nav-home'), true);
         });
 
         window.onload = () => {
