@@ -446,6 +446,73 @@
             history.pushState({ view: 'vip' }, null, "");
         }
         function fecharModalVip() { document.getElementById('vipModal').style.display = 'none'; }
+
+        function switchVipTab(tab) {
+            document.getElementById('vipFormLogin').style.display = tab === 'login' ? 'block' : 'none';
+            document.getElementById('vipFormCadastro').style.display = tab === 'cadastro' ? 'block' : 'none';
+            document.getElementById('tabLogin').style.background = tab === 'login' ? 'gold' : 'transparent';
+            document.getElementById('tabLogin').style.color = tab === 'login' ? '#000' : '#ccc';
+            document.getElementById('tabCadastro').style.background = tab === 'cadastro' ? '#00e676' : 'transparent';
+            document.getElementById('tabCadastro').style.color = tab === 'cadastro' ? '#000' : '#ccc';
+            document.getElementById('vipMsg').style.display = 'none';
+        }
+
+        async function cadastrarVip() {
+            const email = document.getElementById('vipEmailCad').value.trim();
+            const senha = document.getElementById('vipSenhaCad').value;
+            const confirm = document.getElementById('vipSenhaCadConfirm').value;
+            const btn = document.getElementById('btnCadastroBtn');
+            const msg = document.getElementById('vipMsg');
+
+            if(!email || !senha) { msg.innerText = "Preencha todos os campos."; msg.style.display = 'block'; return; }
+            if(senha !== confirm) { msg.innerText = "As senhas não coincidem."; msg.style.display = 'block'; return; }
+            if(senha.length < 4) { msg.innerText = "Senha muito curta (mín. 4 caracteres)."; msg.style.display = 'block'; return; }
+
+            if(!supabase) { msg.innerText = "Servidor indisponível."; msg.style.display = 'block'; return; }
+
+            btn.innerText = "Criando...";
+            msg.style.display = 'none';
+
+            try {
+                // Verificar se email já existe
+                const { data: existente } = await supabase.from('streamflix_users').select('email').eq('email', email);
+                if(existente && existente.length > 0) {
+                    msg.innerText = "Este e-mail já está cadastrado. Use 'Entrar'.";
+                    msg.style.display = 'block';
+                    btn.innerText = "Criar Conta VIP";
+                    return;
+                }
+
+                // Inserir novo usuário
+                const { error } = await supabase.from('streamflix_users').insert([{ 
+                    email: email, 
+                    senha: senha, 
+                    status: 'VIP',
+                    created_at: new Date().toISOString()
+                }]);
+
+                if(error) {
+                    console.error('Cadastro error:', error);
+                    msg.innerText = "Erro ao criar conta: " + (error.message || "Tente novamente");
+                    msg.style.display = 'block';
+                    btn.innerText = "Criar Conta VIP";
+                    return;
+                }
+
+                // Login automático após cadastro
+                localStorage.setItem('streamflix_vip', 'true');
+                localStorage.setItem('streamflix_vip_email', email);
+                alert("Conta VIP criada com sucesso! Bem-vindo!");
+                fecharModalVip();
+                verificarStatusVip();
+
+            } catch(e) {
+                console.error('Cadastro exception:', e);
+                msg.innerText = "Erro de conexão: " + (e.message || "Verifique sua internet");
+                msg.style.display = 'block';
+                btn.innerText = "Criar Conta VIP";
+            }
+        }
         
         function abrirWhatsAppVip() {
             // Pode alterar este link depois para o seu número real
@@ -761,8 +828,7 @@
             
             try {
                 let htmlConstruido = "";
-                const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
-                const vodCats = await resVodCats.json();
+                
                 const pastasFilmes = vodCats.filter(c => pastaValida(c.category_name)).sort((a,b) => {
                     const pri = /LANÇA|AÇÃO|COMÉDIA|TERROR/i;
                     return pri.test(b.category_name) - pri.test(a.category_name);
