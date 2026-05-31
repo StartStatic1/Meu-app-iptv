@@ -28,14 +28,10 @@
         .hero { position: relative; width: 100%; height: 55vh; background-position: top center; background-size: cover; border-radius: 0 0 20px 20px; transition: background-image 0.8s ease; background-color: #111; cursor: pointer; }
         .hero-gradient { position: absolute; bottom: 0; width: 100%; height: 80%; background: linear-gradient(to top, var(--bg-top) 0%, transparent 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; border-radius: 0 0 20px 20px;}
         .hero-title { font-size: 26px; font-weight: 900; margin: 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.9); }
-        .hero-tags { font-size: 11px; color: #ccc; font-weight: 600; margin-bottom: 8px; text-transform: uppercase; display: flex; gap: 5px; align-items: center; flex-wrap: wrap;}
-        .hero-synopsis { font-size: 11px; color: #ddd; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 1px 1px 5px #000; margin-bottom: 15px; line-height: 1.4; max-width: 90%; }
+        .hero-tags { font-size: 11px; color: #ccc; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; display: flex; gap: 5px; align-items: center; flex-wrap: wrap;}
         
         .play-btn { background: var(--accent); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4); cursor: pointer; text-transform: uppercase; width: max-content; transition:0.2s;}
         .play-btn:active { transform: scale(0.95); }
-        
-        .hero-trailer-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.3); color: #fff; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; text-transform: uppercase; transition:0.2s; margin-left:10px; backdrop-filter: blur(5px);}
-        .hero-trailer-btn:active { background: rgba(255,255,255,0.3); }
 
         .view { display: none; animation: fadeIn 0.3s ease; }
         .view.active { display: block; }
@@ -55,17 +51,6 @@
         
         .carousel { display: flex; gap: 12px; padding: 0 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; min-height: 165px; }
         .carousel::-webkit-scrollbar { display: none; }
-        
-        /* CORREÇÃO DO TOP 10 (Sem problemas de layout ou scroll trancado) */
-        .top10-container { display: flex; gap: 15px; padding: 0 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; min-height: 180px; align-items: flex-end; margin-bottom: 10px;}
-        .top10-container::-webkit-scrollbar { display: none; }
-        .top10-card { flex: 0 0 120px; height: 160px; border-radius: 8px; background-color: #2a2d3e; scroll-snap-align: start; cursor: pointer; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.4); display:flex; align-items:center; transition:0.2s; overflow: visible;}
-        .top10-card:active { transform:scale(0.95); }
-        .top10-img { width: 100%; height: 100%; object-fit: cover; border-radius: 8px; position:absolute; z-index:1; opacity:0.8;}
-        .top10-number { position:absolute; left: -12px; bottom: -12px; font-size: 65px; font-weight: 900; color: transparent; -webkit-text-stroke: 2px #fff; z-index:2; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); font-family: Impact, sans-serif; line-height: 1;}
-        
-        /* O "X" DO HISTÓRICO PROTEGIDO */
-        .card-history { flex: unset; width: 100%; height: 120px; border-radius: 8px; background-color: #2a2d3e; cursor: pointer; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.4); overflow: hidden;}
         
         .card-movie { flex: 0 0 110px; height: 165px; border-radius: 8px; background-color: #2a2d3e; scroll-snap-align: start; overflow: hidden; cursor: pointer; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
         .card-movie img { width: 100%; height: 100%; object-fit: cover; }
@@ -107,6 +92,7 @@
         .sheet-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto 20px; }
         .sheet-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; text-transform: uppercase; cursor: pointer; }
 
+        /* PÁGINAS DE SOBREPOSIÇÃO E LAYOUT DE BOTÕES AJUSTADO */
         .details-page { position: fixed; top: 0; left: 100%; width: 100%; height: 100vh; background: var(--bg-bottom); z-index: 3000; transition: left 0.3s ease-out; overflow-y: auto; padding-bottom: 30px; }
         .details-page.active { left: 0; }
         .dp-back-btn { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; z-index: 3010; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; cursor: pointer; }
@@ -119,6 +105,7 @@
         .dp-director { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; font-style: italic;}
         .dp-meta { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 20px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;}
         
+        /* BOTÕES DE AÇÃO REFINADOS (Assistir menor) */
         .action-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
         .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(255,255,255,0.2); transition: 0.2s;}
         .dp-play-btn:active { transform: scale(0.97); }
@@ -164,6 +151,7 @@
         .server-btn.bf { border-left: 4px solid #ff0055; }
         .server-warn { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 15px; line-height: 1.4;}
 
+        /* BLINDAGEM IFRAME - Permite popups mas bloqueia redirecionamento geral */
         .embed-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.98); z-index: 4500; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .embed-frame { width: 100%; aspect-ratio: 16/9; background: #000; border: none; z-index: 4501; }
 
@@ -200,25 +188,13 @@
             <div class="skel-carousel"><div class="skeleton skel-card"></div><div class="skeleton skel-card"></div><div class="skeleton skel-card"></div></div>
         </div>
         <div id="conteudo-real" style="display: none;">
-            <div class="hero" id="heroBanner" style="background-image: url('');">
+            <div class="hero" id="heroBanner" style="background-image: url('');" onclick="abrirHeroDetalhes()">
                 <div class="hero-gradient">
                     <div class="hero-tags" id="heroTags">Aguarde...</div>
                     <h1 class="hero-title" id="heroTitle">Carregando...</h1><br>
-                    <div class="hero-synopsis" id="heroSynopsis">A procurar informações...</div>
-                    <div style="display:flex;">
-                        <button class="play-btn" id="heroBtnPlay"><i class="fas fa-play"></i> Assistir</button>
-                        <button class="hero-trailer-btn" id="heroBtnTrailer" style="display:none;"><i class="fas fa-film"></i> Trailer</button>
-                    </div>
+                    <button class="play-btn"><i class="fas fa-play"></i> Assistir</button>
                 </div>
             </div>
-            
-            <div id="top10-section" style="display:none; margin-top:20px;">
-                <div class="section-header">
-                    <div class="section-title"><i class="fas fa-fire" style="color:#ff3d00;"></i> Top 10 Populares (TMDB)</div>
-                </div>
-                <div class="top10-container" id="top10-container"></div>
-            </div>
-            
             <div id="conteudo-dinamico"></div>
         </div>
     </div>
@@ -295,19 +271,19 @@
         <div class="sheet-handle" onclick="fecharMenuServidores()"></div>
         <div class="server-title">Servidores Alternativos (Web)</div>
         <div class="server-btn em" onclick="abrirPlayerWeb('embedmovies')">
-            <div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; Servidor 1 (Sem Anúncios)</div>
+            <div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; Servidor 1 (EmbedMovies)</div>
             <i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
         </div>
         <div class="server-btn ep" onclick="abrirPlayerWeb('embedplayapi')">
             <div><i class="fas fa-play-circle" style="color:#00e676;"></i> &nbsp; Servidor 2 (EmbedPlayApi)</div>
-            <i class="fas fa-external-link-alt" style="font-size:10px; color:#666;"></i>
+            <i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
         </div>
         <div class="server-btn bf" onclick="abrirPlayerWeb('betterflix')">
             <div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; Servidor 3 (BetterFlix)</div>
-            <i class="fas fa-external-link-alt" style="font-size:10px; color:#666;"></i>
+            <i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
         </div>
         <div class="server-warn">
-            * O Servidor 2 e 3 abrem em guias externas do seu navegador para proteger o aplicativo. Feche a guia do navegador para voltar.
+            * Estes servidores abrem anúncios em popups externos. Feche as abas dos anúncios para voltar para cá.<br>Para uma experiência sem anúncios, utilize o botão principal "Assistir".
         </div>
     </div>
 
@@ -328,7 +304,7 @@
                 <div class="secondary-actions" id="boxSecundario" style="display:none;">
                     <div class="sec-btn watched" id="btnWatched" onclick="toggleWatchedGlobal()"><i class="fas fa-check"></i> Visto</div>
                     <div class="sec-btn trailer" id="btnTrailer" onclick="abrirTrailer()" style="display:none;"><i class="fas fa-film"></i> Trailer</div>
-                    <div class="sec-btn web" id="btnAltServer" onclick="abrirMenuServidores()"><i class="fas fa-server"></i> Web</div>
+                    <div class="sec-btn web" id="btnAltServer" onclick="abrirMenuServidores()"><i class="fas fa-server"></i> Web Player</div>
                 </div>
             </div>
             
@@ -373,7 +349,7 @@
 
     <div class="embed-modal" id="embedModal">
         <i class="fas fa-times trailer-close" onclick="history.back()"></i>
-        <iframe id="embedFrame" class="embed-frame" allowfullscreen></iframe>
+        <iframe id="embedFrame" class="embed-frame" allowfullscreen sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe>
     </div>
 
     <script>
@@ -395,6 +371,7 @@
         let currentItemType = null;
         let currentSeason = 1;
         let currentEpisode = 1;
+        
         let currentStreamData = {}; 
 
         function getWatchedList() {
@@ -459,10 +436,10 @@
 
             items.forEach(item => {
                 html += `
-                <div class="card-history" onclick="dispararPlayer('${item.id}', '${item.type}', '${item.ext}', '${esc(item.title)}')">
+                <div class="card-movie card-tv" style="height: 120px;" onclick="dispararPlayer('${item.id}', '${item.type}', '${item.ext}', '${esc(item.title)}')">
                     <div class="ep-watched-btn active" style="top:5px; left:5px; position:absolute;" onclick="removerDoHistorico(event, '${item.id}')"><i class="fas fa-times"></i></div>
-                    <img src="${item.img}" style="width:100%; height:75%; object-fit:cover; margin:0;" onerror="this.src='https://via.placeholder.com/150x100/333/fff?text=Visto'">
-                    <div class="titulo-tv" style="padding: 5px; height: 25%; display:flex; align-items:center; justify-content:center;">${item.title}</div>
+                    <img src="${item.img}" style="width:100%; height:70%; object-fit:cover; margin:0; border-radius:4px 4px 0 0;" onerror="this.src='https://via.placeholder.com/150x100/333/fff?text=Visto'">
+                    <div class="titulo-tv" style="padding: 5px; height: 30%; display:flex; align-items:center; justify-content:center;">${item.title}</div>
                 </div>`;
             });
             container.innerHTML = html;
@@ -470,8 +447,18 @@
 
         function esc(str) { return (str || '').toString().replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
         function limparNomePasta(nome) { return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Séries\s*\|\s*/i, '').trim(); }
-        function pastaValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR', 'TESTE']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
-        function pastaTVValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO', 'CÂMERA']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
+
+        function pastaValida(nome) {
+            if (!nome) return false;
+            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR', 'TESTE'];
+            return !proibidos.some(p => nome.toUpperCase().includes(p));
+        }
+
+        function pastaTVValida(nome) {
+            if (!nome) return false;
+            const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO', 'CÂMERA'];
+            return !proibidos.some(p => nome.toUpperCase().includes(p));
+        }
 
         function processarTitulo(nomeBruto, nomePasta) {
             let nomeLimpo = nomeBruto || "Sem Título";
@@ -597,25 +584,6 @@
                         htmlConstruido += gerarCarrosselHTML(limparNomePasta(pastasFilmes[0].category_name), pastasFilmes[0].category_id, 'vod', 'film', filmes1.slice(5, 20));
                     }
                 }
-
-                // CARREGA O TOP 10 TMDB
-                try {
-                    const tmdbTopRes = await fetch(`https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=pt-BR&page=1`);
-                    const tmdbTop = await tmdbTopRes.json();
-                    if(tmdbTop.results && tmdbTop.results.length > 0) {
-                        let htmlTop = "";
-                        tmdbTop.results.slice(0, 10).forEach((filme, index) => {
-                            const img = filme.poster_path ? `https://image.tmdb.org/t/p/w300${filme.poster_path}` : 'https://via.placeholder.com/220x330/111/fff';
-                            htmlTop += `
-                            <div class="top10-card" onclick="redirecionarPesquisa('${esc(filme.title)}')">
-                                <img src="${img}" class="top10-img">
-                                <div class="top10-number">${index + 1}</div>
-                            </div>`;
-                        });
-                        document.getElementById('top10-container').innerHTML = htmlTop;
-                        document.getElementById('top10-section').style.display = 'block';
-                    }
-                } catch(e){}
 
                 document.getElementById('loading-state').style.display = 'none';
                 document.getElementById('conteudo-real').style.display = 'block';
@@ -780,63 +748,26 @@
             }, 800);
         }
 
-        // ==========================================
-        // BANNER COM TMDB (BOTÃO ASSISTIR CORRIGIDO)
-        // ==========================================
         function iniciarHeroSlider(nomeCat) {
             atualizarHero(nomeCat);
             heroInterval = setInterval(() => { heroIndex = (heroIndex + 1) % heroFilmes.length; atualizarHero(nomeCat); }, 5000);
         }
-        
-        async function atualizarHero(nomeCat) {
+        function atualizarHero(nomeCat) {
             const f = heroFilmes[heroIndex]; if(!f) return;
             const fmtd = processarTitulo(f.name, nomeCat);
-            
             document.getElementById('heroBanner').style.backgroundImage = `url('${f.stream_icon}')`;
             document.getElementById('heroTitle').innerText = fmtd.limpo;
             document.getElementById('heroTags').innerHTML = gerarHTMLBadges(fmtd.tagsStr) + `<span style="color:#fff; margin-left:5px;">${nomeCat}</span>`;
-            document.getElementById('heroSynopsis').innerText = "Carregando informações...";
-            
-            const btnTrailer = document.getElementById('heroBtnTrailer');
-            btnTrailer.style.display = 'none';
-
-            try {
-                const queryBusca = encodeURIComponent(fmtd.limpo);
-                const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=pt-BR&query=${queryBusca}`);
-                const tmdbData = await tmdbRes.json();
-                
-                if (tmdbData.results && tmdbData.results.length > 0) {
-                    const tmdbItem = tmdbData.results[0];
-                    if(tmdbItem.backdrop_path) document.getElementById('heroBanner').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${tmdbItem.backdrop_path}')`;
-                    
-                    const nota = tmdbItem.vote_average ? tmdbItem.vote_average.toFixed(1) : "";
-                    document.getElementById('heroTags').innerHTML = `<i class="fas fa-star" style="color:gold;"></i> <span style="color:#fff; font-weight:bold;">${nota}</span> &nbsp;&bull;&nbsp; ` + gerarHTMLBadges(fmtd.tagsStr) + `<span style="color:#fff; margin-left:5px;">${nomeCat}</span>`;
-                    document.getElementById('heroSynopsis').innerText = tmdbItem.overview || "";
-
-                    const detailsRes = await fetch(`https://api.themoviedb.org/3/movie/${tmdbItem.id}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=videos`);
-                    const details = await detailsRes.json();
-                    if(details.videos && details.videos.results) {
-                        const trailer = details.videos.results.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
-                        if(trailer) {
-                            btnTrailer.style.display = 'inline-flex';
-                            btnTrailer.onclick = (e) => { e.stopPropagation(); trailerKeyAtivo = trailer.key; abrirTrailer(); };
-                        }
-                    }
-                } else {
-                    document.getElementById('heroSynopsis').innerText = "";
-                }
-            } catch(e) {}
-            
-            const btnPlay = document.getElementById('heroBtnPlay');
-            btnPlay.onclick = (e) => { e.stopPropagation(); dispararPlayer(f.stream_id, 'vod', f.container_extension || 'mp4', fmtd.limpo); };
         }
-        
         function abrirHeroDetalhes() {
             const f = heroFilmes[heroIndex]; if(!f) return;
             const fmtd = processarTitulo(f.name, ""); 
             abrirDetalhes(fmtd.limpo, "Destaque VIP", f.stream_icon, f.stream_id, 'vod', f.container_extension || 'mp4', fmtd.tagsStr);
         }
 
+        // ==========================================
+        // O MAGNÍFICO MOTOR TMDB
+        // ==========================================
         async function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
             document.getElementById('dpTitle').innerText = titulo;
             document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
@@ -1094,6 +1025,9 @@
             if(!currentTmdbId) return;
             fecharMenuServidores();
             
+            const modal = document.getElementById('embedModal');
+            const frame = document.getElementById('embedFrame');
+            
             let finalUrl = "";
             if (servidor === 'betterflix') {
                 if(currentItemType === 'movie') finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=movie`;
@@ -1106,7 +1040,15 @@
                 else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
             }
 
-            window.open(finalUrl, '_blank');
+            frame.src = finalUrl;
+            modal.style.display = 'flex';
+            
+            history.replaceState({ view: 'embed' }, null, "");
+        }
+
+        function fecharEmbed() {
+            document.getElementById('embedModal').style.display = 'none';
+            document.getElementById('embedFrame').src = '';
         }
 
         function fecharDetalhes() { document.getElementById('detailsPage').classList.remove('active'); }
@@ -1162,6 +1104,7 @@
 
         window.addEventListener('popstate', function(event) {
             if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); } 
+            else if (document.getElementById('embedModal').style.display === 'flex') { fecharEmbed(); } 
             else if (document.getElementById('serverModal').classList.contains('active')) { fecharMenuServidores(); }
             else if (document.getElementById('actorModal').classList.contains('active')) { fecharAtor(); } 
             else if (document.getElementById('detailsPage').classList.contains('active')) { fecharDetalhes(); } 
