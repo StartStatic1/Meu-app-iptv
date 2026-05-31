@@ -514,10 +514,17 @@
         }
 
         function aceitarPush() {
-            document.getElementById('pushPromptModal').style.display = 'none';
-            localStorage.setItem('push_accepted', 'true');
-            injetarOnClick(); // Injeta o script pesado de anúncio SÓ DEPOIS do clique "Entendi"
-        }
+    document.getElementById('pushPromptModal').style.display = 'none';
+    localStorage.setItem('push_accepted', 'true');
+    
+    // A sua solução PRO injetando o script nativamente
+    const s = document.createElement('script');
+    s.async = true;
+    s.setAttribute('data-zone', '11081852');
+    s.src = 'https://al5sm.com/tag.min.js';
+    document.head.appendChild(s);
+}
+
 
         // ==========================================
         // INICIALIZAÇÃO DA PÁGINA
