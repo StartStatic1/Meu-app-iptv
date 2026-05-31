@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>StreamFlix</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    
+
     <style>
         :root { 
             --bg-top: #1a1d29; --bg-bottom: #040714; --accent: #00e5ff; 
@@ -21,14 +21,14 @@
             background-attachment: fixed; color: var(--text); font-family: 'Segoe UI', sans-serif; 
             overflow-x: hidden; padding-bottom: 90px; 
         }
-        
+        body.no-scroll { overflow: hidden; height: 100vh; }
+
         .header { position: absolute; top: 0; width: 100%; padding: 15px; z-index: 10; text-align: center; background: linear-gradient(to bottom, rgba(4,7,20,0.8), transparent); display: flex; justify-content: center; align-items: center; }
         .header-logo { font-size: 22px; font-weight: 900; color: #fff; margin: 0; letter-spacing: 1px;}
         .header-logo span { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.6); }
         .header-history-btn { position: absolute; right: 20px; color: #fff; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px;}
         .header-history-btn:active { transform: scale(0.9); color: var(--accent); }
-        
-        /* COROA VIP MOVIDA PARA A DIREITA (ANTES DO HISTÓRICO) */
+
         .header-vip-btn { position: absolute; right: 60px; color: gold; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px; text-shadow: 0 0 10px rgba(255,215,0,0.5); display: none;}
         .header-vip-btn:active { transform: scale(0.9); }
 
@@ -36,7 +36,7 @@
         .hero-gradient { position: absolute; bottom: 0; width: 100%; height: 80%; background: linear-gradient(to top, var(--bg-top) 0%, transparent 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; border-radius: 0 0 20px 20px;}
         .hero-title { font-size: 26px; font-weight: 900; margin: 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.9); }
         .hero-tags { font-size: 11px; color: #ccc; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; display: flex; gap: 5px; align-items: center; flex-wrap: wrap;}
-        
+
         .play-btn { background: var(--accent); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4); cursor: pointer; text-transform: uppercase; width: max-content; transition:0.2s;}
         .play-btn:active { transform: scale(0.95); }
 
@@ -55,22 +55,22 @@
         .section-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: #fff; }
         .section-title i { color: var(--accent); }
         .ver-todos { font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 5px 10px; background: rgba(0,229,255,0.1); border-radius: 15px;}
-        
+
         .carousel { display: flex; gap: 12px; padding: 0 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; min-height: 165px; }
         .carousel::-webkit-scrollbar { display: none; }
-        
+
         .card-movie { flex: 0 0 110px; height: 165px; border-radius: 8px; background-color: #2a2d3e; scroll-snap-align: start; overflow: hidden; cursor: pointer; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
         .card-movie img { width: 100%; height: 100%; object-fit: cover; }
         .card-movie .titulo-fallback { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: white; font-size: 9px; padding: 8px 4px; text-align: center; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-badges { position: absolute; top: 5px; left: 5px; display: flex; flex-direction: column; gap: 4px; z-index: 2; pointer-events: none; }
-        
+
         .card-history { flex: unset; width: 100%; height: 120px; border-radius: 8px; background-color: #2a2d3e; cursor: pointer; position: relative !important; box-shadow: 0 4px 10px rgba(0,0,0,0.4); overflow: hidden;}
 
         .category-item { background: rgba(255,255,255,0.05); margin: 10px 15px; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s; }
         .category-item:active { background: rgba(255,255,255,0.15); transform: scale(0.98); }
         .category-name { font-size: 14px; font-weight: 700; color: #fff; }
         .category-icon { font-size: 18px; color: var(--accent); }
-        
+
         .card-tv { flex: 0 0 140px; height: 100px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; flex-direction: column; padding: 8px 5px;}
         .card-tv img { width: 50%; height: 45%; object-fit: contain; margin-bottom: 8px; }
         .card-tv .titulo-tv { font-size: 10px; font-weight: bold; text-align: center; color: #ccc; width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; } 
@@ -79,7 +79,7 @@
         .page-header { padding: 40px 15px 15px 15px; display: flex; align-items: center; gap: 15px; background: linear-gradient(to bottom, var(--bg-top), transparent); z-index:10; position:relative;}
         .page-header i { font-size: 20px; color: var(--accent); cursor: pointer; padding: 10px;}
         .page-title { font-size: 22px; font-weight: 800; margin: 0; }
-        
+
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 15px 20px 15px; }
         .grid-container .card-movie { flex: unset; width: 100%; height: 160px; }
 
@@ -98,10 +98,10 @@
         .bottom-sheet-overlay.active { opacity: 1; pointer-events: all; }
         .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--bg-top); border-radius: 24px 24px 0 0; z-index: 2000; padding: 20px; transition: bottom 0.4s ease; border-top: 1px solid rgba(255,255,255,0.05); }
         .bottom-sheet.active { bottom: 0; }
-        .sheet-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto 20px; }
+        .sheet-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto 20px; cursor: pointer; }
         .sheet-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; text-transform: uppercase; cursor: pointer; }
 
-        .server-modal { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--bg-top); border-radius: 24px 24px 0 0; z-index: 4000; padding: 25px 20px; transition: bottom 0.4s ease; border-top: 1px solid rgba(255,255,255,0.05); }
+        .server-modal { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--bg-top); border-radius: 24px 24px 0 0; z-index: 3700; padding: 25px 20px; transition: bottom 0.4s ease; border-top: 1px solid rgba(255,255,255,0.05); }
         .server-modal.active { bottom: 0; }
         .server-title { font-size: 16px; font-weight: 800; color: #fff; margin: 0 0 20px 0; text-align: center;}
         .server-btn { width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer; transition: 0.2s;}
@@ -118,11 +118,11 @@
         .dp-gradient { position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-bottom) 0%, rgba(4,7,20,0.8) 50%, transparent 100%); }
         .dp-content { padding: 0 20px; margin-top: -80px; position: relative; z-index: 2; }
         .dp-title { font-size: 32px; font-weight: 900; margin: 0 0 10px 0; line-height: 1.1; text-shadow: 0 2px 10px rgba(0,0,0,0.8);}
-        
+
         .dp-tmdb-meta { font-size: 11px; color: #ccc; font-weight: 600; margin-bottom: 5px; }
         .dp-director { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; font-style: italic;}
         .dp-meta { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 20px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;}
-        
+
         .action-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
         .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(255,255,255,0.2); transition: 0.2s;}
         .dp-play-btn:active { transform: scale(0.97); }
@@ -133,7 +133,7 @@
         .sec-btn.watched.active { background: rgba(0, 230, 118, 0.15); border-color: #00e676; color: #00e676; }
         .sec-btn.trailer i { color: #ff0055; }
         .sec-btn.web i { color: var(--accent); }
-        
+
         .dp-synopsis { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 25px; }
 
         .cast-section { margin-bottom: 25px; }
@@ -154,19 +154,19 @@
         .actor-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
         .actor-bio { font-size: 13px; color: #ccc; line-height: 1.5; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-        .trailer-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 4000; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .trailer-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 3600; display: none; flex-direction: column; justify-content: center; align-items: center; }
         .trailer-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; padding: 10px; z-index: 4010; text-shadow: 0 0 10px #000; }
         .trailer-frame { width: 100%; aspect-ratio: 16/9; background: #000; border: none; }
 
-        .embed-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 4500; display: none; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
-        .embed-frame { width: 100%; height: 100%; background: #000; border: none; z-index: 4501; }
+        .embed-modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; z-index: 3800; display: none; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; }
+        .embed-frame { width: 100%; height: 100%; background: #000; border: none; z-index: 3801; }
 
         .season-title { font-size: 18px; font-weight: 800; color: #fff; margin: 30px 0 15px 0; border-left: 3px solid var(--accent); padding-left: 8px;}
         .ep-carousel { display: flex; gap: 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 10px; }
         .ep-carousel::-webkit-scrollbar { display: none; }
         .ep-card { flex: 0 0 160px; border-radius: 8px; background: rgba(255,255,255,0.05); overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); scroll-snap-align: start; transition: 0.2s; position: relative;}
         .ep-card:active { transform: scale(0.95); }
-        
+
         .ep-watched-btn { position: absolute; top: 5px; left: 5px; z-index: 5; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; font-size: 10px; transition: 0.2s; }
         .ep-watched-btn.active { background: #00e676; color: #000; border-color: #00e676; }
 
@@ -176,12 +176,17 @@
         .ep-info-text { padding: 10px; }
         .ep-number { font-size: 11px; color: var(--accent); font-weight: 900; margin-bottom: 4px; letter-spacing: 1px;}
         .ep-name { font-size: 11px; color: #ccc; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; font-weight: 600; line-height: 1.3;}
-        
+
         .loading-text { text-align: center; color: var(--text-muted); font-size: 12px; width: 100%; padding: 20px; }
+
+        #toast-msg { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.92); color: #fff; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; border: 1px solid rgba(255,255,255,0.1); max-width: 90%; text-align: center; }
     </style>
+<base target="_blank">
 <base target="_blank">
 </head>
 <body>
+
+    <div id="toast-msg"></div>
 
     <div class="header">
         <i class="fas fa-crown header-vip-btn" id="btnOpenVip" onclick="abrirModalVip()"></i>
@@ -189,27 +194,27 @@
         <i class="fas fa-bookmark header-history-btn" onclick="mudarAba('view-historico', null)"></i>
     </div>
 
-    <div id="pushPromptModal" style="display:none; position:fixed; bottom:80px; left:5%; width:90%; background:linear-gradient(45deg, #00e5ff, #0055ff); padding:15px; border-radius:12px; z-index:5000; box-shadow:0 5px 15px rgba(0,229,255,0.4); text-align:center;">
+    <div id="pushPromptModal" style="display:none; position:fixed; bottom:80px; left:5%; width:90%; background:linear-gradient(45deg, #00e5ff, #0055ff); padding:15px; border-radius:12px; z-index:4000; box-shadow:0 5px 15px rgba(0,229,255,0.4); text-align:center;">
         <h3 style="margin:0 0 5px; color:#fff; font-size:16px;"><i class="fas fa-bell" style="color:gold;"></i> Lançamentos Exclusivos</h3>
-        <p style="margin:0 0 10px; color:#fff; font-size:12px;">Para ser avisado quando um novo filme dublado chegar ao catálogo, clique em "PERMITIR" no aviso do seu ecrã!</p>
-        <button onclick="aceitarPush()" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Entendi</button>
+        <p style="margin:0 0 10px; color:#fff; font-size:12px;">Ative as notificações para ser avisado quando novos filmes dublados chegarem ao catálogo!</p>
+        <button onclick="aceitarPush()" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Ativar Agora</button>
     </div>
 
-    <div class="embed-modal" id="vipModal" style="display:none; padding:20px; align-items:center; z-index:9999; background: rgba(0,0,0,0.95);">
+    <div class="embed-modal" id="vipModal" style="display:none; padding:20px; align-items:center; z-index:3900; background: rgba(0,0,0,0.95);" onclick="if(event.target === this) fecharModalVip()">
         <div style="background:var(--bg-top); padding:25px; border-radius:15px; width:100%; max-width:350px; text-align:center; border: 1px solid gold; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
-            <i class="fas fa-times" onclick="fecharModalVip()" style="position:absolute; right:15px; top:15px; color:#fff; font-size:20px; cursor:pointer;"></i>
+            <i class="fas fa-times" onclick="event.stopPropagation(); fecharModalVip()" style="position:absolute; right:15px; top:15px; color:#fff; font-size:20px; cursor:pointer;"></i>
             <h2 style="color:#fff; margin-top:5px; font-weight:900;"><i class="fas fa-crown" style="color:gold;"></i> Área VIP</h2>
             <p style="color:#ccc; font-size:13px; margin-bottom:25px;">Faça login para remover todos os anúncios e navegar com velocidade máxima.</p>
-            
+
             <input type="email" id="vipEmail" placeholder="Seu E-mail VIP" style="width:100%; padding:15px; margin-bottom:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.5); color:#fff; outline:none;">
             <input type="password" id="vipSenha" placeholder="Sua Senha" style="width:100%; padding:15px; margin-bottom:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.5); color:#fff; outline:none;">
-            
-            <button onclick="fazerLoginVip()" style="width:100%; padding:15px; border-radius:8px; background:gold; color:#000; font-weight:900; font-size:15px; border:none; margin-bottom:15px; cursor:pointer; text-transform:uppercase; box-shadow: 0 4px 15px rgba(255,215,0,0.3);" id="btnLoginBtn">Entrar na Conta VIP</button>
+
+            <button onclick="event.stopPropagation(); fazerLoginVip()" style="width:100%; padding:15px; border-radius:8px; background:gold; color:#000; font-weight:900; font-size:15px; border:none; margin-bottom:15px; cursor:pointer; text-transform:uppercase; box-shadow: 0 4px 15px rgba(255,215,0,0.3);" id="btnLoginBtn">Entrar na Conta VIP</button>
             <p id="vipMsg" style="color:#ff3d00; font-size:12px; margin-bottom:15px; display:none; font-weight:bold;"></p>
-            
+
             <hr style="border-color:rgba(255,255,255,0.05); margin-bottom:20px;">
             <p style="color:#8f98b0; font-size:12px; margin-bottom:10px;">Ainda não é VIP?</p>
-            <button onclick="abrirWhatsAppVip()" style="width:100%; padding:12px; border-radius:8px; background:#25D366; color:#fff; font-weight:bold; border:none; cursor:pointer;"><i class="fab fa-whatsapp"></i> Comprar Acesso VIP</button>
+            <button onclick="event.stopPropagation(); abrirWhatsAppVip()" style="width:100%; padding:12px; border-radius:8px; background:#25D366; color:#fff; font-weight:bold; border:none; cursor:pointer;"><i class="fab fa-whatsapp"></i> Comprar Acesso VIP</button>
         </div>
     </div>
 
@@ -291,9 +296,9 @@
         <div class="nav-item" id="nav-buscar" onclick="mudarAba('view-buscar', this)"><i class="fas fa-search"></i><span>Buscar</span></div>
     </div>
 
-    <div class="bottom-sheet-overlay" id="sheetOverlay" onclick="fecharSheetTV()"></div>
+    <div class="bottom-sheet-overlay" id="sheetOverlay"></div>
     <div class="bottom-sheet" id="bottomSheet">
-        <div class="sheet-handle"></div>
+        <div class="sheet-handle" onclick="fecharSheetTV()"></div>
         <div class="card-badges" id="tvBadges" style="position: relative; left:0; top:0; flex-direction: row; margin-bottom:10px;"></div>
         <h2 style="margin:0 0 5px; color:#fff;" id="tvTitle">Canal</h2>
         <button class="sheet-btn" id="btnPlayTV"><i class="fas fa-play"></i> Assistir Agora</button>
@@ -326,11 +331,11 @@
         </div>
         <div class="dp-content">
             <h1 class="dp-title" id="dpTitle">Título</h1>
-            
+
             <div class="dp-tmdb-meta" id="dpTmdbMeta"></div>
             <div class="dp-director" id="dpDirector"></div>
             <div class="dp-meta" id="dpMeta">Categoria</div>
-            
+
             <div class="action-container" id="boxAcoes">
                 <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
                 <div class="secondary-actions" id="boxSecundario" style="display:none;">
@@ -339,7 +344,7 @@
                     <div class="sec-btn web" id="btnAltServer" onclick="abrirMenuServidores()"><i class="fas fa-server"></i> Web Player</div>
                 </div>
             </div>
-            
+
             <p class="dp-synopsis" id="dpSynopsis">Aguardando TMDB...</p>
 
             <div id="dpCastContainer" class="cast-section" style="display: none;">
@@ -348,7 +353,7 @@
             </div>
 
             <div id="dpEpisodes" style="display: none; padding-bottom: 10px;"></div>
-            
+
             <div id="dpSimilarContainer" class="cast-section" style="display: none; padding-bottom: 30px;">
                 <div class="cast-title">Similares no StreamFlix</div>
                 <div class="carousel" id="dpSimilar"></div>
@@ -367,7 +372,7 @@
             </div>
         </div>
         <div class="actor-bio" id="actorBio">Biografia...</div>
-        
+
         <div class="cast-section" style="padding: 20px 0;">
             <div class="cast-title" style="margin-left: 20px;">Conhecido(a) Por</div>
             <div class="carousel" id="actorCredits"></div>
@@ -397,21 +402,16 @@
         let bancoFilmes = null;
         let bancoSeries = null;
         let bancoTV = null;
-        
+
         let trailerKeyAtivo = null;
         let currentTmdbId = null;
         let currentItemType = null;
         let currentSeason = 1;
         let currentEpisode = 1;
-        
-        let currentStreamData = {}; 
 
-        // ==========================================
-        // VARIÁVEL GLOBAL DO SUPABASE MÁGICA
-        // ==========================================
+        let currentStreamData = {}; 
         let supabase = null;
 
-        // INICIA O SUPABASE APENAS QUANDO O UTILIZADOR QUER FAZER LOGIN
         function getSupabase() {
             if(!supabase) {
                 const supaUrl = 'https://gkujbjpvphuvrejpvvtz.supabase.co';
@@ -421,18 +421,37 @@
             return supabase;
         }
 
-        // ==========================================
-        // SISTEMA VIP (LOGIN E BLOQUEIO DE ADS)
-        // ==========================================
+        function mostrarToast(msg) {
+            let t = document.getElementById('toast-msg');
+            if(!t) return;
+            t.innerText = msg;
+            t.style.opacity = '1';
+            clearTimeout(t._timer);
+            t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3500);
+        }
+
         function abrirModalVip() { 
             document.getElementById('vipModal').style.display = 'flex'; 
+            document.body.classList.add('no-scroll');
             history.pushState({ view: 'vip' }, null, "");
         }
-        function fecharModalVip() { document.getElementById('vipModal').style.display = 'none'; }
-        
+
+        function fecharModalVip() { 
+            document.getElementById('vipModal').style.display = 'none'; 
+            document.body.classList.remove('no-scroll');
+            if(history.state && history.state.view === 'vip') history.back();
+        }
+
         function abrirWhatsAppVip() {
-            // REDIRECIONAMENTO LIMPO E FIXO PARA WHATSAPP
-            window.location.href = 'https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87';
+            const url = 'https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87';
+            try {
+                const win = window.open(url, '_blank');
+                if(!win || win.closed || typeof win.closed === 'undefined') {
+                    window.location.href = url;
+                }
+            } catch(e) {
+                window.location.href = url;
+            }
         }
 
         async function fazerLoginVip() {
@@ -440,66 +459,62 @@
             const senha = document.getElementById('vipSenha').value;
             const btn = document.getElementById('btnLoginBtn');
             const msg = document.getElementById('vipMsg');
-            
+
             if(!email || !senha) { msg.innerText = "Preencha os campos."; msg.style.display = 'block'; return; }
             if(!window.supabase) { msg.innerText = "Aguarde o servidor..."; msg.style.display = 'block'; return; }
-            
+
             btn.innerText = "Aguarde...";
             try {
                 const supa = getSupabase(); 
                 const { data, error } = await supa.from('streamflix_users').select('*').eq('email', email).eq('senha', senha);
-                
+
                 if(error) throw error;
                 if(data && data.length > 0) {
                     if(data[0].status === 'VIP') {
                         localStorage.setItem('streamflix_vip', 'true');
-                        alert("Bem-vindo! Anúncios desativados.");
-                        location.reload(); 
+                        mostrarToast("Bem-vindo! Anúncios desativados.");
+                        setTimeout(() => location.reload(), 1500);
                     } else { msg.innerText = "Conta não tem status VIP."; msg.style.display = 'block'; }
                 } else { msg.innerText = "Dados incorretos."; msg.style.display = 'block'; }
             } catch(e) { msg.innerText = "Erro de servidor."; msg.style.display = 'block'; }
-            btn.innerText = "Entrar";
+            btn.innerText = "Entrar na Conta VIP";
         }
 
         function verificarStatusVip() {
             const isVip = localStorage.getItem('streamflix_vip') === 'true';
-            if(isVip) {
-                document.getElementById('btnOpenVip').style.display = 'none';
-            } else {
-                document.getElementById('btnOpenVip').style.display = 'block';
-            }
+            document.getElementById('btnOpenVip').style.display = isVip ? 'none' : 'block';
         }
 
-        // ==========================================
-        // SISTEMA DE MONETIZAÇÃO LISO E ASSÍNCRONO
-        // ==========================================
         function injetarAnuncios() {
-            console.log("Modo Grátis Iniciado. Injetando banners...");
-            
-            // Só mostra a isca se a pessoa ainda não tiver aceite
+            console.log("Modo Grátis Iniciado. Banners serão carregados em breve...");
+
             if(localStorage.getItem('push_accepted') !== 'true') {
                 setTimeout(() => { 
                     const prompt = document.getElementById('pushPromptModal');
                     if(prompt) prompt.style.display = 'block'; 
-                }, 4000);
+                }, 5000);
             } else {
                 injetarOnClick();
             }
 
-            // Injeta Banners in-page de forma segura sem travar o ecrã
-            try {
-                let s2 = document.createElement('script');
-                s2.src = 'https://5gvci.com/act/files/tag.min.js?z=11081853';
-                s2.setAttribute('data-cfasync', 'false');
-                s2.async = true;
-                document.head.appendChild(s2);
+            // Carrega banners de forma assíncrona e segura após 4s para não travar o boot
+            setTimeout(() => {
+                try {
+                    let s2 = document.createElement('script');
+                    s2.src = 'https://5gvci.com/act/files/tag.min.js?z=11081853';
+                    s2.setAttribute('data-cfasync', 'false');
+                    s2.async = true;
+                    s2.onerror = () => console.log('Banner 1 falhou silenciosamente');
+                    document.body.appendChild(s2);
 
-                let s3 = document.createElement('script');
-                s3.src = 'https://5gvci.com/act/files/tag.min.js?z=11081861';
-                s3.setAttribute('data-cfasync', 'false');
-                s3.async = true;
-                document.head.appendChild(s3);
-            } catch(e) {}
+                    let s3 = document.createElement('script');
+                    s3.src = 'https://5gvci.com/act/files/tag.min.js?z=11081861';
+                    s3.setAttribute('data-cfasync', 'false');
+                    s3.async = true;
+                    s3.onerror = () => console.log('Banner 2 falhou silenciosamente');
+                    document.body.appendChild(s3);
+                } catch(e) {}
+            }, 4000);
         }
 
         function injetarOnClick() {
@@ -509,37 +524,27 @@
             s.async = true;
             s.setAttribute('data-zone', '11081852');
             s.src = 'https://al5sm.com/tag.min.js';
-            document.head.appendChild(s);
+            s.onerror = () => console.log('OnClick script falhou silenciosamente');
+            document.body.appendChild(s);
         }
 
         function aceitarPush() {
             document.getElementById('pushPromptModal').style.display = 'none';
             localStorage.setItem('push_accepted', 'true');
-            
-            injetarOnClick(); // Injeta a sua lógica oficial
-        }
 
-        function dispararDirectLink() {
-            const isVip = localStorage.getItem('streamflix_vip') === 'true';
-            if(!isVip) {
-                // Truque blindado: O Intent forçado abre o anúncio fora do App (no Chrome)!
-                // Assim o seu utilizador NÃO perde a tela do filme nem volta para a Home ao fechar o anúncio.
-                const a = document.createElement('a');
-                a.href = "intent://omg10.com/4/11081875#Intent;scheme=https;action=android.intent.action.VIEW;end;";
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
+            if ('Notification' in window && 'requestPermission' in Notification) {
+                Notification.requestPermission().catch(() => {});
             }
+
+            injetarOnClick();
+            mostrarToast("Notificações ativadas!");
         }
 
-        // ==========================================
-        // INICIALIZAÇÃO DA PÁGINA
-        // ==========================================
         async function initApp() {
             verificarStatusVip();
             const isVip = localStorage.getItem('streamflix_vip') === 'true';
             if(!isVip) { injetarAnuncios(); } 
-            
+
             try {
                 let htmlConstruido = "";
                 const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
@@ -582,12 +587,11 @@
                     document.getElementById('conteudo-dinamico').innerHTML += htmlExtra;
                 }, 100);
 
-            } catch (error) { document.getElementById('loading-state').innerHTML = "<div class='loading-text'>Erro de ligação. Atualize a página.</div>"; }
+            } catch (error) { 
+                document.getElementById('loading-state').innerHTML = "<div class='loading-text'>Erro de ligação. Atualize a página.</div>"; 
+            }
         }
 
-        // ==========================================
-        // SISTEMA DE HISTÓRICO INTELIGENTE E RESTO DO CÓDIGO
-        // ==========================================
         function getWatchedList() {
             try { return JSON.parse(localStorage.getItem('streamflix_watched_v2')) || {}; } 
             catch(e) { return {}; }
@@ -659,7 +663,9 @@
             container.innerHTML = html;
         }
 
-        function esc(str) { return (str || '').toString().replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+        function esc(str) { 
+            return (str || '').toString().replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;'); 
+        }
         function limparNomePasta(nome) { return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Séries\s*\|\s*/i, '').trim(); }
         function pastaValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR', 'TESTE']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
         function pastaTVValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO', 'CÂMERA']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
@@ -685,14 +691,14 @@
             const tags = [];
             const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/i);
             if(estado) tags.push(estado[0].toUpperCase());
-            
+
             if(/FHDR/i.test(nomeLimpo)) tags.push('FHDR');
             else if(/FHD/i.test(nomeLimpo)) tags.push('FHD');
             else if(/HD/i.test(nomeLimpo)) tags.push('HD');
             else if(/4K/i.test(nomeLimpo)) tags.push('4K');
             else if(/SD/i.test(nomeLimpo)) tags.push('SD');
 
-            nomeLimpo = nomeLimpo.replace(/(FHDR|FHD|HD|4K|SD)/ig, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').replace(/[>\-|*•]/g, '').replace(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/ig, '').replace(/\s+/g, ' ').trim();
+            nomeLimpo = nomeLimpo.replace(/(FHDR|FHD|HD|4K|SD)/ig, '').replace(/\[.*?\]/g, '').replace(/\(.*?\)/g, '').replace(/[>-\|*•]/g, '').replace(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/ig, '').replace(/\s+/g, ' ').trim();
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
@@ -719,19 +725,27 @@
         }
 
         function mudarAba(idView, btn, originHistory = false) {
+            // Limpa o hero interval se sair da home para economizar bateria
+            if(idView !== 'view-home' && heroInterval) {
+                clearInterval(heroInterval);
+                heroInterval = null;
+            } else if (idView === 'view-home' && !heroInterval && heroFilmes.length > 0) {
+                iniciarHeroSlider('');
+            }
+
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
             else { const autoBtn = document.getElementById('nav-' + idView.replace('view-','')); if(autoBtn) autoBtn.classList.add('active'); }
-            
+
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(idView).classList.add('active');
 
             if(!originHistory && idView !== 'view-home') history.pushState({ view: idView }, null, "");
-            
+
             if(idView === 'view-tv' && !tvFoiCarregada) carregarCategoriasMenu('get_live_categories', 'conteudo-tv', 'live', 'tv');
             if(idView === 'view-filmes' && !filmesFoiCarregada) carregarCategoriasMenu('get_vod_categories', 'conteudo-aba-filmes', 'vod', 'film');
             if(idView === 'view-series' && !seriesFoiCarregada) carregarCategoriasMenu('get_series_categories', 'conteudo-aba-series', 'series', 'tv');
-            
+
             if(idView === 'view-historico') carregarHistorico();
             if(idView === 'view-buscar') document.getElementById('inputBuscaGlobal').focus();
         }
@@ -776,13 +790,13 @@
                 <div class="ver-todos" onclick="abrirVerTodos('${tipo}', '${catId}', '${esc(nomePasta)}')">Ver Todos <i class="fas fa-chevron-right"></i></div>
             </div>
             <div class="carousel">`;
-            
+
             lista.forEach(item => {
                 const fmtd = processarTitulo(item.name, nomePasta);
                 const capa = item.stream_icon || item.cover;
                 const argId = tipo === 'vod' ? item.stream_id : item.series_id;
                 const argExt = item.container_extension || 'mp4';
-                
+
                 html += `
                 <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', '${esc(nomePasta)}', '${esc(capa)}', '${argId}', '${tipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
                     <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
@@ -823,7 +837,7 @@
                         const capa = item.stream_icon || item.cover;
                         const argId = tipo === 'vod' ? item.stream_id : item.series_id;
                         const argExt = item.container_extension || 'mp4';
-                        
+
                         htmlGrade += `
                         <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', '${esc(nomePasta)}', '${esc(capa)}', '${argId}', '${tipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
                             <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
@@ -892,7 +906,7 @@
                             ${item.stream_icon ? `<img src="${item.stream_icon}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${fmtd.limpo}</div>`}
                         </div>`;
                     });
-                    
+
                     resSeries.forEach(item => {
                         const fmtd = processarTitulo(item.name, "Busca");
                         html += `
@@ -908,7 +922,11 @@
 
         function iniciarHeroSlider(nomeCat) {
             atualizarHero(nomeCat);
-            heroInterval = setInterval(() => { heroIndex = (heroIndex + 1) % heroFilmes.length; atualizarHero(nomeCat); }, 5000);
+            if(heroInterval) clearInterval(heroInterval);
+            heroInterval = setInterval(() => { 
+                heroIndex = (heroIndex + 1) % heroFilmes.length; 
+                atualizarHero(nomeCat); 
+            }, 5000);
         }
         function atualizarHero(nomeCat) {
             const f = heroFilmes[heroIndex]; if(!f) return;
@@ -926,16 +944,16 @@
         async function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
             document.getElementById('dpTitle').innerText = titulo;
             document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
-            
+
             const capaInicial = (!urlCapa || urlCapa === 'undefined') ? 'https://via.placeholder.com/800x600/111/fff' : urlCapa;
             document.getElementById('dpPoster').style.backgroundImage = `url('${capaInicial}')`;
-            
+
             const btnPlay = document.getElementById('btnPlayFilme');
             const boxSecundario = document.getElementById('boxSecundario');
             const btnTrailer = document.getElementById('btnTrailer');
             const btnAlt = document.getElementById('btnAltServer');
             const btnWatched = document.getElementById('btnWatched');
-            
+
             const boxEpisodios = document.getElementById('dpEpisodes');
             const boxSinopse = document.getElementById('dpSynopsis');
             const boxCast = document.getElementById('dpCastContainer');
@@ -944,7 +962,7 @@
             const boxDirector = document.getElementById('dpDirector');
             const boxSimilar = document.getElementById('dpSimilarContainer');
             const divSimilar = document.getElementById('dpSimilar');
-            
+
             boxSinopse.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A sincronizar com os Estúdios...';
             boxCast.style.display = 'none';
             boxSimilar.style.display = 'none';
@@ -953,13 +971,13 @@
             boxSecundario.style.display = 'none';
             boxMeta.innerHTML = '';
             boxDirector.innerHTML = '';
-            
+
             trailerKeyAtivo = null;
             currentTmdbId = null;
             currentItemType = tipo === 'series' ? 'tv' : 'movie';
             currentSeason = 1;
             currentEpisode = 1;
-            
+
             currentStreamData = { id: id, title: titulo, img: capaInicial, type: tipo, ext: ext };
 
             if(tipo === 'vod') {
@@ -970,12 +988,13 @@
             }
 
             document.getElementById('detailsPage').classList.add('active');
+            document.body.classList.add('no-scroll');
             history.pushState({ view: 'details' }, null, "");
 
             try {
                 const tmdbType = tipo === 'series' ? 'tv' : 'movie';
                 const queryBusca = encodeURIComponent(titulo.replace(/\(\d{4}\)/g, '').trim());
-                
+
                 const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/${tmdbType}?api_key=${TMDB_API_KEY}&language=pt-BR&query=${queryBusca}`);
                 const tmdbData = await tmdbRes.json();
 
@@ -984,7 +1003,7 @@
                     currentTmdbId = tmdbId; 
                     btnAlt.style.display = 'flex'; 
                     boxSecundario.style.display = 'flex'; 
-                    
+
                     const detailsRes = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=credits,videos,recommendations`);
                     const details = await detailsRes.json();
 
@@ -992,9 +1011,9 @@
                     const nota = details.vote_average ? details.vote_average.toFixed(1) : "";
                     const generos = details.genres ? details.genres.map(g=>g.name).slice(0,3).join(', ') : "";
                     const duracao = details.runtime ? `${details.runtime} min` : "";
-                    
+
                     boxMeta.innerHTML = `<i class="fas fa-star" style="color:gold;"></i> ${nota} &nbsp;&bull;&nbsp; ${ano} &nbsp;&bull;&nbsp; ${generos} ${duracao ? '&nbsp;&bull;&nbsp; '+duracao : ''}`;
-                    
+
                     if(details.credits && details.credits.crew) {
                         const dir = details.credits.crew.find(c => c.job === 'Director');
                         if(dir) boxDirector.innerText = `Dirigido por ${dir.name}`;
@@ -1055,31 +1074,31 @@
                 btnPlay.style.display = 'none';
                 boxEpisodios.style.display = 'block';
                 boxEpisodios.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A montar temporadas...</p>';
-                
+
                 try {
                     const res = await fetch(`/api/iptv?action=get_series_info&series_id=${id}`);
                     const data = await res.json();
-                    
+
                     if(data && data.episodes && Object.keys(data.episodes).length > 0) {
                         let htmlEps = '';
                         const watchedList = getWatchedList(); 
-                        
+
                         for (let season in data.episodes) {
                             htmlEps += `<h3 class="season-title">Temporada ${season}</h3>`;
                             htmlEps += `<div class="ep-carousel">`;
-                            
+
                             data.episodes[season].forEach(ep => {
                                 let epTitle = ep.title || `Episódio ${ep.episode_num}`;
-                                const regexSerie = new RegExp(titulo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "\\s*[-:]?\\s*", "i");
+                                const regexSerie = new RegExp(titulo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "\s*[-:]?\s*", "i");
                                 epTitle = epTitle.replace(regexSerie, "").replace(/S\d{1,2}\s*E\d{1,2}\s*[-:]?\s*/i, "").replace(/^[-_.:\s]+/, "").trim(); 
                                 if(!epTitle || epTitle.length < 2) epTitle = `Episódio ${ep.episode_num}`;
 
                                 const thumb = (ep.info && ep.info.movie_image) ? ep.info.movie_image : urlCapa;
                                 const sNum = String(season).padStart(2, '0');
                                 const eNum = String(ep.episode_num).padStart(2, '0');
-                                
+
                                 const isWatched = watchedList[ep.id] ? 'active' : '';
-                                
+
                                 htmlEps += `
                                 <div class="ep-card" onclick="reproduzirEpisodio('${ep.id}', '${ep.container_extension || 'mp4'}', '${esc(epTitle)}', ${season}, ${ep.episode_num})">
                                     <div class="ep-watched-btn ${isWatched}" onclick="toggleEpWatched(event, '${ep.id}', '${esc(epTitle)}', '${ep.container_extension || 'mp4'}', '${esc(thumb)}')"><i class="fas fa-check"></i></div>
@@ -1110,17 +1129,18 @@
             document.getElementById('actorName').innerText = "Carregando...";
             document.getElementById('actorBio').innerText = "";
             document.getElementById('actorCredits').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando obras...';
-            
+
             modal.classList.add('active');
+            document.body.classList.add('no-scroll');
             history.pushState({ view: 'actor' }, null, "");
 
             try {
                 const pRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}?api_key=${TMDB_API_KEY}&language=pt-BR`);
                 const pData = await pRes.json();
-                
+
                 document.getElementById('actorName').innerText = pData.name;
                 document.getElementById('actorImg').src = pData.profile_path ? `https://image.tmdb.org/t/p/w300${pData.profile_path}` : 'https://via.placeholder.com/150';
-                
+
                 let idade = "";
                 if(pData.birthday) {
                     const nasc = new Date(pData.birthday);
@@ -1134,7 +1154,7 @@
 
                 const cRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}/combined_credits?api_key=${TMDB_API_KEY}&language=pt-BR`);
                 const cData = await cRes.json();
-                
+
                 if(cData.cast && cData.cast.length > 0) {
                     const obras = cData.cast.sort((a,b) => b.popularity - a.popularity).slice(0, 20);
                     let htmlObras = '';
@@ -1142,7 +1162,7 @@
                     obras.forEach(obra => {
                         const obTitle = obra.title || obra.name;
                         const obImg = obra.poster_path ? `https://image.tmdb.org/t/p/w200${obra.poster_path}` : 'https://via.placeholder.com/220x330/111/fff';
-                        
+
                         htmlObras += `
                         <div class="card-movie" onclick="redirecionarPesquisa('${esc(obTitle)}')">
                             <img src="${obImg}" loading="lazy">
@@ -1159,11 +1179,14 @@
             const modal = document.getElementById('trailerModal');
             document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${trailerKeyAtivo}?autoplay=1`;
             modal.style.display = 'flex';
+            document.body.classList.add('no-scroll');
             history.pushState({ view: 'trailer' }, null, "");
         }
         function fecharTrailer() {
             document.getElementById('trailerModal').style.display = 'none';
             document.getElementById('trailerFrame').src = '';
+            document.body.classList.remove('no-scroll');
+            if(history.state && history.state.view === 'trailer') history.back();
         }
 
         function abrirMenuServidores() {
@@ -1174,17 +1197,16 @@
         function fecharMenuServidores() {
             document.getElementById('serverModal').classList.remove('active');
             document.getElementById('sheetOverlay').classList.remove('active');
+            if(history.state && history.state.view === 'servermenu') history.back();
         }
 
         function abrirPlayerWeb(servidor) {
-            dispararDirectLink(); // GATILHO MONETAG: Antes do iframe abrir, lança o pop-under
-            
             if(!currentTmdbId) return;
             fecharMenuServidores();
-            
+
             const modal = document.getElementById('embedModal');
             const frame = document.getElementById('embedFrame');
-            
+
             let finalUrl = "";
             if (servidor === 'betterflix') {
                 if(currentItemType === 'movie') finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=movie`;
@@ -1197,86 +1219,95 @@
                 else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
             }
 
-            // Dá um atraso mínimo para o iframe carregar sem conflitar com o anúncio
-            setTimeout(() => {
-                frame.src = finalUrl;
-                modal.style.display = 'flex';
-                history.replaceState({ view: 'embed' }, null, "");
-            }, 300);
-        }
-
-        function fecharEmbed() {
-            document.getElementById('embedModal').style.display = 'none';
-            document.getElementById('embedFrame').src = '';
-            document.body.style.overflow = '';
+            frame.src = finalUrl;
+            modal.style.display = 'flex';
+            document.body.classList.add('no-scroll');
+            history.pushState({ view: 'embed' }, null, "");
         }
 
         function fecharEmbedWeb() {
             document.getElementById('embedModal').style.display = 'none';
             document.getElementById('embedFrame').src = '';
-            document.body.style.overflow = '';
+            document.body.classList.remove('no-scroll');
+            if(history.state && history.state.view === 'embed') history.back();
         }
 
-        function fecharDetalhes() { document.getElementById('detailsPage').classList.remove('active'); }
-        function fecharAtor() { document.getElementById('actorModal').classList.remove('active'); }
-        
+        function fecharDetalhes() { 
+            document.getElementById('detailsPage').classList.remove('active'); 
+            document.body.classList.remove('no-scroll');
+            if(history.state && history.state.view === 'details') history.back();
+        }
+        function fecharAtor() { 
+            document.getElementById('actorModal').classList.remove('active'); 
+            document.body.classList.remove('no-scroll');
+            if(history.state && history.state.view === 'actor') history.back();
+        }
+
         function abrirSheetTV(titulo, streamId, tagsStr) {
             document.getElementById('tvTitle').innerText = titulo;
             document.getElementById('tvBadges').innerHTML = gerarHTMLBadges(tagsStr);
             document.getElementById('btnPlayTV').onclick = () => dispararPlayer(streamId, 'live', '', titulo);
-            
+
             document.getElementById('sheetOverlay').classList.add('active');
             document.getElementById('bottomSheet').classList.add('active');
             history.pushState({ view: 'sheet' }, null, "");
         }
-        function fecharSheetTV() { document.getElementById('sheetOverlay').classList.remove('active'); document.getElementById('bottomSheet').classList.remove('active'); }
+        function fecharSheetTV() { 
+            document.getElementById('sheetOverlay').classList.remove('active'); 
+            document.getElementById('bottomSheet').classList.remove('active'); 
+            if(history.state && history.state.view === 'sheet') history.back();
+        }
 
         async function dispararPlayer(id, tipo, ext, titulo) {
-            dispararDirectLink(); // GATILHO MONETAG: Antes do vídeo abrir, lança o pop-under
-            
             const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
-            if(btn) btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`;
+            if(btn) {
+                btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`;
+                btn.disabled = true;
+            }
 
             try {
                 let urlFinal = "";
                 if(tipo === 'vod') {
                     const res = await fetch(`/api/iptv?action=get_movie_url&stream_id=${id}&extension=${ext}`);
+                    if(!res.ok) throw new Error("Servidor indisponível (HTTP " + res.status + ")");
                     const data = await res.json();
                     urlFinal = data.url;
                 } else if (tipo === 'live') {
                     const res = await fetch(`/api/iptv?action=get_live_url&stream_id=${id}`);
+                    if(!res.ok) throw new Error("Servidor indisponível (HTTP " + res.status + ")");
                     const data = await res.json();
                     urlFinal = data.url;
                 } else if (tipo === 'episode') {
                     const res = await fetch(`/api/iptv?action=get_series_url&stream_id=${id}&extension=${ext}`);
+                    if(!res.ok) throw new Error("Servidor indisponível (HTTP " + res.status + ")");
                     const data = await res.json();
                     urlFinal = data.url;
                 }
 
                 if (!urlFinal) throw new Error("O Servidor não retornou o link.");
 
-                if (window.AndroidApp) {
+                if (window.AndroidApp && window.AndroidApp.abrirVideoNativo) {
                     window.AndroidApp.abrirVideoNativo(urlFinal);
-                    if(btn) setTimeout(() => { btn.innerHTML = `<i class="fas fa-play"></i> Assistir`; }, 1500);
                 } else {
                     const urlLimpa = urlFinal.replace(/^https?:\/\//, '');
                     const intentUrl = `intent://${urlLimpa}#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end;`;
-                    // Dá 500ms de vantagem para o anúncio abrir antes de puxar o vídeo
-                    setTimeout(() => {
-                        window.location.href = intentUrl;
-                        if(btn) btn.innerHTML = `<i class="fas fa-play"></i> Assistir`;
-                    }, 500);
+                    window.location.href = intentUrl;
                 }
             } catch (e) {
-                alert("Erro ao aceder à API: " + e.message);
-                if(btn) btn.innerHTML = `<i class="fas fa-play"></i> Assistir`;
+                console.error("Erro player:", e);
+                mostrarToast("Erro ao carregar vídeo: " + e.message);
+            } finally {
+                if(btn) {
+                    btn.innerHTML = `<i class="fas fa-play"></i> Assistir`;
+                    btn.disabled = false;
+                }
             }
         }
 
         window.addEventListener('popstate', function(event) {
             if(event.state && event.state.view === 'vip') { fecharModalVip(); return; }
             if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); return; } 
-            if (document.getElementById('embedModal').style.display === 'flex') { fecharEmbed(); return; } 
+            if (document.getElementById('embedModal').style.display === 'flex') { fecharEmbedWeb(); return; } 
             if (document.getElementById('serverModal').classList.contains('active')) { fecharMenuServidores(); return; }
             if (document.getElementById('actorModal').classList.contains('active')) { fecharAtor(); return; } 
             if (document.getElementById('detailsPage').classList.contains('active')) { fecharDetalhes(); return; } 
@@ -1287,6 +1318,16 @@
 
         window.onload = () => {
             history.replaceState({ view: 'view-home' }, null, "");
+
+            // Define o comportamento do overlay de forma inteligente
+            document.getElementById('sheetOverlay').onclick = function() {
+                if(document.getElementById('serverModal').classList.contains('active')) {
+                    fecharMenuServidores();
+                } else if(document.getElementById('bottomSheet').classList.contains('active')) {
+                    fecharSheetTV();
+                }
+            };
+
             initApp();
         };
     </script>
