@@ -1,4 +1,4 @@
-// api/iptv.js — MOTOR 8.0 (SERVIDORES OFUSCADOS + CACHE + FALLBACK)
+// api/iptv.js — MOTOR 8.1 (BASE64 + FALLBACK + CACHE LEVE)
 // Servidores codificados em Base64 para ofuscação
 const SERVIDORES_B64 = 'W3sidXJsIjogImh0dHA6Ly9rYXZydS5jb206ODAiLCAidXNlciI6ICI1NTgzOTYwNDM1MTkiLCAicGFzcyI6ICI2NDUzNzUwNSJ9LCB7InVybCI6ICJodHRwOi8vcm5wbGF5MDcudmlwOjgwIiwgInVzZXIiOiAiOTQxMzk0NDQxIiwgInBhc3MiOiAiOTAzMjI4ODcyIn0sIHsidXJsIjogImh0dHA6Ly9ibmV3c2MudG9wOjgwIiwgInVzZXIiOiAicmVnaW5hbGRvYnIiLCAicGFzcyI6ICI0MzIzMzR4YyJ9XQ==';
 
@@ -9,6 +9,24 @@ function decodeServidores() {
     } catch (e) {
         return [];
     }
+}
+
+// Cache em memória (funciona bem no Vercel serverless para requests simultâneas)
+const CACHE = new Map();
+const CACHE_TTL = 5 * 60 * 1000; // 5 minutos
+
+function getCache(key) {
+    const item = CACHE.get(key);
+    if (!item) return null;
+    if (Date.now() - item.ts > CACHE_TTL) {
+        CACHE.delete(key);
+        return null;
+    }
+    return item.data;
+}
+
+function setCache(key, data) {
+    CACHE.set(key, { data, ts: Date.now() });
 }
 
 module.exports = async function handler(req, res) {
@@ -25,53 +43,48 @@ module.exports = async function handler(req, res) {
 
     // 1. DECODIFICAR SERVIDORES
     const servidores = decodeServidores();
-
     if (servidores.length === 0) {
         return res.status(500).json({ error: "Erro ao decodificar servidores." });
     }
 
-    // 2. CACHE SIMPLES (TTL 5 minutos)
-    const CACHE_TTL = 5 * 60 * 1000;
-    if (!global.cacheIptv) global.cacheIptv = new Map();
+    // 2. CACHE KEY
     const cacheKey = `${action}_${category_id}_${series_id}_${stream_id}`;
-    const cached = global.cacheIptv.get(cacheKey);
-    if (cached && (Date.now() - cached.ts < CACHE_TTL)) {
-        return res.status(200).json(cached.data);
+    const cached = getCache(cacheKey);
+    if (cached) {
+        return res.status(200).json(cached);
     }
 
-    // 3. GERAR LINKS DE STREAM COM FALLBACK
+    // 3. GERAR LINKS DE STREAM (RETORNA TODOS OS LINKS DE FALLBACK)
     const ext = extension || "mp4";
-    const buildStreamUrls = (pathTemplate) => {
-        return servidores.map(s => {
-            return pathTemplate
-                .replace('{URL}', s.url)
-                .replace('{USER}', s.user)
-                .replace('{PASS}', s.pass)
-                .replace('{ID}', stream_id)
-                .replace('{EXT}', ext);
-        });
-    };
-
+    
     if (action === "get_movie_url" && stream_id) {
-        const urls = buildStreamUrls('{URL}/movie/{USER}/{PASS}/{ID}.{EXT}');
+        const urls = servidores.map(s => 
+            `${s.url}/movie/${s.user}/${s.pass}/${stream_id}.${ext}`
+        );
         const data = { url: urls[0], urls: urls };
-        global.cacheIptv.set(cacheKey, { data, ts: Date.now() });
+        setCache(cacheKey, data);
         return res.status(200).json(data);
     }
+    
     if (action === "get_live_url" && stream_id) {
-        const urls = buildStreamUrls('{URL}/{USER}/{PASS}/{ID}.ts');
+        const urls = servidores.map(s => 
+            `${s.url}/${s.user}/${s.pass}/${stream_id}.ts`
+        );
         const data = { url: urls[0], urls: urls };
-        global.cacheIptv.set(cacheKey, { data, ts: Date.now() });
+        setCache(cacheKey, data);
         return res.status(200).json(data);
     }
+    
     if (action === "get_series_url" && stream_id) {
-        const urls = buildStreamUrls('{URL}/series/{USER}/{PASS}/{ID}.{EXT}');
+        const urls = servidores.map(s => 
+            `${s.url}/series/${s.user}/${s.pass}/${stream_id}.${ext}`
+        );
         const data = { url: urls[0], urls: urls };
-        global.cacheIptv.set(cacheKey, { data, ts: Date.now() });
+        setCache(cacheKey, data);
         return res.status(200).json(data);
     }
 
-    // 4. BUSCAR DADOS COM FALLBACK
+    // 4. BUSCAR DADOS COM FALLBACK (SEM ABORTCONTROLLER - DEIXA O VERCEL GERENCIAR)
     let erroFinal = "Todos os servidores falharam.";
 
     for (let i = 0; i < servidores.length; i++) {
@@ -82,14 +95,13 @@ module.exports = async function handler(req, res) {
         if (series_id) targetUrl += `&series_id=${series_id}`;
 
         try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 6000);
-            const response = await fetch(targetUrl, { signal: controller.signal });
-            clearTimeout(timeoutId);
-
+            // REMOVIDO: AbortController com 6s que matava a request
+            // O Vercel já tem timeout próprio (10s hobby, 60s+ pro)
+            const response = await fetch(targetUrl);
+            
             if (response.ok) {
                 const data = await response.json();
-                global.cacheIptv.set(cacheKey, { data, ts: Date.now() });
+                setCache(cacheKey, data);
                 return res.status(200).json(data);
             } else {
                 erroFinal = `Servidor ${i+1} erro ${response.status}`;
