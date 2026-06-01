@@ -287,9 +287,3 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
 #vipModal { align-items: center; justify-content: center; }
 a.server-btn { display: flex; width: 100%; box-sizing: border-box; }
-
-
-/* BUG FIX 2: Header quando VIP está ativo */
-.header:has(.header-vip-btn[style*="none"]) {
-    justify-content: center;
-}
