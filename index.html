@@ -5,105 +5,81 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>StreamFlix</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
-
     <style>
         :root { 
             --bg-top: #1a1d29; --bg-bottom: #040714; --accent: #00e5ff; 
             --glass: rgba(26, 29, 41, 0.85); --text: #f9f9f9; --text-muted: #8f98b0;
         }
-
         * { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
-
-        /* CORREÇÃO 1: Teclado travando ao apagar - inputs isolados para seleção de texto */
         input, textarea { -webkit-user-select: text; user-select: text; -webkit-touch-callout: default; }
-
         body { 
             margin: 0; padding: 0; background: linear-gradient(to bottom, var(--bg-top), var(--bg-bottom));
             background-attachment: fixed; color: var(--text); font-family: 'Segoe UI', sans-serif; 
             overflow-x: hidden; padding-bottom: 90px; 
         }
         body.no-scroll { overflow: hidden; height: 100vh; }
-
         .header { position: absolute; top: 0; width: 100%; padding: 15px; z-index: 10; text-align: center; background: linear-gradient(to bottom, rgba(4,7,20,0.8), transparent); display: flex; justify-content: center; align-items: center; }
         .header-logo { font-size: 22px; font-weight: 900; color: #fff; margin: 0; letter-spacing: 1px;}
         .header-logo span { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.6); }
         .header-history-btn { position: absolute; right: 20px; color: #fff; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px;}
         .header-history-btn:active { transform: scale(0.9); color: var(--accent); }
-
         .header-vip-btn { position: absolute; right: 60px; color: gold; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px; text-shadow: 0 0 10px rgba(255,215,0,0.5); display: none;}
         .header-vip-btn:active { transform: scale(0.9); }
-
         .hero { position: relative; width: 100%; height: 55vh; background-position: top center; background-size: cover; border-radius: 0 0 20px 20px; transition: background-image 0.8s ease; background-color: #111; cursor: pointer; }
         .hero-gradient { position: absolute; bottom: 0; width: 100%; height: 80%; background: linear-gradient(to top, var(--bg-top) 0%, transparent 100%); display: flex; flex-direction: column; justify-content: flex-end; padding: 20px; border-radius: 0 0 20px 20px;}
         .hero-title { font-size: 26px; font-weight: 900; margin: 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.9); }
         .hero-tags { font-size: 11px; color: #ccc; font-weight: 600; margin-bottom: 10px; text-transform: uppercase; display: flex; gap: 5px; align-items: center; flex-wrap: wrap;}
-
         .play-btn { background: var(--accent); color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; font-size: 13px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4); cursor: pointer; text-transform: uppercase; width: max-content; transition:0.2s;}
         .play-btn:active { transform: scale(0.95); }
-
         .view { display: none; animation: fadeIn 0.3s ease; }
         .view.active { display: block; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
         @keyframes shimmer { 0% { background-position: -1000px 0; } 100% { background-position: 1000px 0; } }
         .skeleton { background: #2a2d3e; background-image: linear-gradient(90deg, #2a2d3e 0px, #3a3e52 40px, #2a2d3e 80px); background-size: 1000px 100%; animation: shimmer 2.5s infinite linear; }
         .skel-hero { width: 100%; height: 55vh; border-radius: 0 0 20px 20px; margin-bottom: 20px; }
         .skel-title { width: 40%; height: 18px; margin: 25px 0 15px 15px; border-radius: 4px; }
         .skel-carousel { display: flex; gap: 12px; padding: 0 15px; overflow: hidden; margin-bottom: 20px; }
         .skel-card { flex: 0 0 110px; height: 165px; border-radius: 8px; }
-
         .section-header { display: flex; justify-content: space-between; align-items: center; padding: 25px 15px 10px 15px; }
         .section-title { font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; color: #fff; }
         .section-title i { color: var(--accent); }
         .ver-todos { font-size: 10px; font-weight: 800; color: var(--accent); text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 4px; padding: 5px 10px; background: rgba(0,229,255,0.1); border-radius: 15px;}
-
         .carousel { display: flex; gap: 12px; padding: 0 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; min-height: 165px; }
         .carousel::-webkit-scrollbar { display: none; }
-
         .card-movie { flex: 0 0 110px; height: 165px; border-radius: 8px; background-color: #2a2d3e; scroll-snap-align: start; overflow: hidden; cursor: pointer; position: relative; box-shadow: 0 4px 10px rgba(0,0,0,0.4); }
         .card-movie img { width: 100%; height: 100%; object-fit: cover; }
         .card-movie .titulo-fallback { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: white; font-size: 9px; padding: 8px 4px; text-align: center; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .card-badges { position: absolute; top: 5px; left: 5px; display: flex; flex-direction: column; gap: 4px; z-index: 2; pointer-events: none; }
-
         .card-history { flex: unset; width: 100%; height: 120px; border-radius: 8px; background-color: #2a2d3e; cursor: pointer; position: relative !important; box-shadow: 0 4px 10px rgba(0,0,0,0.4); overflow: hidden;}
-
         .category-item { background: rgba(255,255,255,0.05); margin: 10px 15px; padding: 15px 20px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid rgba(255,255,255,0.1); cursor: pointer; transition: 0.2s; }
         .category-item:active { background: rgba(255,255,255,0.15); transform: scale(0.98); }
         .category-name { font-size: 14px; font-weight: 700; color: #fff; }
         .category-icon { font-size: 18px; color: var(--accent); }
-
         .card-tv { flex: 0 0 140px; height: 100px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; flex-direction: column; padding: 8px 5px;}
         .card-tv img { width: 50%; height: 45%; object-fit: contain; margin-bottom: 8px; }
         .card-tv .titulo-tv { font-size: 10px; font-weight: bold; text-align: center; color: #ccc; width: 100%; white-space: normal; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.2;} 
         .live-badge { position: absolute; top: 5px; right: 5px; background: #e50914; color: white; font-size: 7px; font-weight: bold; padding: 2px 4px; border-radius: 3px; }
-
         .page-header { padding: 40px 15px 15px 15px; display: flex; align-items: center; gap: 15px; background: linear-gradient(to bottom, var(--bg-top), transparent); z-index:10; position:relative;}
         .page-header i { font-size: 20px; color: var(--accent); cursor: pointer; padding: 10px;}
         .page-title { font-size: 22px; font-weight: 800; margin: 0; }
-
         .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 15px 20px 15px; }
         .grid-container .card-movie { flex: unset; width: 100%; height: 160px; }
-
         .search-container { position: relative; width: calc(100% - 30px); margin: 60px auto 20px auto; }
         .search-bar { width: 100%; padding: 15px 20px 15px 45px; border-radius: 30px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); color: #fff; font-size: 16px; outline: none; box-sizing: border-box; transition: 0.3s; }
         .search-bar:focus { background: rgba(255,255,255,0.12); border-color: var(--accent); box-shadow: 0 0 15px rgba(0,229,255,0.2); }
         .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
-
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; }
         .nav-item { color: var(--text-muted); font-size: 18px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; width: 20%; transition: 0.2s; }
         .nav-item.active { color: var(--text); }
         .nav-item.active i { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.8); transform: scale(1.1); }
         .nav-item span { font-size: 9px; font-weight: 700; text-transform: uppercase; }
-
         .bottom-sheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1999; opacity: 0; pointer-events: none; transition: 0.3s ease; }
         .bottom-sheet-overlay.active { opacity: 1; pointer-events: all; }
         .bottom-sheet { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--bg-top); border-radius: 24px 24px 0 0; z-index: 2000; padding: 20px; transition: bottom 0.4s ease; border-top: 1px solid rgba(255,255,255,0.05); }
         .bottom-sheet.active { bottom: 0; }
         .sheet-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto 20px; cursor: pointer; }
         .sheet-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; text-transform: uppercase; cursor: pointer; }
-
         .server-modal { position: fixed; bottom: -100%; left: 0; width: 100%; background: var(--bg-top); border-radius: 24px 24px 0 0; z-index: 3700; padding: 25px 20px; transition: bottom 0.4s ease; border-top: 1px solid rgba(255,255,255,0.05); }
         .server-modal.active { bottom: 0; }
         .server-title { font-size: 16px; font-weight: 800; color: #fff; margin: 0 0 20px 0; text-align: center;}
@@ -113,7 +89,6 @@
         .server-btn.ep { border-left: 4px solid #00e676; }
         .server-btn.bf { border-left: 4px solid #ff0055; }
         .server-warn { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 15px; line-height: 1.4;}
-
         .details-page { position: fixed; top: 0; left: 100%; width: 100%; height: 100vh; background: var(--bg-bottom); z-index: 3000; transition: left 0.3s ease-out; overflow-y: auto; padding-bottom: 30px; }
         .details-page.active { left: 0; }
         .dp-back-btn { position: absolute; top: 20px; left: 20px; background: rgba(0,0,0,0.5); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; z-index: 3010; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; cursor: pointer; }
@@ -121,11 +96,9 @@
         .dp-gradient { position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-bottom) 0%, rgba(4,7,20,0.8) 50%, transparent 100%); }
         .dp-content { padding: 0 20px; margin-top: -80px; position: relative; z-index: 2; }
         .dp-title { font-size: 32px; font-weight: 900; margin: 0 0 10px 0; line-height: 1.1; text-shadow: 0 2px 10px rgba(0,0,0,0.8);}
-
         .dp-tmdb-meta { font-size: 11px; color: #ccc; font-weight: 600; margin-bottom: 5px; }
         .dp-director { font-size: 12px; color: var(--text-muted); margin-bottom: 15px; font-style: italic;}
         .dp-meta { font-size: 12px; color: var(--accent); font-weight: bold; margin-bottom: 20px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap;}
-
         .action-container { display: flex; flex-direction: column; gap: 10px; margin-bottom: 25px; }
         .dp-play-btn { width: 100%; background: #fff; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: 800; font-size: 14px; display: flex; justify-content: center; align-items: center; gap: 10px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(255,255,255,0.2); transition: 0.2s;}
         .dp-play-btn:active { transform: scale(0.97); }
@@ -136,9 +109,7 @@
         .sec-btn.watched.active { background: rgba(0, 230, 118, 0.15); border-color: #00e676; color: #00e676; }
         .sec-btn.trailer i { color: #ff0055; }
         .sec-btn.web i { color: var(--accent); }
-
         .dp-synopsis { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 25px; }
-
         .cast-section { margin-bottom: 25px; }
         .cast-title { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 15px; border-left: 3px solid var(--accent); padding-left: 8px;}
         .cast-carousel { display: flex; gap: 15px; overflow-x: auto; scrollbar-width: none; padding-bottom: 10px; }
@@ -148,7 +119,6 @@
         .cast-img { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; background: #2a2d3e; margin-bottom: 8px; border: 2px solid rgba(255,255,255,0.1); }
         .cast-name { font-size: 11px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .cast-char { font-size: 10px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
         .actor-modal { position: fixed; top: 100%; left: 0; width: 100%; height: 100vh; background: var(--bg-bottom); z-index: 3500; transition: top 0.3s ease-out; overflow-y: auto; padding-bottom: 30px; }
         .actor-modal.active { top: 0; }
         .actor-header { display: flex; align-items: center; gap: 20px; padding: 40px 20px 20px; background: var(--bg-top); }
@@ -156,42 +126,31 @@
         .actor-info h2 { margin: 0 0 5px 0; font-size: 22px; color: #fff; }
         .actor-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
         .actor-bio { font-size: 13px; color: #ccc; line-height: 1.5; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-
         .trailer-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 3600; display: none; }
         .trailer-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; padding: 10px; z-index: 4502; text-shadow: 0 0 10px #000; }
         .trailer-frame { width: 100%; height: 100%; background: #000; border: none; }
-
         .embed-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 3800; display: none; overflow: hidden; }
         .embed-frame { width: 100%; height: 100%; background: #000; border: none; }
-
         .season-title { font-size: 18px; font-weight: 800; color: #fff; margin: 30px 0 15px 0; border-left: 3px solid var(--accent); padding-left: 8px;}
         .ep-carousel { display: flex; gap: 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 10px; }
         .ep-carousel::-webkit-scrollbar { display: none; }
         .ep-card { flex: 0 0 160px; border-radius: 8px; background: rgba(255,255,255,0.05); overflow: hidden; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); scroll-snap-align: start; transition: 0.2s; position: relative;}
         .ep-card:active { transform: scale(0.95); }
-
         .ep-watched-btn { position: absolute; top: 5px; left: 5px; z-index: 5; background: rgba(0,0,0,0.6); color: #fff; border: 1px solid rgba(255,255,255,0.3); border-radius: 50%; width: 24px; height: 24px; display: flex; justify-content: center; align-items: center; font-size: 10px; transition: 0.2s; }
         .ep-watched-btn.active { background: #00e676; color: #000; border-color: #00e676; }
-
         .ep-thumb { width: 100%; aspect-ratio: 16/9; background-color: #2a2d3e; background-size: cover; background-position: center; position: relative; display: flex; align-items: center; justify-content: center; }
         .ep-thumb::after { content: ''; position: absolute; width: 100%; height: 100%; background: rgba(0,0,0,0.3); }
         .ep-thumb i { font-size: 30px; color: rgba(255,255,255,0.8); z-index: 2; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
         .ep-info-text { padding: 10px; }
         .ep-number { font-size: 11px; color: var(--accent); font-weight: 900; margin-bottom: 4px; letter-spacing: 1px;}
         .ep-name { font-size: 11px; color: #ccc; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; font-weight: 600; line-height: 1.3;}
-
         .loading-text { text-align: center; color: var(--text-muted); font-size: 12px; width: 100%; padding: 20px; }
-
         #toast-msg { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.92); color: #fff; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; border: 1px solid rgba(255,255,255,0.1); max-width: 90%; text-align: center; }
     </style>
 <base target="_blank">
-<base target="_blank">
-<base target="_blank">
 </head>
 <body>
-
     <div id="toast-msg"></div>
-
     <div class="header">
         <i class="fas fa-crown header-vip-btn" id="btnOpenVip" onclick="abrirModalVip()"></i>
         <h1 class="header-logo">Stream<span>Flix</span></h1>
@@ -204,40 +163,34 @@
         <button onclick="aceitarPush()" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Entendi</button>
     </div>
 
-    <!-- Modal de bloqueio a cada 10 min para não-VIP -->
+    <!-- POP-UP 10MIN: SÓ SOME SE CLICAR NO ANÚNCIO OU VIP -->
     <div id="adBlockModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:5000; justify-content:center; align-items:center; flex-direction:column; padding:20px; text-align:center;">
         <div style="background:var(--bg-top); padding:30px; border-radius:15px; width:100%; max-width:350px; border:1px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <i class="fas fa-clock" style="font-size:40px; color:var(--accent); margin-bottom:15px;"></i>
             <h2 style="color:#fff; margin:0 0 10px; font-weight:900;">Continue Assistindo</h2>
             <p style="color:#ccc; font-size:13px; margin-bottom:20px; line-height:1.5;">Assista ao anúncio ou entre no nosso Telegram VIP para continuar sem interrupções.</p>
-
             <button onclick="assistirAnuncioAdBlock()" style="width:100%; padding:15px; border-radius:8px; background:var(--accent); color:#000; font-weight:900; font-size:14px; border:none; margin-bottom:12px; cursor:pointer; text-transform:uppercase;">
                 <i class="fas fa-play"></i> Assistir Anúncio
             </button>
-
             <button onclick="abrirTelegramVip(); fecharAdBlock();" style="width:100%; padding:15px; border-radius:8px; background:#0088cc; color:#fff; font-weight:900; font-size:14px; border:none; margin-bottom:12px; cursor:pointer; text-transform:uppercase;">
                 <i class="fab fa-telegram"></i> Entrar no Telegram VIP
             </button>
-
-            <p style="color:#555; font-size:11px; margin-top:5px;">Você precisa interagir para continuar.</p>
         </div>
     </div>
 
+    <!-- IFRAME INVISÍVEL PARA FORÇAR INTENT DO TELEGRAM -->
+    <iframe id="tgIntentFrame" style="display:none; width:0; height:0; border:none;"></iframe>
+
+    <!-- MODAL VIP: SEM BOTÃO TELEGRAM (só no pop-up 10min) -->
     <div class="embed-modal" id="vipModal" style="padding:20px; align-items:center; z-index:3900; background: rgba(0,0,0,0.95); display:none;" onclick="if(event.target === this) fecharModalVip()">
         <div style="background:var(--bg-top); padding:25px; border-radius:15px; width:100%; max-width:350px; text-align:center; border: 1px solid gold; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <i class="fas fa-times" onclick="event.stopPropagation(); fecharModalVip()" style="position:absolute; right:15px; top:15px; color:#fff; font-size:20px; cursor:pointer;"></i>
             <h2 style="color:#fff; margin-top:5px; font-weight:900;"><i class="fas fa-crown" style="color:gold;"></i> Área VIP</h2>
             <p style="color:#ccc; font-size:13px; margin-bottom:25px;">Faça login para remover todos os anúncios e navegar com velocidade máxima.</p>
-
             <input type="email" id="vipEmail" placeholder="Seu E-mail VIP" style="width:100%; padding:15px; margin-bottom:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.5); color:#fff; outline:none;">
             <input type="password" id="vipSenha" placeholder="Sua Senha" style="width:100%; padding:15px; margin-bottom:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.5); color:#fff; outline:none;">
-
             <button onclick="event.stopPropagation(); fazerLoginVip()" style="width:100%; padding:15px; border-radius:8px; background:gold; color:#000; font-weight:900; font-size:15px; border:none; margin-bottom:15px; cursor:pointer; text-transform:uppercase; box-shadow: 0 4px 15px rgba(255,215,0,0.3);" id="btnLoginBtn">Entrar na Conta VIP</button>
             <p id="vipMsg" style="color:#ff3d00; font-size:12px; margin-bottom:15px; display:none; font-weight:bold;"></p>
-
-            <hr style="border-color:rgba(255,255,255,0.05); margin-bottom:20px;">
-            <p style="color:#8f98b0; font-size:12px; margin-bottom:10px;">Ainda não é VIP?</p>
-            <button onclick="event.stopPropagation(); abrirTelegramVip()" style="width:100%; padding:12px; border-radius:8px; background:#0088cc; color:#fff; font-weight:bold; border:none; cursor:pointer;"><i class="fab fa-telegram"></i> Entrar no Telegram VIP</button>
         </div>
     </div>
 
@@ -292,7 +245,7 @@
     <div id="view-tv" class="view">
         <div class="search-container" style="margin-top: 80px;">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-bar" id="inputBuscaTV" placeholder="Buscar canal ao vivo..." onkeyup="pesquisarTV()">
+            <input type="text" class="search-bar" id="inputBuscaTV" placeholder="Buscar canal ao vivo..." oninput="pesquisarTV()">
         </div>
         <div id="conteudo-tv"><p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A carregar...</p></div>
         <div class="grid-container" id="resultados-tv" style="display: none;"></div>
@@ -301,7 +254,7 @@
     <div id="view-buscar" class="view">
         <div class="search-container" style="margin-top: 80px;">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-bar" id="inputBuscaGlobal" placeholder="Qual filme ou série você procura?" onkeyup="pesquisarGlobal()">
+            <input type="text" class="search-bar" id="inputBuscaGlobal" placeholder="Qual filme ou série você procura?" oninput="pesquisarGlobal()">
         </div>
         <div id="resultados-busca-container">
             <div class="section-title" style="margin-left: 15px;"><i class="fas fa-film"></i> Títulos Encontrados</div>
@@ -354,11 +307,9 @@
         </div>
         <div class="dp-content">
             <h1 class="dp-title" id="dpTitle">Título</h1>
-
             <div class="dp-tmdb-meta" id="dpTmdbMeta"></div>
             <div class="dp-director" id="dpDirector"></div>
             <div class="dp-meta" id="dpMeta">Categoria</div>
-
             <div class="action-container" id="boxAcoes">
                 <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
                 <div class="secondary-actions" id="boxSecundario" style="display:none;">
@@ -367,16 +318,12 @@
                     <div class="sec-btn web" id="btnAltServer" onclick="abrirMenuServidores()"><i class="fas fa-server"></i> Web Player</div>
                 </div>
             </div>
-
             <p class="dp-synopsis" id="dpSynopsis">Aguardando TMDB...</p>
-
             <div id="dpCastContainer" class="cast-section" style="display: none;">
                 <div class="cast-title">Elenco Principal</div>
                 <div class="cast-carousel" id="dpCast"></div>
             </div>
-
             <div id="dpEpisodes" style="display: none; padding-bottom: 10px;"></div>
-
             <div id="dpSimilarContainer" class="cast-section" style="display: none; padding-bottom: 30px;">
                 <div class="cast-title">Similares no StreamFlix</div>
                 <div class="carousel" id="dpSimilar"></div>
@@ -395,7 +342,6 @@
             </div>
         </div>
         <div class="actor-bio" id="actorBio">Biografia...</div>
-
         <div class="cast-section" style="padding: 20px 0;">
             <div class="cast-title" style="margin-left: 20px;">Conhecido(a) Por</div>
             <div class="carousel" id="actorCredits"></div>
@@ -414,27 +360,26 @@
 
     <script>
         const TMDB_API_KEY = '46230929e061f1d2f3df518aed983e08';
-
         let heroFilmes = [];
         let heroIndex = 0;
         let heroInterval = null;
         let tvFoiCarregada = false;
         let filmesFoiCarregada = false;
         let seriesFoiCarregada = false;
-
         let bancoFilmes = null;
         let bancoSeries = null;
         let bancoTV = null;
-
         let trailerKeyAtivo = null;
         let currentTmdbId = null;
         let currentItemType = null;
         let currentSeason = 1;
         let currentEpisode = 1;
-
         let currentStreamData = {}; 
-
         let meuSupabase = null;
+        let adBlockTimer = null;
+        let timeoutBuscaTV = null;
+        let timeoutBuscaGlobal = null;
+        let bancoCarregando = false;
 
         function getSupabase() {
             if(!meuSupabase) {
@@ -450,16 +395,19 @@
             document.body.classList.add('no-scroll');
             history.pushState({ view: 'vip' }, null, "");
         }
-
         function fecharModalVip() { 
             document.getElementById('vipModal').style.display = 'none'; 
             document.body.classList.remove('no-scroll');
             if(history.state && history.state.view === 'vip') history.back();
         }
 
-        // CORREÇÃO: window.open com _blank abre FORA do WebView (navegador ou app nativo)
+        // CORRECAO TELEGRAM: iframe trick + window.open como fallback
         function abrirTelegramVip() {
-            window.open('https://t.me/streamflixofc', '_blank');
+            const iframe = document.getElementById('tgIntentFrame');
+            iframe.src = 'https://t.me/streamflixofc';
+            setTimeout(() => {
+                window.open('https://t.me/streamflixofc', '_blank');
+            }, 300);
         }
 
         async function fazerLoginVip() {
@@ -467,32 +415,26 @@
             const senha = document.getElementById('vipSenha').value.trim();
             const btn = document.getElementById('btnLoginBtn');
             const msg = document.getElementById('vipMsg');
-
             if(!email || !senha) { 
                 msg.innerText = "Preencha os campos."; 
                 msg.style.display = 'block'; 
                 return; 
             }
-
             btn.innerText = "Verificando...";
             btn.disabled = true;
             msg.style.display = 'none';
-
             try {
-                if(!window.supabase) throw new Error("Erro de internet. A biblioteca não carregou.");
-
+                if(!window.supabase) throw new Error("Erro de internet. A biblioteca nao carregou.");
                 const supa = getSupabase(); 
                 const { data, error } = await supa.from('streamflix_users').select('*').eq('email', email).eq('senha', senha);
-
                 if(error) throw error;
-
                 if(data && data.length > 0) {
                     if(data[0].status === 'VIP') {
                         localStorage.setItem('streamflix_vip', 'true');
-                        mostrarToast("Bem-vindo! Anúncios desativados.");
+                        mostrarToast("Bem-vindo! Anuncios desativados.");
                         setTimeout(() => location.reload(), 1500);
                     } else { 
-                        msg.innerText = "Sua conta não tem status VIP."; 
+                        msg.innerText = "Sua conta nao tem status VIP."; 
                         msg.style.display = 'block'; 
                     }
                 } else { 
@@ -522,10 +464,9 @@
             document.getElementById('btnOpenVip').style.display = isVip ? 'none' : 'block';
         }
 
-        // CORREÇÃO: VIP nunca vê push de anúncios
+        // VIP nunca ve push de anuncios
         function injetarAnuncios() {
             if(localStorage.getItem('streamflix_vip') === 'true') return;
-
             if(localStorage.getItem('push_accepted') !== 'true') {
                 setTimeout(() => { 
                     const prompt = document.getElementById('pushPromptModal');
@@ -538,26 +479,23 @@
             document.getElementById('pushPromptModal').style.display = 'none';
             localStorage.setItem('push_accepted', 'true');
             window.open('https://omg10.com/4/11081875', '_blank');
-            mostrarToast("Notificações e Lançamentos ativados!");
+            mostrarToast("Notificacoes e Lancamentos ativados!");
         }
 
-        let adBlockTimer = null;
-
+        // POP-UP 10MIN: SO SOME SE CLICAR NO ANUNCIO OU VIP
         function iniciarAdBlockTimer() {
             if(localStorage.getItem('streamflix_vip') === 'true') return;
             if(adBlockTimer) clearTimeout(adBlockTimer);
-
             adBlockTimer = setTimeout(() => {
                 if(localStorage.getItem('streamflix_vip') !== 'true') {
                     const modal = document.getElementById('adBlockModal');
                     if(modal) {
                         modal.style.display = 'flex';
                         document.body.classList.add('no-scroll');
-                        // Trava o botão voltar do Android enquanto modal estiver aberto
                         history.pushState({ view: 'adblock' }, null, "");
                     }
                 }
-            }, 600000);
+            }, 600000); // 10 minutos
         }
 
         function fecharAdBlock() {
@@ -569,15 +507,13 @@
 
         function assistirAnuncioAdBlock() {
             window.open('https://omg10.com/4/11081875', '_blank');
-            mostrarToast("Anúncio carregado! Obrigado pelo apoio.");
+            mostrarToast("Anuncio carregado! Obrigado pelo apoio.");
             fecharAdBlock();
         }
 
-        // CORREÇÃO: initApp agora esconde tudo de não-VIP se for VIP
         async function initApp() {
             verificarStatusVip();
             const isVip = localStorage.getItem('streamflix_vip') === 'true';
-
             if(!isVip) { 
                 injetarAnuncios(); 
                 iniciarAdBlockTimer();
@@ -585,16 +521,14 @@
                 document.getElementById('pushPromptModal').style.display = 'none';
                 document.getElementById('adBlockModal').style.display = 'none';
             }
-
             try {
                 let htmlConstruido = "";
                 const resVodCats = await fetch('/api/iptv?action=get_vod_categories');
                 const vodCats = await resVodCats.json();
                 const pastasFilmes = vodCats.filter(c => pastaValida(c.category_name)).sort((a,b) => {
-                    const pri = /LANÇA|AÇÃO|COMÉDIA|TERROR/i;
+                    const pri = /LANCA|ACAO|COMEDIA|TERROR/i;
                     return pri.test(b.category_name) - pri.test(a.category_name);
                 }).slice(0, 5); 
-
                 if(pastasFilmes.length > 0) {
                     const res1 = await fetch(`/api/iptv?action=get_vod_streams&category_id=${pastasFilmes[0].category_id}`);
                     const filmes1 = await res1.json();
@@ -604,11 +538,9 @@
                         htmlConstruido += gerarCarrosselHTML(limparNomePasta(pastasFilmes[0].category_name), pastasFilmes[0].category_id, 'vod', 'film', filmes1.slice(5, 20));
                     }
                 }
-
                 document.getElementById('loading-state').style.display = 'none';
                 document.getElementById('conteudo-real').style.display = 'block';
                 document.getElementById('conteudo-dinamico').innerHTML = htmlConstruido;
-
                 setTimeout(async () => {
                     let htmlExtra = "";
                     for(let i = 1; i < pastasFilmes.length; i++) {
@@ -616,7 +548,6 @@
                         const filmes = await res.json();
                         if(filmes && filmes.length > 0) htmlExtra += gerarCarrosselHTML(limparNomePasta(pastasFilmes[i].category_name), pastasFilmes[i].category_id, 'vod', 'film', filmes.slice(0, 15));
                     }
-
                     const resSerieCats = await fetch('/api/iptv?action=get_series_categories');
                     const serieCats = await resSerieCats.json();
                     const pastasSeries = serieCats.filter(c => pastaValida(c.category_name)).slice(0, 2);
@@ -627,9 +558,8 @@
                     }
                     document.getElementById('conteudo-dinamico').innerHTML += htmlExtra;
                 }, 100);
-
             } catch (error) { 
-                document.getElementById('loading-state').innerHTML = "<div class='loading-text'>Erro de ligação. Atualize a página.</div>"; 
+                document.getElementById('loading-state').innerHTML = "<div class='loading-text'>Erro de ligacao. Atualize a pagina.</div>"; 
             }
         }
 
@@ -687,12 +617,10 @@
             const container = document.getElementById('conteudo-historico');
             let html = "";
             const items = Object.values(list).reverse(); 
-
             if(items.length === 0) {
-                container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top:30px;">Ainda não marcou nenhum filme ou episódio como visto.</p>`;
+                container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top:30px;">Ainda nao marcou nenhum filme ou episodio como visto.</p>`;
                 return;
             }
-
             items.forEach(item => {
                 html += `
                 <div class="card-history" onclick="dispararPlayer('${item.id}', '${item.type}', '${item.ext}', '${esc(item.title)}')">
@@ -705,23 +633,21 @@
         }
 
         function esc(str) { 
-            return (str || '').toString().replace(/\\/g, '\\\\').replace(/'/g, "\'").replace(/"/g, '&quot;'); 
+            return (str || '').toString().replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;'); 
         }
-        function limparNomePasta(nome) { return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Séries\s*\|\s*/i, '').trim(); }
-        function pastaValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CÂMERA', 'RADIO', 'OSCAR', 'TESTE']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
-        function pastaTVValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO', 'CÂMERA']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
+        function limparNomePasta(nome) { return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Series\s*\|\s*/i, '').trim(); }
+        function pastaValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'CAMERA', 'RADIO', 'OSCAR', 'TESTE']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
+        function pastaTVValida(nome) { const proibidos = ['JOGOS', 'REALITY', 'XXX', 'RELIGIOSO', 'ADULTO', '+18', '24H', 'RADIO', 'CAMERA']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
 
         function processarTitulo(nomeBruto, nomePasta) {
-            let nomeLimpo = nomeBruto || "Sem Título";
+            let nomeLimpo = nomeBruto || "Sem Titulo";
             const tags = [];
             const pU = nomePasta ? nomePasta.toUpperCase() : '';
-
             if(pU.includes('4K') || /4K|UHD|2160p/i.test(nomeLimpo)) tags.push('4K');
             if(/FHD|1080p/i.test(nomeLimpo)) tags.push('FHD');
             if(/HD|720p/i.test(nomeLimpo)) tags.push('HD');
             if(pU.includes('LEGENDADO') || /\[LEG\]|\(LEG\)/i.test(nomeLimpo)) tags.push('LEG');
             else if(pU.includes('DUBLADO') || /\[DUB\]|\(DUB\)/i.test(nomeLimpo)) tags.push('DUB');
-
             nomeLimpo = nomeLimpo.replace(/(4K|UHD|2160p|FHD|1080p|HD|720p)/ig, '').replace(/\[(DUB|LEG|VOD).*?\]/ig, '').replace(/\((DUB|LEG).*?\)/ig, '').replace(/\|.*?\|/g, '').replace(/-\s*$/, '').replace(/\s+/g, ' ').trim(); 
             if(nomeLimpo.length < 2) nomeLimpo = nomeBruto.substring(0, 20);
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
@@ -730,21 +656,17 @@
         function processarTV(nomeBruto) {
             let nomeLimpo = nomeBruto || "Canal";
             const tags = [];
-
             if(/FHDR/i.test(nomeLimpo)) tags.push('FHDR');
             else if(/FHD/i.test(nomeLimpo)) tags.push('FHD');
             else if(/HD/i.test(nomeLimpo)) tags.push('HD');
             else if(/4K/i.test(nomeLimpo)) tags.push('4K');
             else if(/SD/i.test(nomeLimpo)) tags.push('SD');
-
             const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/i);
             if(estado && !tags.includes(estado[0].toUpperCase())) tags.push(estado[0].toUpperCase());
-
             nomeLimpo = nomeLimpo.replace(/\[(FHDR|FHD|HD|4K|SD)\]/ig, '');
             nomeLimpo = nomeLimpo.replace(/\((FHDR|FHD|HD|4K|SD)\)/ig, '');
             nomeLimpo = nomeLimpo.replace(/\b(FHDR|FHD|HD|4K|SD)\b/ig, '');
             nomeLimpo = nomeLimpo.replace(/^[\s\|\-]+|[\s\|\-]+$/g, '').replace(/\s+/g, ' ').trim();
-
             return { limpo: nomeLimpo, tagsStr: tags.join(',') };
         }
 
@@ -766,8 +688,13 @@
         }
 
         async function garantirBancoCarregado() {
-            if(!bancoFilmes) { const resF = await fetch('/api/iptv?action=get_vod_streams'); bancoFilmes = await resF.json(); }
-            if(!bancoSeries) { const resS = await fetch('/api/iptv?action=get_series'); bancoSeries = await resS.json(); }
+            if(bancoCarregando) return;
+            bancoCarregando = true;
+            try {
+                if(!bancoFilmes) { const resF = await fetch('/api/iptv?action=get_vod_streams'); bancoFilmes = await resF.json(); }
+                if(!bancoSeries) { const resS = await fetch('/api/iptv?action=get_series'); bancoSeries = await resS.json(); }
+            } catch(e) {}
+            bancoCarregando = false;
         }
 
         function mudarAba(idView, btn, originHistory = false) {
@@ -777,23 +704,16 @@
             } else if (idView === 'view-home' && !heroInterval && heroFilmes.length > 0) {
                 iniciarHeroSlider('');
             }
-
             document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
             if(btn) btn.classList.add('active');
             else { const autoBtn = document.getElementById('nav-' + idView.replace('view-','')); if(autoBtn) autoBtn.classList.add('active'); }
-
             document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
             document.getElementById(idView).classList.add('active');
-
             if(!originHistory && idView !== 'view-home') history.pushState({ view: idView }, null, "");
-
             if(idView === 'view-tv' && !tvFoiCarregada) carregarCategoriasMenu('get_live_categories', 'conteudo-tv', 'live', 'tv');
             if(idView === 'view-filmes' && !filmesFoiCarregada) carregarCategoriasMenu('get_vod_categories', 'conteudo-aba-filmes', 'vod', 'film');
             if(idView === 'view-series' && !seriesFoiCarregada) carregarCategoriasMenu('get_series_categories', 'conteudo-aba-series', 'series', 'tv');
-
             if(idView === 'view-historico') carregarHistorico();
-
-            // CORREÇÃO: pré-carrega banco em background ao entrar na busca (evita travamento no teclado)
             if(idView === 'view-buscar') {
                 document.getElementById('inputBuscaGlobal').focus();
                 garantirBancoCarregado().catch(()=>{});
@@ -813,13 +733,11 @@
             if(tipo === 'live') tvFoiCarregada = true;
             if(tipo === 'vod') filmesFoiCarregada = true;
             if(tipo === 'series') seriesFoiCarregada = true;
-
             try {
                 let html = "";
                 const res = await fetch(`/api/iptv?action=${endpoint}`);
                 const cats = await res.json();
                 const validas = cats.filter(c => tipo === 'live' ? pastaTVValida(c.category_name) : pastaValida(c.category_name));
-
                 validas.forEach(cat => {
                     html += `
                     <div class="category-item" onclick="abrirVerTodos('${tipo}', '${cat.category_id}', '${esc(limparNomePasta(cat.category_name))}')">
@@ -840,13 +758,11 @@
                 <div class="ver-todos" onclick="abrirVerTodos('${tipo}', '${catId}', '${esc(nomePasta)}')">Ver Todos <i class="fas fa-chevron-right"></i></div>
             </div>
             <div class="carousel">`;
-
             lista.forEach(item => {
                 const fmtd = processarTitulo(item.name, nomePasta);
                 const capa = item.stream_icon || item.cover;
                 const argId = tipo === 'vod' ? item.stream_id : item.series_id;
                 const argExt = item.container_extension || 'mp4';
-
                 html += `
                 <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', '${esc(nomePasta)}', '${esc(capa)}', '${argId}', '${tipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
                     <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
@@ -862,15 +778,12 @@
             const containerGrade = document.getElementById('conteudo-grade');
             containerGrade.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> A montar a grade...</div>`;
             mudarAba('view-grade', null);
-
             try {
                 let action = 'get_vod_streams';
                 if(tipo === 'series') action = 'get_series';
                 else if(tipo === 'live') action = 'get_live_streams';
-
                 const res = await fetch(`/api/iptv?action=${action}&category_id=${catId}`);
                 const listaCompleta = await res.json();
-
                 let htmlGrade = "";
                 listaCompleta.forEach(item => {
                     if(tipo === 'live') {
@@ -887,7 +800,6 @@
                         const capa = item.stream_icon || item.cover;
                         const argId = tipo === 'vod' ? item.stream_id : item.series_id;
                         const argExt = item.container_extension || 'mp4';
-
                         htmlGrade += `
                         <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', '${esc(nomePasta)}', '${esc(capa)}', '${argId}', '${tipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
                             <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
@@ -899,23 +811,18 @@
             } catch(e) { containerGrade.innerHTML = `<p class="loading-text" style="grid-column: span 3;">Erro ao carregar a pasta.</p>`; }
         }
 
-        let timeoutBusca = null;
         async function pesquisarTV() {
-            clearTimeout(timeoutBusca);
+            clearTimeout(timeoutBuscaTV);
             const query = document.getElementById('inputBuscaTV').value.toLowerCase();
             const divPastas = document.getElementById('conteudo-tv');
             const divResultados = document.getElementById('resultados-tv');
-
             if(query.length < 3) { divPastas.style.display = 'block'; divResultados.style.display = 'none'; return; }
-
             divPastas.style.display = 'none'; divResultados.style.display = 'grid';
             divResultados.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> A procurar canal...</div>`;
-
-            timeoutBusca = setTimeout(async () => {
+            timeoutBuscaTV = setTimeout(async () => {
                 if(!bancoTV) { try { const res = await fetch('/api/iptv?action=get_live_streams'); bancoTV = await res.json(); } catch(e) { return; } }
                 const resultados = bancoTV.filter(c => c.name && c.name.toLowerCase().includes(query)).slice(0, 50);
                 if(resultados.length === 0) { divResultados.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Nenhum canal encontrado.</p>`; return; }
-
                 let html = "";
                 resultados.forEach(item => {
                     const fmtd = processarTV(item.name); const capa = item.stream_icon;
@@ -930,39 +837,27 @@
             }, 800);
         }
 
-        // CORREÇÃO: pesquisa global com yield para não travar o teclado no celular
-        let timeoutBuscaGlobal = null;
+        // CORRECAO: pesquisa global com oninput + debounce + yield
         async function pesquisarGlobal() {
             clearTimeout(timeoutBuscaGlobal);
             const query = document.getElementById('inputBuscaGlobal').value.toLowerCase();
             const container = document.getElementById('resultados-global');
-
             if(query.length < 3) { 
                 container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras...</p>`; 
                 return; 
             }
-
-            container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> A procurar no catálogo...</div>`;
-
+            container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> A procurar no catalogo...</div>`;
             timeoutBuscaGlobal = setTimeout(async () => {
                 try {
                     await garantirBancoCarregado();
-
-                    // Yield para UI respirar (evita travamento do teclado no celular)
                     await new Promise(r => setTimeout(r, 10));
-
                     const resFilmes = bancoFilmes.filter(f => f.name && f.name.toLowerCase().includes(query)).slice(0, 30);
-
-                    // Outro yield entre filtros pesados
                     await new Promise(r => setTimeout(r, 0));
-
                     const resSeries = bancoSeries.filter(s => s.name && s.name.toLowerCase().includes(query)).slice(0, 15);
-
                     if(resFilmes.length === 0 && resSeries.length === 0) { 
                         container.innerHTML = `<p class="loading-text" style="grid-column: span 3;">Nada encontrado.</p>`; 
                         return; 
                     }
-
                     let html = "";
                     resFilmes.forEach(item => {
                         const fmtd = processarTitulo(item.name, "Busca");
@@ -972,11 +867,10 @@
                             ${item.stream_icon ? `<img src="${item.stream_icon}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${fmtd.limpo}</div>`}
                         </div>`;
                     });
-
                     resSeries.forEach(item => {
                         const fmtd = processarTitulo(item.name, "Busca");
                         html += `
-                        <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', 'Série', '${esc(item.cover)}', '${item.series_id}', 'series', '', '${esc(fmtd.tagsStr)}')">
+                        <div class="card-movie" onclick="abrirDetalhes('${esc(fmtd.limpo)}', 'Serie', '${esc(item.cover)}', '${item.series_id}', 'series', '', '${esc(fmtd.tagsStr)}')">
                             <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
                             ${item.cover ? `<img src="${item.cover}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${fmtd.limpo}</div>`}
                         </div>`;
@@ -1012,16 +906,13 @@
         async function abrirDetalhes(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
             document.getElementById('dpTitle').innerText = titulo;
             document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
-
             const capaInicial = (!urlCapa || urlCapa === 'undefined') ? 'https://via.placeholder.com/800x600/111/fff' : urlCapa;
             document.getElementById('dpPoster').style.backgroundImage = `url('${capaInicial}')`;
-
             const btnPlay = document.getElementById('btnPlayFilme');
             const boxSecundario = document.getElementById('boxSecundario');
             const btnTrailer = document.getElementById('btnTrailer');
             const btnAlt = document.getElementById('btnAltServer');
             const btnWatched = document.getElementById('btnWatched');
-
             const boxEpisodios = document.getElementById('dpEpisodes');
             const boxSinopse = document.getElementById('dpSynopsis');
             const boxCast = document.getElementById('dpCastContainer');
@@ -1030,8 +921,7 @@
             const boxDirector = document.getElementById('dpDirector');
             const boxSimilar = document.getElementById('dpSimilarContainer');
             const divSimilar = document.getElementById('dpSimilar');
-
-            boxSinopse.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A sincronizar com os Estúdios...';
+            boxSinopse.innerHTML = '<i class="fas fa-spinner fa-spin"></i> A sincronizar com os Estudios...';
             boxCast.style.display = 'none';
             boxSimilar.style.display = 'none';
             btnTrailer.style.display = 'none';
@@ -1039,57 +929,44 @@
             boxSecundario.style.display = 'none';
             boxMeta.innerHTML = '';
             boxDirector.innerHTML = '';
-
             trailerKeyAtivo = null;
             currentTmdbId = null;
             currentItemType = tipo === 'series' ? 'tv' : 'movie';
             currentSeason = 1;
             currentEpisode = 1;
-
             currentStreamData = { id: id, title: titulo, img: capaInicial, type: tipo, ext: ext };
-
             if(tipo === 'vod') {
                 const list = getWatchedList();
                 if(list[id]) btnWatched.classList.add('active');
                 else btnWatched.classList.remove('active');
                 boxSecundario.style.display = 'flex'; 
             }
-
             document.getElementById('detailsPage').classList.add('active');
             document.body.classList.add('no-scroll');
             history.pushState({ view: 'details' }, null, "");
-
             try {
                 const tmdbType = tipo === 'series' ? 'tv' : 'movie';
                 const queryBusca = encodeURIComponent(titulo.replace(/\(\d{4}\)/g, '').trim());
-
                 const tmdbRes = await fetch(`https://api.themoviedb.org/3/search/${tmdbType}?api_key=${TMDB_API_KEY}&language=pt-BR&query=${queryBusca}`);
                 const tmdbData = await tmdbRes.json();
-
                 if (tmdbData.results && tmdbData.results.length > 0) {
                     const tmdbId = tmdbData.results[0].id;
                     currentTmdbId = tmdbId; 
                     btnAlt.style.display = 'flex'; 
                     boxSecundario.style.display = 'flex'; 
-
                     const detailsRes = await fetch(`https://api.themoviedb.org/3/${tmdbType}/${tmdbId}?api_key=${TMDB_API_KEY}&language=pt-BR&append_to_response=credits,videos,recommendations`);
                     const details = await detailsRes.json();
-
                     const ano = (details.release_date || details.first_air_date || "").substring(0,4);
                     const nota = details.vote_average ? details.vote_average.toFixed(1) : "";
                     const generos = details.genres ? details.genres.map(g=>g.name).slice(0,3).join(', ') : "";
                     const duracao = details.runtime ? `${details.runtime} min` : "";
-
                     boxMeta.innerHTML = `<i class="fas fa-star" style="color:gold;"></i> ${nota} &nbsp;&bull;&nbsp; ${ano} &nbsp;&bull;&nbsp; ${generos} ${duracao ? '&nbsp;&bull;&nbsp; '+duracao : ''}`;
-
                     if(details.credits && details.credits.crew) {
                         const dir = details.credits.crew.find(c => c.job === 'Director');
                         if(dir) boxDirector.innerText = `Dirigido por ${dir.name}`;
                     }
-
-                    boxSinopse.innerText = details.overview || "Sinopse oficial indisponível em Português.";
+                    boxSinopse.innerText = details.overview || "Sinopse oficial indisponivel em Portugues.";
                     if (details.backdrop_path) document.getElementById('dpPoster').style.backgroundImage = `url('https://image.tmdb.org/t/p/original${details.backdrop_path}')`;
-
                     if(details.videos && details.videos.results) {
                         const trailer = details.videos.results.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
                         if(trailer) {
@@ -1097,7 +974,6 @@
                             btnTrailer.style.display = 'flex';
                         }
                     }
-
                     if (details.credits && details.credits.cast && details.credits.cast.length > 0) {
                         let htmlCast = '';
                         details.credits.cast.slice(0, 15).forEach(ator => {
@@ -1112,61 +988,49 @@
                         divCast.innerHTML = htmlCast;
                         boxCast.style.display = 'block';
                     }
-
                     if (details.recommendations && details.recommendations.results && details.recommendations.results.length > 0) {
                         let htmlSimilar = '';
                         details.recommendations.results.forEach(rec => {
                             const recTitle = rec.title || rec.name;
                             const recImg = rec.poster_path ? `https://image.tmdb.org/t/p/w300${rec.poster_path}` : 'https://via.placeholder.com/220x330/111/fff';
-
                             htmlSimilar += `
                             <div class="card-movie" onclick="redirecionarPesquisa('${esc(recTitle)}')">
                                 <img src="${recImg}" loading="lazy">
                             </div>`;
                         });
-
                         if(htmlSimilar !== '') {
                             divSimilar.innerHTML = htmlSimilar;
                             boxSimilar.style.display = 'block';
                         }
                     }
-
                 } else {
-                    boxSinopse.innerText = "Este título não foi encontrado no banco de dados do cinema.";
+                    boxSinopse.innerText = "Este titulo nao foi encontrado no banco de dados do cinema.";
                 }
             } catch (err) {
-                if(boxSinopse.innerText.includes('sincronizar')) boxSinopse.innerText = "Resumo indisponível.";
+                if(boxSinopse.innerText.includes('sincronizar')) boxSinopse.innerText = "Resumo indisponivel.";
             }
-
             if(tipo === 'series') {
                 btnPlay.style.display = 'none';
                 boxEpisodios.style.display = 'block';
                 boxEpisodios.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A montar temporadas...</p>';
-
                 try {
                     const res = await fetch(`/api/iptv?action=get_series_info&series_id=${id}`);
                     const data = await res.json();
-
                     if(data && data.episodes && Object.keys(data.episodes).length > 0) {
                         let htmlEps = '';
                         const watchedList = getWatchedList(); 
-
                         for (let season in data.episodes) {
                             htmlEps += `<h3 class="season-title">Temporada ${season}</h3>`;
                             htmlEps += `<div class="ep-carousel">`;
-
                             data.episodes[season].forEach(ep => {
-                                let epTitle = ep.title || `Episódio ${ep.episode_num}`;
-                                const regexSerie = new RegExp(titulo.replace(/[.*+?^${}()|[\]\\]/g, '\$&') + "\s*[-:]?\s*", "i");
+                                let epTitle = ep.title || `Episodio ${ep.episode_num}`;
+                                const regexSerie = new RegExp(titulo.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + "\\s*[-:]?\\s*", "i");
                                 epTitle = epTitle.replace(regexSerie, "").replace(/S\d{1,2}\s*E\d{1,2}\s*[-:]?\s*/i, "").replace(/^[-_.:\s]+/, "").trim(); 
-                                if(!epTitle || epTitle.length < 2) epTitle = `Episódio ${ep.episode_num}`;
-
+                                if(!epTitle || epTitle.length < 2) epTitle = `Episodio ${ep.episode_num}`;
                                 const thumb = (ep.info && ep.info.movie_image) ? ep.info.movie_image : urlCapa;
                                 const sNum = String(season).padStart(2, '0');
                                 const eNum = String(ep.episode_num).padStart(2, '0');
-
                                 const isWatched = watchedList[ep.id] ? 'active' : '';
-
                                 htmlEps += `
                                 <div class="ep-card" onclick="reproduzirEpisodio('${ep.id}', '${ep.container_extension || 'mp4'}', '${esc(epTitle)}', ${season}, ${ep.episode_num})">
                                     <div class="ep-watched-btn ${isWatched}" onclick="toggleEpWatched(event, '${ep.id}', '${esc(epTitle)}', '${ep.container_extension || 'mp4'}', '${esc(thumb)}')"><i class="fas fa-check"></i></div>
@@ -1177,8 +1041,8 @@
                             htmlEps += `</div>`;
                         }
                         boxEpisodios.innerHTML = htmlEps;
-                    } else { boxEpisodios.innerHTML = '<p class="loading-text">Nenhum episódio cadastrado no servidor.</p>'; }
-                } catch(e) { boxEpisodios.innerHTML = '<p class="loading-text">Erro ao carregar episódios.</p>'; }
+                    } else { boxEpisodios.innerHTML = '<p class="loading-text">Nenhum episodio cadastrado no servidor.</p>'; }
+                } catch(e) { boxEpisodios.innerHTML = '<p class="loading-text">Erro ao carregar episodios.</p>'; }
             } else {
                 btnPlay.style.display = 'flex';
                 boxEpisodios.style.display = 'none';
@@ -1197,18 +1061,14 @@
             document.getElementById('actorName').innerText = "Carregando...";
             document.getElementById('actorBio').innerText = "";
             document.getElementById('actorCredits').innerHTML = '<i class="fas fa-spinner fa-spin"></i> Buscando obras...';
-
             modal.classList.add('active');
             document.body.classList.add('no-scroll');
             history.pushState({ view: 'actor' }, null, "");
-
             try {
                 const pRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}?api_key=${TMDB_API_KEY}&language=pt-BR`);
                 const pData = await pRes.json();
-
                 document.getElementById('actorName').innerText = pData.name;
                 document.getElementById('actorImg').src = pData.profile_path ? `https://image.tmdb.org/t/p/w300${pData.profile_path}` : 'https://via.placeholder.com/150';
-
                 let idade = "";
                 if(pData.birthday) {
                     const nasc = new Date(pData.birthday);
@@ -1218,19 +1078,15 @@
                 }
                 document.getElementById('actorMeta').innerText = pData.birthday ? `${pData.birthday}${idade}` : "Data de nascimento desconhecida";
                 document.getElementById('actorPlace').innerText = pData.place_of_birth || "";
-                document.getElementById('actorBio').innerText = pData.biography || "Biografia oficial em português indisponível. Veja as principais obras abaixo.";
-
+                document.getElementById('actorBio').innerText = pData.biography || "Biografia oficial em portugues indisponivel. Veja as principais obras abaixo.";
                 const cRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}/combined_credits?api_key=${TMDB_API_KEY}&language=pt-BR`);
                 const cData = await cRes.json();
-
                 if(cData.cast && cData.cast.length > 0) {
                     const obras = cData.cast.sort((a,b) => b.popularity - a.popularity).slice(0, 20);
                     let htmlObras = '';
-
                     obras.forEach(obra => {
                         const obTitle = obra.title || obra.name;
                         const obImg = obra.poster_path ? `https://image.tmdb.org/t/p/w200${obra.poster_path}` : 'https://via.placeholder.com/220x330/111/fff';
-
                         htmlObras += `
                         <div class="card-movie" onclick="redirecionarPesquisa('${esc(obTitle)}')">
                             <img src="${obImg}" loading="lazy">
@@ -1238,7 +1094,6 @@
                     });
                     document.getElementById('actorCredits').innerHTML = htmlObras || "Nenhuma obra deste ator foi encontrada.";
                 }
-
             } catch(e) { document.getElementById('actorBio').innerText = "Erro ao carregar dados do TMDB."; }
         }
 
@@ -1270,13 +1125,10 @@
 
         function abrirPlayerWeb(servidor) {
             if(!currentTmdbId) return;
-
             document.getElementById('serverModal').classList.remove('active');
             document.getElementById('sheetOverlay').classList.remove('active');
-
             const modal = document.getElementById('embedModal');
             const frame = document.getElementById('embedFrame');
-
             let finalUrl = "";
             if (servidor === 'betterflix') {
                 if(currentItemType === 'movie') finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=movie`;
@@ -1288,11 +1140,9 @@
                 if(currentItemType === 'movie') finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}`;
                 else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
             }
-
             frame.src = finalUrl;
             modal.style.display = 'flex';
             document.body.classList.add('no-scroll');
-
             if(history.state && history.state.view === 'servermenu') {
                 history.replaceState({ view: 'embed' }, null, "");
             } else {
@@ -1322,7 +1172,6 @@
             document.getElementById('tvTitle').innerText = titulo;
             document.getElementById('tvBadges').innerHTML = gerarHTMLBadges(tagsStr);
             document.getElementById('btnPlayTV').onclick = () => dispararPlayer(streamId, 'live', '', titulo);
-
             document.getElementById('sheetOverlay').classList.add('active');
             document.getElementById('bottomSheet').classList.add('active');
             history.pushState({ view: 'sheet' }, null, "");
@@ -1339,28 +1188,25 @@
                 btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`;
                 btn.disabled = true;
             }
-
             try {
                 let urlFinal = "";
                 if(tipo === 'vod') {
                     const res = await fetch(`/api/iptv?action=get_movie_url&stream_id=${id}&extension=${ext}`);
-                    if(!res.ok) throw new Error("Servidor indisponível");
+                    if(!res.ok) throw new Error("Servidor indisponivel");
                     const data = await res.json();
                     urlFinal = data.url;
                 } else if (tipo === 'live') {
                     const res = await fetch(`/api/iptv?action=get_live_url&stream_id=${id}`);
-                    if(!res.ok) throw new Error("Servidor indisponível");
+                    if(!res.ok) throw new Error("Servidor indisponivel");
                     const data = await res.json();
                     urlFinal = data.url;
                 } else if (tipo === 'episode') {
                     const res = await fetch(`/api/iptv?action=get_series_url&stream_id=${id}&extension=${ext}`);
-                    if(!res.ok) throw new Error("Servidor indisponível");
+                    if(!res.ok) throw new Error("Servidor indisponivel");
                     const data = await res.json();
                     urlFinal = data.url;
                 }
-
-                if (!urlFinal) throw new Error("O Servidor não retornou o link.");
-
+                if (!urlFinal) throw new Error("O Servidor nao retornou o link.");
                 if (window.AndroidApp && window.AndroidApp.abrirVideoNativo) {
                     window.AndroidApp.abrirVideoNativo(urlFinal);
                 } else {
@@ -1370,7 +1216,7 @@
                 }
             } catch (e) {
                 console.error("Erro player:", e);
-                mostrarToast("Erro ao carregar vídeo: " + e.message);
+                mostrarToast("Erro ao carregar video: " + e.message);
             } finally {
                 if(btn) {
                     btn.innerHTML = `<i class="fas fa-play"></i> Assistir`;
@@ -1379,14 +1225,13 @@
             }
         }
 
-        // CORREÇÃO: popstate agora trava back button quando AdBlockModal está aberto
+        // CORRECAO: popstate trava back button quando AdBlockModal esta aberto
         window.addEventListener('popstate', function(event) {
             if(document.getElementById('adBlockModal').style.display === 'flex') {
-                mostrarToast("Assista ao anúncio ou entre no VIP para continuar.");
+                mostrarToast("Assista ao anuncio ou entre no VIP para continuar.");
                 history.pushState({ view: 'adblock' }, null, "");
                 return;
             }
-
             if(event.state && event.state.view === 'vip') { fecharModalVip(); return; }
             if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); return; } 
             if (document.getElementById('embedModal').style.display === 'flex') { fecharEmbedWeb(); return; } 
@@ -1400,7 +1245,6 @@
 
         window.onload = () => {
             history.replaceState({ view: 'view-home' }, null, "");
-
             document.getElementById('sheetOverlay').onclick = function() {
                 if(document.getElementById('serverModal').classList.contains('active')) {
                     history.back();
@@ -1408,7 +1252,6 @@
                     fecharSheetTV();
                 }
             };
-
             initApp();
         };
     </script>
