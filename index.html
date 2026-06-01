@@ -4,26 +4,31 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>StreamFlix</title>
+    <!-- Bibliotecas -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
     
+    <!-- CSS Externo -->
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
 
     <div id="toast-msg"></div>
 
+    <!-- CABEÇALHO PRINCIPAL -->
     <div class="header" id="mainHeader">
         <h1 class="header-logo">Stream<span>Flix</span></h1>
         <i class="fas fa-crown header-btn header-vip-btn" id="btnOpenVip" onclick="abrirModalVip()"></i>
     </div>
 
+    <!-- AVISO ISCA PUSH -->
     <div id="pushPromptModal" style="display:none; position:fixed; bottom:80px; left:5%; width:90%; background:linear-gradient(45deg, #00e5ff, #0055ff); padding:15px; border-radius:12px; z-index:4000; box-shadow:0 5px 15px rgba(0,229,255,0.4); text-align:center;">
         <h3 style="margin:0 0 5px; color:#fff; font-size:16px;"><i class="fas fa-bell" style="color:gold;"></i> Lançamentos Exclusivos</h3>
         <p style="margin:0 0 10px; color:#fff; font-size:12px;">Ative as notificações para ser avisado quando novos filmes chegarem ao catálogo!</p>
         <button onclick="aceitarPush()" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Ativar Agora</button>
     </div>
 
+    <!-- MODAL VIP -->
     <div class="embed-modal" id="vipModal" style="padding:20px; align-items:center; z-index:3900; background: rgba(0,0,0,0.95); display:none;" onclick="if(event.target === this) fecharModalVip()">
         <div style="background:var(--bg-top); padding:25px; border-radius:15px; width:100%; max-width:350px; text-align:center; border: 1px solid gold; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <i class="fas fa-times" onclick="event.stopPropagation(); fecharModalVip()" style="position:absolute; right:15px; top:15px; color:#fff; font-size:20px; cursor:pointer;"></i>
@@ -36,6 +41,7 @@
         </div>
     </div>
 
+    <!-- VIEW HOME (NOVO BANNER) -->
     <div id="view-home" class="view active" style="padding-top: 60px;">
         <div id="loading-state">
             <div class="skeleton skel-hero"></div>
@@ -43,17 +49,22 @@
             <div class="skel-carousel"><div class="skeleton skel-card"></div><div class="skeleton skel-card"></div><div class="skeleton skel-card"></div></div>
         </div>
         <div id="conteudo-real" style="display: none;">
-            <div class="hero" id="heroBanner" style="background-image: url('');" onclick="abrirHeroDetalhes()">
+            <div class="hero" id="heroBanner" style="background-image: url('');">
                 <div class="hero-gradient">
                     <div class="hero-tags" id="heroTags">Aguarde...</div>
-                    <h1 class="hero-title" id="heroTitle">Carregando...</h1><br>
-                    <button class="play-btn"><i class="fas fa-play"></i> Assistir</button>
+                    <h1 class="hero-title" id="heroTitle">Carregando...</h1>
+                    <p class="hero-synopsis" id="heroSynopsis">Aguarde...</p>
+                    <div class="hero-buttons">
+                        <button class="hero-info-btn" onclick="abrirHeroDetalhes()"><i class="fas fa-info-circle"></i> Mais Info</button>
+                        <button class="hero-trailer-btn" id="heroTrailerBtn" onclick="abrirHeroTrailer()"><i class="fas fa-play"></i> Trailer</button>
+                    </div>
                 </div>
             </div>
             <div id="conteudo-dinamico"></div>
         </div>
     </div>
 
+    <!-- VIEW SALVOS E FAVORITOS -->
     <div id="view-historico" class="view" style="padding-top: 60px;">
         <div class="page-header" style="padding-top: 20px;">
             <i class="fas fa-arrow-left" onclick="history.back()"></i>
@@ -62,6 +73,7 @@
         <div class="grid-container" id="conteudo-historico"></div>
     </div>
 
+    <!-- VIEW GRADE -->
     <div id="view-grade" class="view">
         <div class="page-header">
             <i class="fas fa-arrow-left" onclick="history.back()"></i>
@@ -70,6 +82,7 @@
         <div class="grid-container" id="conteudo-grade"></div>
     </div>
 
+    <!-- VIEW BUSCA TMDB -->
     <div id="view-buscar" class="view">
         <div class="search-container" style="margin-top: 80px;">
             <i class="fas fa-search search-icon"></i>
@@ -89,6 +102,7 @@
         </div>
     </div>
 
+    <!-- VIEW IPTV (MODO COMPLETO) -->
     <div id="view-iptv" class="view">
         <div class="iptv-header">
             <div class="page-header" style="padding-top:20px; background:none;">
@@ -110,12 +124,14 @@
         </div>
     </div>
 
+    <!-- BOTTOM NAV ATUALIZADO (Com botão MENU) -->
     <div class="bottom-nav" id="bottomNav">
         <div class="nav-item active" id="nav-home" onclick="mudarAba('view-home', this)"><i class="fas fa-home"></i><span>Início</span></div>
         <div class="nav-item" id="nav-buscar" onclick="mudarAba('view-buscar', this)"><i class="fas fa-search"></i><span>Buscar</span></div>
         <div class="nav-item" id="nav-menu" onclick="abrirMenuPrincipal()"><i class="fas fa-bars"></i><span>Menu</span></div>
     </div>
 
+    <!-- MENU PRINCIPAL ESCONDIDO (RODAPÉ) -->
     <div class="bottom-sheet-overlay" id="menuOverlay" onclick="fecharMenuPrincipal()"></div>
     <div class="bottom-sheet" id="menuPrincipal">
         <div class="sheet-handle" onclick="fecharMenuPrincipal()"></div>
@@ -130,6 +146,7 @@
             <i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
         </div>
         
+        <!-- TAGS NATVAS BLINDADAS -->
         <a href="https://t.me/streamflixofc" target="_blank" class="server-btn" style="text-decoration:none; margin-top:20px;">
             <div><i class="fab fa-telegram" style="color:#0088cc;"></i> &nbsp; Canal Telegram</div>
             <i class="fas fa-external-link-alt" style="font-size:10px; color:#666;"></i>
@@ -140,6 +157,7 @@
         </a>
     </div>
 
+    <!-- MODAL DE ESCOLHA DE SERVIDOR -->
     <div class="server-modal" id="serverModal">
         <div class="sheet-handle" onclick="fecharMenuServidores()"></div>
         <div class="server-title">Escolha um Servidor</div>
@@ -155,6 +173,7 @@
         <div class="server-warn">* Os Servidores Web podem conter pop-ups externos. Para uma experiência livre, assine o VIP e use o Servidor App.</div>
     </div>
 
+    <!-- BOTTOM SHEET DA TV -->
     <div class="bottom-sheet" id="bottomSheet">
         <div class="sheet-handle" onclick="fecharSheetTV()"></div>
         <div class="card-badges" id="tvBadges" style="position: relative; left:0; top:0; flex-direction: row; margin-bottom:10px;"></div>
@@ -162,6 +181,7 @@
         <button class="sheet-btn" id="btnPlayTV"><i class="fas fa-play"></i> Assistir Agora</button>
     </div>
 
+    <!-- DETALHES TMDB (LAYOUT PROTEGIDO E ORIGINAL) -->
     <div class="details-page" id="detailsPage">
         <button class="dp-back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
         <div class="dp-poster" id="dpPoster" style="background-image: url('');"><div class="dp-gradient"></div></div>
@@ -172,7 +192,8 @@
             <div class="dp-meta" id="dpMeta"></div>
             
             <div class="action-container" id="boxAcoes">
-                <button class="dp-play-btn" id="btnPlayFilme" onclick="abrirMenuServidoresDetalhes()"><i class="fas fa-play"></i> Assistir</button>
+                <!-- Play Flutuante -->
+                <button class="dp-play-btn" id="btnPlayFilme" onclick="abrirMenuServidoresDetalhes()"><i class="fas fa-play"></i></button>
                 
                 <div class="secondary-actions" id="boxSecundario">
                     <div class="sec-btn watched" id="btnWatched" onclick="toggleWatchedGlobal()"><i class="fas fa-check"></i> Visto</div>
@@ -197,6 +218,7 @@
         </div>
     </div>
 
+    <!-- ATOR E MODAIS -->
     <div class="actor-modal" id="actorModal">
         <button class="dp-back-btn" style="position: fixed;" onclick="history.back()"><i class="fas fa-arrow-down"></i></button>
         <div class="actor-header">
@@ -224,6 +246,7 @@
         <iframe id="embedFrame" class="embed-frame" allow="fullscreen; autoplay; encrypted-media; picture-in-picture" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe>
     </div>
 
+    <!-- Scripts Motor -->
     <script src="/js/config.js"></script>
     <script src="/js/app.js"></script>
 </body>
