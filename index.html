@@ -12,8 +12,30 @@
 
     <title>StreamFlix</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="/css/style.css">
+
+    <style>
+        /* =========================================
+           MENU PRINCIPAL AJUSTADO (MENOR E COMPACTO)
+        ========================================= */
+        .menu-header { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .menu-avatar { width: 42px; height: 42px; font-size: 18px; }
+        .menu-user-info h3 { font-size: 14px; margin: 0; }
+        .menu-user-info p { font-size: 10px; margin: 2px 0 0 0; }
+        
+        .menu-section { margin-bottom: 15px; }
+        .menu-section-title { font-size: 10px; margin-bottom: 10px; }
+        .menu-grid { gap: 8px; }
+        .menu-grid-item { padding: 10px; gap: 6px; border-radius: 10px; }
+        .menu-icon-box { width: 34px; height: 34px; font-size: 14px; border-radius: 8px; }
+        .menu-grid-item span { font-size: 10px; }
+        
+        .menu-list-item { padding: 8px 12px; border-radius: 8px; gap: 10px; }
+        .menu-list-icon { font-size: 16px; width: 20px; }
+        .menu-list-title { font-size: 12px; }
+        .menu-list-sub { font-size: 9px; }
+    </style>
 </head>
 <body>
 
@@ -26,14 +48,12 @@
         <i class="fas fa-crown header-btn header-vip-btn" id="btnOpenVip" onclick="abrirModalVip()"></i>
     </div>
 
-    <!-- PUSH NOTIFICATION -->
     <div id="pushPromptModal" style="display:none; position:fixed; bottom:80px; left:5%; width:90%; background:linear-gradient(45deg, #00e5ff, #0055ff); padding:15px; border-radius:12px; z-index:4000; box-shadow:0 5px 15px rgba(0,229,255,0.4); text-align:center;">
         <h3 style="margin:0 0 5px; color:#fff; font-size:16px;"><i class="fas fa-bell" style="color:gold;"></i> Lançamentos Exclusivos</h3>
         <p style="margin:0 0 10px; color:#fff; font-size:12px;">Ative as notificações para ser avisado quando novos filmes chegarem!</p>
         <button onclick="aceitarPush()" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Ativar Agora</button>
     </div>
 
-    <!-- MODAL VIP -->
     <div class="embed-modal" id="vipModal" style="padding:20px; align-items:center; z-index:3900; background: rgba(0,0,0,0.95); display:none;" onclick="if(event.target === this) fecharModalVip()">
         <div style="background:var(--bg-top); padding:25px; border-radius:15px; width:100%; max-width:350px; text-align:center; border: 1px solid gold; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <i class="fas fa-times" onclick="event.stopPropagation(); fecharModalVip()" style="position:absolute; right:15px; top:15px; color:#fff; font-size:20px; cursor:pointer; padding:10px;"></i>
@@ -47,7 +67,6 @@
         </div>
     </div>
 
-    <!-- VIEWS -->
     <div id="view-home" class="view active" style="padding-top: 60px;">
         <div id="loading-state">
             <div class="skeleton skel-hero"></div>
@@ -105,7 +124,6 @@
         </div>
     </div>
 
-    <!-- MODO IPTV -->
     <div id="view-iptv" class="view">
         <div class="iptv-header">
             <div class="page-header" style="padding-top:20px; background:none;">
@@ -127,7 +145,6 @@
         </div>
     </div>
 
-    <!-- ANIMES E DORAMAS (SUPERFLIX) -->
     <div id="view-superflix" class="view" style="padding-top: 60px;">
         <div class="page-header" style="padding-top: 20px;">
             <i class="fas fa-arrow-left" onclick="history.back()"></i>
@@ -141,16 +158,14 @@
         <div class="grid-container" id="conteudo-superflix"></div>
     </div>
 
-    <!-- BOTTOM NAV -->
     <div class="bottom-nav" id="bottomNav">
         <div class="nav-item active" id="nav-home" onclick="mudarAba('view-home', this)"><i class="fas fa-home"></i><span>Início</span></div>
         <div class="nav-item" id="nav-buscar" onclick="mudarAba('view-buscar', this)"><i class="fas fa-search"></i><span>Buscar</span></div>
         <div class="nav-item" id="nav-menu" onclick="abrirMenuPrincipal()"><i class="fas fa-bars"></i><span>Menu</span></div>
     </div>
 
-    <!-- MENU PRINCIPAL -->
     <div class="bottom-sheet-overlay" id="menuOverlay" onclick="fecharMenuPrincipal()"></div>
-    <div class="bottom-sheet" id="menuPrincipal">
+    <div class="bottom-sheet" id="menuPrincipal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)" style="touch-action: pan-y;">
         <div class="sheet-handle" onclick="fecharMenuPrincipal()"></div>
 
         <div class="menu-header">
@@ -200,7 +215,7 @@
                     </div>
                     <span>Animes</span>
                 </div>
-                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); abrirSuperFlix('dorama');">
+                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); abrirSuperFlix('doramas');">
                     <div class="menu-icon-box" style="background: linear-gradient(135deg, #00b0ff, #00e5ff);">
                         <i class="fas fa-heart"></i>
                     </div>
@@ -237,7 +252,6 @@
         <div class="menu-footer">StreamFlix v2.4 (PWA)</div>
     </div>
 
-    <!-- MODAL SERVIDORES -->
     <div class="server-modal" id="serverModal">
         <div class="sheet-handle" onclick="fecharMenuServidores()"></div>
         <div class="server-title">Escolha um Servidor</div>
@@ -253,14 +267,13 @@
         <div class="server-btn bf" onclick="abrirPlayerWeb('betterflix')"><div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; Servidor Web 3 (Rápido)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
     </div>
 
-    <div class="bottom-sheet" id="bottomSheet">
+    <div class="bottom-sheet" id="bottomSheet" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)" style="touch-action: pan-y;">
         <div class="sheet-handle" onclick="fecharSheetTV()"></div>
         <div class="card-badges" id="tvBadges" style="position: relative; left:0; top:0; flex-direction: row; margin-bottom:10px;"></div>
         <h2 style="margin:0 0 5px; color:#fff;" id="tvTitle">Canal</h2>
         <button class="sheet-btn" id="btnPlayTV"><i class="fas fa-play"></i> Assistir Agora</button>
     </div>
 
-    <!-- DETALHES TMDB -->
     <div class="details-page" id="detailsPage">
         <button class="dp-back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
         <div class="dp-poster" id="dpPoster" style="background-image: url('');"><div class="dp-gradient"></div></div>
@@ -315,7 +328,6 @@
         </div>
     </div>
 
-    <!-- IFRAMES LIVRES DE SANDBOX PARA NÃO DAR ERRO 404 NO SUPERFLIX -->
     <div class="trailer-modal" id="trailerModal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)">
         <i class="fas fa-times trailer-close" onclick="fecharTrailer()"></i>
         <div class="swipe-indicator" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; z-index:4503;"></div>
@@ -325,7 +337,8 @@
     <div class="embed-modal" id="embedModal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)">
         <i class="fas fa-times trailer-close" onclick="fecharEmbedWeb()"></i>
         <div class="swipe-indicator" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; z-index:4503;"></div>
-        <iframe id="embedFrame" class="embed-frame" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+        
+        <iframe id="embedFrame" class="embed-frame" frameborder="0" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *; accelerometer *; gyroscope *; web-share *" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
     </div>
 
     <div class="embed-modal" id="adBlockModal" style="z-index:5000; display:none; background:rgba(0,0,0,0.95); padding:20px; text-align:center; align-items:center; justify-content:center; flex-direction:column;">
