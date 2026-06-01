@@ -12,30 +12,8 @@
 
     <title>StreamFlix</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+    <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
     <link rel="stylesheet" href="/css/style.css">
-
-    <style>
-        /* =========================================
-           MENU PRINCIPAL AJUSTADO (MENOR E COMPACTO)
-        ========================================= */
-        .menu-header { margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-        .menu-avatar { width: 42px; height: 42px; font-size: 18px; }
-        .menu-user-info h3 { font-size: 14px; margin: 0; }
-        .menu-user-info p { font-size: 10px; margin: 2px 0 0 0; }
-        
-        .menu-section { margin-bottom: 15px; }
-        .menu-section-title { font-size: 10px; margin-bottom: 10px; }
-        .menu-grid { gap: 8px; }
-        .menu-grid-item { padding: 10px; gap: 6px; border-radius: 10px; }
-        .menu-icon-box { width: 34px; height: 34px; font-size: 14px; border-radius: 8px; }
-        .menu-grid-item span { font-size: 10px; }
-        
-        .menu-list-item { padding: 8px 12px; border-radius: 8px; gap: 10px; }
-        .menu-list-icon { font-size: 16px; width: 20px; }
-        .menu-list-title { font-size: 12px; }
-        .menu-list-sub { font-size: 9px; }
-    </style>
 </head>
 <body>
 
@@ -165,7 +143,7 @@
     </div>
 
     <div class="bottom-sheet-overlay" id="menuOverlay" onclick="fecharMenuPrincipal()"></div>
-    <div class="bottom-sheet" id="menuPrincipal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)" style="touch-action: pan-y;">
+    <div class="bottom-sheet" id="menuPrincipal">
         <div class="sheet-handle" onclick="fecharMenuPrincipal()"></div>
 
         <div class="menu-header">
@@ -215,7 +193,7 @@
                     </div>
                     <span>Animes</span>
                 </div>
-                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); abrirSuperFlix('doramas');">
+                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); abrirSuperFlix('dorama');">
                     <div class="menu-icon-box" style="background: linear-gradient(135deg, #00b0ff, #00e5ff);">
                         <i class="fas fa-heart"></i>
                     </div>
@@ -225,12 +203,13 @@
         </div>
 
         <div class="menu-section">
+            <div class="menu-section-title"><i class="fas fa-cog"></i> Conta</div>
             <div class="menu-list">
                 <div class="menu-list-item" onclick="fecharMenuPrincipal(); abrirModalVip();">
                     <div class="menu-list-icon" style="color:gold;"><i class="fas fa-crown"></i></div>
                     <div class="menu-list-text">
                         <div class="menu-list-title">Área VIP</div>
-                        <div class="menu-list-sub">Remova anúncios</div>
+                        <div class="menu-list-sub">Remova todos os anúncios</div>
                     </div>
                     <i class="fas fa-chevron-right" style="color:#666; font-size:10px;"></i>
                 </div>
@@ -238,18 +217,28 @@
         </div>
 
         <div class="menu-section">
+            <div class="menu-section-title"><i class="fas fa-users"></i> Comunidade</div>
             <div class="menu-list">
                 <a href="https://t.me/streamflixofc" target="_blank" rel="noopener noreferrer" class="menu-list-item" style="text-decoration:none;">
                     <div class="menu-list-icon" style="color:#0088cc;"><i class="fab fa-telegram"></i></div>
                     <div class="menu-list-text">
                         <div class="menu-list-title">Canal Telegram</div>
+                        <div class="menu-list-sub">Novidades e suporte</div>
+                    </div>
+                    <i class="fas fa-external-link-alt" style="color:#666; font-size:10px;"></i>
+                </a>
+                <a href="https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87" target="_blank" rel="noopener noreferrer" class="menu-list-item" style="text-decoration:none;">
+                    <div class="menu-list-icon" style="color:#25D366;"><i class="fab fa-whatsapp"></i></div>
+                    <div class="menu-list-text">
+                        <div class="menu-list-title">Grupo WhatsApp</div>
+                        <div class="menu-list-sub">Converse com a galera</div>
                     </div>
                     <i class="fas fa-external-link-alt" style="color:#666; font-size:10px;"></i>
                 </a>
             </div>
         </div>
 
-        <div class="menu-footer">StreamFlix v2.4 (PWA)</div>
+        <div class="menu-footer">StreamFlix v2.3</div>
     </div>
 
     <div class="server-modal" id="serverModal">
@@ -265,9 +254,10 @@
         <div class="server-btn em" onclick="abrirPlayerWeb('embedmovies')"><div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; Servidor Web 1 (Legendado/Dub)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-btn ep" onclick="abrirPlayerWeb('embedplayapi')"><div><i class="fas fa-play-circle" style="color:#00e676;"></i> &nbsp; Servidor Web 2 (Dublado)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-btn bf" onclick="abrirPlayerWeb('betterflix')"><div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; Servidor Web 3 (Rápido)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-warn">* Os Servidores Web podem conter pop-ups. Para experiência livre, use o Servidor App.</div>
     </div>
 
-    <div class="bottom-sheet" id="bottomSheet" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)" style="touch-action: pan-y;">
+    <div class="bottom-sheet" id="bottomSheet">
         <div class="sheet-handle" onclick="fecharSheetTV()"></div>
         <div class="card-badges" id="tvBadges" style="position: relative; left:0; top:0; flex-direction: row; margin-bottom:10px;"></div>
         <h2 style="margin:0 0 5px; color:#fff;" id="tvTitle">Canal</h2>
@@ -331,14 +321,13 @@
     <div class="trailer-modal" id="trailerModal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)">
         <i class="fas fa-times trailer-close" onclick="fecharTrailer()"></i>
         <div class="swipe-indicator" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; z-index:4503;"></div>
-        <iframe id="trailerFrame" class="trailer-frame" allowfullscreen="true"></iframe>
+        <iframe id="trailerFrame" class="trailer-frame" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>
     </div>
 
     <div class="embed-modal" id="embedModal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)">
         <i class="fas fa-times trailer-close" onclick="fecharEmbedWeb()"></i>
         <div class="swipe-indicator" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; z-index:4503;"></div>
-        
-        <iframe id="embedFrame" class="embed-frame" frameborder="0" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *; accelerometer *; gyroscope *; web-share *" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+        <iframe id="embedFrame" class="embed-frame" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *; accelerometer *; gyroscope *; web-share *" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe>
     </div>
 
     <div class="embed-modal" id="adBlockModal" style="z-index:5000; display:none; background:rgba(0,0,0,0.95); padding:20px; text-align:center; align-items:center; justify-content:center; flex-direction:column;">
@@ -350,7 +339,11 @@
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js').catch((err) => console.log('PWA Erro', err));
+                navigator.serviceWorker.register('/sw.js').then((reg) => {
+                    console.log('PWA Service Worker registado', reg);
+                }).catch((err) => {
+                    console.log('Erro no registo PWA', err);
+                });
             });
         }
     </script>
