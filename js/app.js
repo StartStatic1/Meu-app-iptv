@@ -18,6 +18,8 @@ let bancoSeries = null;
 let bancoTV = null;
 let iptvCarregado = { filmes: false, series: false, tv: false };
 let adsInjetados = false;
+let currentSuperFlixType = 'animes'; 
+let lastSuperFlixData = [];
 
 // Touch gesture vars
 let touchStartY = 0;
@@ -74,10 +76,8 @@ async function fazerLoginVip() {
 function verificarStatusVip() {
     const btnVip = document.getElementById('btnOpenVip');
     if(btnVip) {
-        // Se VIP, esconde o botão. Se não VIP, mostra (display: block ou flex)
         btnVip.style.display = isVip() ? 'none' : 'block';
     }
-    // Atualiza status no menu também
     const menuVipStatus = document.getElementById('menuVipStatus');
     if(menuVipStatus) {
         if(isVip()) {
@@ -90,7 +90,6 @@ function verificarStatusVip() {
 
 // ===================== ADS DESATIVAÇÃO VIP =====================
 function desativarTodosAds() {
-    // Remove todos os scripts de ads do DOM
     const scripts = document.querySelectorAll('script');
     scripts.forEach(s => {
         const src = s.src || '';
@@ -98,23 +97,19 @@ function desativarTodosAds() {
             s.remove();
         }
     });
-    // Limpa flag e seta VIP
     localStorage.setItem('streamflix_vip', 'true');
     localStorage.setItem('push_accepted', 'false');
-    // Esconde prompt
     const pushPrompt = document.getElementById('pushPromptModal');
     if(pushPrompt) pushPrompt.style.display = 'none';
-    // Reload para matar tudo
     mostrarToast("VIP Ativado! Anúncios removidos.");
     setTimeout(() => location.reload(), 1500);
 }
 
 // ===================== ANÚNCIOS (COMPLETO + VIP BLOCK) =====================
 function injetarAnuncios() {
-    if(isVip()) return; // VIP = ZERO ADS
+    if(isVip()) return; 
     if(adsInjetados) return;
 
-    // Se ainda não aceitou push, mostra prompt bonito
     if(localStorage.getItem('push_accepted') !== 'true') {
         setTimeout(() => { 
             const prompt = document.getElementById('pushPromptModal'); 
@@ -132,25 +127,22 @@ function aceitarPush() {
     mostrarToast("Notificações ativadas!");
 }
 
-function ativarTodosAds() {
+function activarTodosAds() {
     if(isVip() || adsInjetados) return;
     adsInjetados = true;
 
-    // 1. Push Notification z=11081861
     const s1 = document.createElement('script');
     s1.src = 'https://5gvci.com/act/files/tag.min.js?z=11081861';
     s1.setAttribute('data-cfasync', 'false');
     s1.async = true;
     document.head.appendChild(s1);
 
-    // 2. Push Notification z=11081853
     const s2 = document.createElement('script');
     s2.src = 'https://5gvci.com/act/files/tag.min.js?z=11081853';
     s2.setAttribute('data-cfasync', 'false');
     s2.async = true;
     document.head.appendChild(s2);
 
-    // 3. OnClick z=11081852
     const s3 = document.createElement('script');
     s3.dataset.zone = '11081852';
     s3.src = 'https://al5sm.com/tag.min.js';
@@ -160,7 +152,6 @@ function ativarTodosAds() {
 
 function dispararDirectLink() {
     if(isVip()) return;
-    // Abre em nova aba sem quebrar history do app PWA
     let a = document.createElement('a');
     a.href = 'https://omg10.com/4/11081875';
     a.target = '_blank';
@@ -449,6 +440,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     document.getElementById('dpEpisodes').style.display = 'none';
     document.getElementById('dpSimilarContainer').style.display = 'none';
     document.getElementById('btnTrailer').style.display = 'none';
+    if(document.getElementById('btnPlayFilme')) document.getElementById('btnPlayFilme').style.display = 'flex';
     trailerKeyAtivo = null;
 
     document.getElementById('detailsPage').classList.add('active');
@@ -506,6 +498,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
 
         if(type === 'tv' && details.seasons) {
             document.getElementById('dpEpisodes').style.display = 'block';
+            if(document.getElementById('btnPlayFilme')) document.getElementById('btnPlayFilme').style.display = 'none';
             let htmlEps = '';
             const watchedList = getWatchedList();
             details.seasons.forEach(season => {
@@ -563,8 +556,12 @@ async function buscarEReproduzirNativo(title, type) {
         const data = await res.json();
         const termo = title.toLowerCase();
 
-        const match = data.find(item => (item.name || '').toLowerCase().includes(termo));
-        if(match) {
+        const matches = data.filter(item => (item.name || '').toLowerCase().includes(termo));
+        if(matches.length > 0) {
+            // FILTRO INTELIGENTE ANTI-4K PARA NÃO BUGAR OU TRAVAR NO MOBILE
+            let match = matches.find(m => !/(4k|uhd|2160p)/i.test((m.name || '').toLowerCase()));
+            if(!match) match = matches[0]; 
+
             const isVod = type !== 'tv';
             const streamId = isVod ? match.stream_id : match.series_id;
             const ext = match.container_extension || 'mp4';
@@ -606,6 +603,9 @@ function abrirPlayerWeb(servidor) {
     } else if(servidor === 'embedplayapi') {
         if(currentItemType === 'movie') finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}`;
         else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
+    } else if(servidor === 'superflix') {
+        if(currentItemType === 'movie') finalUrl = `https://superflixapi.fit/filme/${currentTmdbId}`;
+        else finalUrl = `https://superflixapi.fit/serie/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
     }
 
     dispararDirectLink();
@@ -615,6 +615,13 @@ function abrirPlayerWeb(servidor) {
         modal.style.display = 'flex';
         document.body.classList.add('no-scroll');
         history.pushState({ view: 'embed', modal: true }, null, "");
+        
+        // FORÇAR ROTAÇÃO PAISAGEM NO EMBED
+        try { 
+            if(screen.orientation && screen.orientation.lock) {
+                screen.orientation.lock('landscape').catch(e => console.log(e));
+            } 
+        } catch(e) {}
     }, 800);
 }
 
@@ -715,7 +722,7 @@ async function abrirAtor(atorId) {
     } catch(e) { document.getElementById('actorBio').innerText = "Erro ao carregar dados."; }
 }
 
-// ===================== TRAILER / EMBED (CORRIGIDO: MATA ÁUDIO) =====================
+// ===================== TRAILER / EMBED =====================
 function abrirTrailer() {
     if(!trailerKeyAtivo) return;
     const frame = document.getElementById('trailerFrame');
@@ -726,7 +733,6 @@ function abrirTrailer() {
 }
 function fecharTrailer() {
     const frame = document.getElementById('trailerFrame');
-    // CORREÇÃO: about:blank para matar o player e o áudio em segundo plano
     frame.src = 'about:blank';
     setTimeout(() => { frame.src = ''; }, 200);
     document.getElementById('trailerModal').style.display = 'none';
@@ -740,11 +746,14 @@ function fecharMenuServidores() {
 }
 function fecharEmbedWeb() {
     const frame = document.getElementById('embedFrame');
-    // CORREÇÃO: about:blank para matar qualquer mídia rodando no embed
     frame.src = 'about:blank';
     setTimeout(() => { frame.src = ''; }, 200);
     document.getElementById('embedModal').style.display = 'none';
     document.body.classList.remove('no-scroll');
+    
+    // LIBERAR ORIENTAÇÃO DA TELA AO FECHAR O EMBED
+    try { if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e) {}
+    
     if(history.state && history.state.view === 'embed') history.back();
 }
 function fecharDetalhes() { 
@@ -773,7 +782,6 @@ function fecharSheetTV() {
     if(history.state && history.state.view === 'sheet') history.back();
 }
 
-// Fecha todos os overlays (útil para click no overlay escuro)
 function fecharTodosOverlays() {
     fecharMenuServidores();
     fecharSheetTV();
@@ -811,7 +819,7 @@ async function dispararPlayer(id, tipo, ext, titulo) {
     finally { if(btn) { btn.innerHTML = `<i class="fas fa-play"></i> Assistir Agora`; btn.disabled = false; } }
 }
 
-// ===================== NAVEGAÇÃO E MENU (REDESENHADO) =====================
+// ===================== NAVEGAÇÃO E MENU =====================
 function abrirMenuPrincipal() {
     document.getElementById('menuOverlay').classList.add('active');
     document.getElementById('menuPrincipal').classList.add('active');
@@ -997,7 +1005,7 @@ async function pesquisarTV() {
     }, 800);
 }
 
-// ===================== GESTOS E EVENTOS (BACK BUTTON REFORÇADO) =====================
+// ===================== GESTOS E EVENTOS =====================
 function handleTouchStart(e) {
     touchStartY = e.changedTouches[0].screenY;
     touchStartX = e.changedTouches[0].screenX;
@@ -1017,7 +1025,6 @@ function handleTouchEnd(e) {
 }
 
 window.addEventListener('popstate', function(event) {
-    // Pilha de modais: fecha o mais recente primeiro
     const modais = [
         { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: fecharAdBlock },
         { id: 'embedModal', check: (el) => el.style.display === 'flex', close: fecharEmbedWeb },
@@ -1034,11 +1041,18 @@ window.addEventListener('popstate', function(event) {
         const el = document.getElementById(modal.id);
         if(el && modal.check(el)) {
             modal.close();
-            return; // Impede saída do app
+            return; 
         }
     }
 
-    // Se IPTV aberto, volta para home
+    if(document.getElementById('view-superflix') && document.getElementById('view-superflix').classList.contains('active')) {
+        document.getElementById('view-superflix').classList.remove('active');
+        const mainHeader = document.getElementById('mainHeader');
+        if(mainHeader) mainHeader.style.display = 'flex';
+        mudarAba('view-home', document.getElementById('nav-home'), true);
+        return;
+    }
+
     if(document.getElementById('view-iptv').classList.contains('active')) {
         document.getElementById('view-iptv').classList.remove('active');
         const mainHeader = document.getElementById('mainHeader');
@@ -1047,21 +1061,18 @@ window.addEventListener('popstate', function(event) {
         return;
     }
 
-    // Se view grade aberta, volta para IPTV
     if(document.getElementById('view-grade').classList.contains('active')) {
         document.getElementById('view-grade').classList.remove('active');
         document.getElementById('view-iptv').classList.add('active');
         return;
     }
 
-    // Se view historico/buscar aberta, volta para home
     if(document.getElementById('view-historico').classList.contains('active') || 
        document.getElementById('view-buscar').classList.contains('active')) {
         mudarAba('view-home', document.getElementById('nav-home'), true); 
         return;
     }
 
-    // Se já na home, permite sair do app (não impede)
     if(document.getElementById('view-home').classList.contains('active')) {
         return;
     }
@@ -1069,7 +1080,6 @@ window.addEventListener('popstate', function(event) {
     mudarAba('view-home', document.getElementById('nav-home'), true);
 });
 
-// Back button físico Android (PWA/Cordova/WebView)
 document.addEventListener('backbutton', function(e) {
     e.preventDefault();
     history.back();
@@ -1078,10 +1088,108 @@ document.addEventListener('backbutton', function(e) {
 window.onload = () => {
     history.replaceState({ view: 'view-home' }, null, "");
     initApp();
+    document.addEventListener('contextmenu', event => event.preventDefault());
 };
 
-// AdBlock modal helpers
 function fecharAdBlock() {
     document.getElementById('adBlockModal').style.display = 'none';
     document.body.classList.remove('no-scroll');
+}
+
+// ===================== INTEGRAÇÃO SUPER FLIX =====================
+async function abrirSuperFlix(tipo) {
+    currentSuperFlixType = tipo;
+    document.getElementById('titulo-superflix').innerText = tipo === 'animes' ? 'Animes' : 'Doramas';
+    document.getElementById('inputBuscaSuperFlix').value = '';
+    
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-superflix').classList.add('active');
+    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+    
+    const mainHeader = document.getElementById('mainHeader');
+    if(mainHeader) mainHeader.style.display = 'none';
+
+    carregarSuperFlixGeneros(tipo);
+    carregarSuperFlixLista(tipo, null);
+    history.pushState({ view: 'view-superflix' }, null, "");
+}
+
+async function carregarSuperFlixGeneros(tipo) {
+    let catUrl = tipo === 'animes' ? 'anime' : 'dorama';
+    try {
+        const res = await fetch(`https://superflixapi.fit/lista?category=${catUrl}&type=generos&format=json`);
+        const generos = await res.json();
+        let html = `<div class="genre-chip active" onclick="filtrarSuperFlix(null, this)">Todos</div>`;
+        if(generos && generos.length > 0) {
+            generos.forEach(g => {
+                const nomeCat = g.name || g;
+                html += `<div class="genre-chip" onclick="filtrarSuperFlix('${nomeCat}', this)">${nomeCat}</div>`;
+            });
+        }
+        document.getElementById('genreChipsSuperFlix').innerHTML = html;
+    } catch(e) { console.error("Erro gêneros", e); }
+}
+
+function filtrarSuperFlix(genero, el) {
+    document.querySelectorAll('#genreChipsSuperFlix .genre-chip').forEach(c => c.classList.remove('active'));
+    if(el) el.classList.add('active');
+    carregarSuperFlixLista(currentSuperFlixType, genero);
+}
+
+let timeoutSfBusca = null;
+function pesquisarSuperFlix() {
+    clearTimeout(timeoutSfBusca);
+    const query = document.getElementById('inputBuscaSuperFlix').value.trim();
+    timeoutSfBusca = setTimeout(() => {
+        if(query.length >= 3) {
+            carregarSuperFlixLista(currentSuperFlixType, null, query);
+        } else if (query.length === 0) {
+            carregarSuperFlixLista(currentSuperFlixType, null);
+        }
+    }, 800);
+}
+
+async function carregarSuperFlixLista(tipo, genero, busca = null) {
+    const container = document.getElementById('conteudo-superflix');
+    container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>`;
+    
+    try {
+        let catUrlBase = tipo === 'animes' ? 'animes' : 'dorama';
+        let resultados = [];
+
+        if (genero) {
+            let catUrlG = tipo === 'animes' ? 'anime' : 'dorama';
+            const res = await fetch(`https://superflixapi.fit/lista?category=${catUrlG}&type=tmdb&genero=${genero.toLowerCase()}&format=json`);
+            resultados = await res.json();
+            lastSuperFlixData = resultados;
+        } else if (!busca) {
+            const res = await fetch(`https://superflixapi.fit/lista?category=${catUrlBase}&format=json`);
+            resultados = await res.json();
+            lastSuperFlixData = resultados;
+        } else {
+            resultados = lastSuperFlixData.filter(item => (item.title || item.nome || '').toLowerCase().includes(busca.toLowerCase()));
+        }
+
+        if(!resultados || resultados.length === 0) {
+            container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Nenhum resultado encontrado.</p>';
+            return;
+        }
+
+        let html = '';
+        resultados.slice(0, 50).forEach(item => {
+            const titulo = item.title || item.nome || 'Sem Título';
+            const id = item.id || item.tmdb_id;
+            const capa = item.cover || item.poster || 'https://via.placeholder.com/220x330/111/fff';
+            const isMovie = item.type === 'filme';
+            const typeToOpen = isMovie ? 'movie' : 'tv';
+
+            html += `<div class="card-movie" onclick="abrirDetalhesTMDB(${id}, '${typeToOpen}')">
+                <img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">
+                <div class="titulo-fallback" style="display:none">${esc(titulo)}</div>
+            </div>`;
+        });
+        container.innerHTML = html;
+    } catch(e) {
+        container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Erro ao carregar do servidor.</p>';
+    }
 }
