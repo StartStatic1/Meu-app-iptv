@@ -6,20 +6,13 @@ export default async function handler(req, res) {
 
     const { action, category_id, stream_id, series_id, extension } = req.query;
 
-    // A ARMA SECRETA: LISTA DE SERVIDORES
-    // O sistema tentará o Principal. Se falhar, tenta o Backup 1, depois o Backup 2.
     const servidores = [
-        { url: "http://kavru.com:80", user: "558396043519", pass: "64537505" },   // Principal
-        { url: "http://rnplay07.vip:80", user: "941394441", pass: "903228872" },   // Backup 1
-        { url: "http://bnewsc.top:80", user: "reginaldobr", pass: "432334xc" }    // Backup 2
+        { url: "http://kavru.com:80", user: "558396043519", pass: "64537505" },
+        { url: "http://rnplay07.vip:80", user: "941394441", pass: "903228872" },
+        { url: "http://bnewsc.top:80", user: "reginaldobr", pass: "432334xc" }
     ];
 
-    // ==========================================
-    // FUNÇÃO: GERAR LINKS DE REPRODUÇÃO DIRETOS
-    // ==========================================
     if (action === "get_movie_url" && stream_id) {
-        // Retorna o link do servidor Principal. 
-        // (Nota: Links diretos de VOD não testam falha de conexão na API, o teste ocorre no próprio App nativo)
         const ext = extension || "mp4";
         const svr = servidores[0];
         return res.status(200).json({ url: `${svr.url}/movie/${svr.user}/${svr.pass}/${stream_id}.${ext}` });
@@ -36,12 +29,8 @@ export default async function handler(req, res) {
         return res.status(200).json({ url: `${svr.url}/series/${svr.user}/${svr.pass}/${stream_id}.${ext}` });
     }
 
-    // ==========================================
-    // FUNÇÃO: BUSCAR DADOS (COM SISTEMA FALLBACK)
-    // ==========================================
     let erroFinal = "Todos os servidores falharam.";
 
-    // Loop Inteligente: Tenta um servidor de cada vez
     for (let i = 0; i < servidores.length; i++) {
         const svr = servidores[i];
         let targetUrl = `${svr.url}/player_api.php?username=${svr.user}&password=${svr.pass}`;
@@ -51,7 +40,6 @@ export default async function handler(req, res) {
         if (series_id) targetUrl += `&series_id=${series_id}`;
 
         try {
-            // Aborta a tentativa se o servidor demorar mais de 6 segundos (para não congelar o telemóvel)
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 6000);
 
@@ -60,19 +48,16 @@ export default async function handler(req, res) {
 
             if (response.ok) {
                 const data = await response.json();
-                // Se respondeu certinho, devolve para o telemóvel e PARA o loop. Sucesso!
                 return res.status(200).json(data);
             } else {
                 erroFinal = `Servidor ${i + 1} retornou Erro ${response.status}`;
-                console.log(erroFinal); // Falhou, vai tentar o próximo...
+                console.log(erroFinal);
             }
         } catch (error) {
             erroFinal = `Servidor ${i + 1} Offline ou Demorou muito.`;
-            console.log(erroFinal); // Falhou, vai tentar o próximo...
+            console.log(erroFinal);
         }
     }
 
-    // Se o código chegou até aqui, significa que os 3 servidores (Kavru, rnplay07 e bnewsc) caíram ao mesmo tempo.
     return res.status(500).json({ error: erroFinal });
 }
-
