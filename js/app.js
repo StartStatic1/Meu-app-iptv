@@ -36,16 +36,15 @@ function fecharModalVip() {
     document.body.classList.remove('no-scroll');
     if(history.state && history.state.view === 'vip') history.back();
 }
-
 function abrirTelegramVip() {
-    // Tenta abrir o App nativo do Telegram primeiro. Se a WebView barrar, abre no navegador.
-    try {
-        window.location.href = 'tg://resolve?domain=streamflixofc';
-    } catch(e) {
-        window.open('https://t.me/streamflixofc', '_blank');
-    }
+    let a = document.createElement('a');
+    a.href = 'https://t.me/streamflixofc';
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
-
 async function fazerLoginVip() {
     const email = document.getElementById('vipEmail').value.trim();
     const senha = document.getElementById('vipSenha').value.trim();
@@ -53,12 +52,11 @@ async function fazerLoginVip() {
     const msg = document.getElementById('vipMsg');
     
     if(!email || !senha) { msg.innerText = "Preencha os campos."; msg.style.display = 'block'; return; }
-    
     btn.innerText = "Verificando..."; btn.disabled = true; msg.style.display = 'none';
+    
     try {
         const supa = getSupabase(); 
         const { data, error } = await supa.from('streamflix_users').select('*').eq('email', email).eq('senha', senha);
-        
         if(error) throw error;
         if(data && data.length > 0) {
             if(data[0].status === 'VIP') {
@@ -70,35 +68,27 @@ async function fazerLoginVip() {
     } catch(e) { msg.innerText = e.message; msg.style.display = 'block'; }
     finally { btn.innerText = "Entrar na Conta VIP"; btn.disabled = false; }
 }
-
 function verificarStatusVip() {
     const isVip = localStorage.getItem('streamflix_vip') === 'true';
     const btnVip = document.getElementById('btnOpenVip');
     if(btnVip) btnVip.style.display = isVip ? 'none' : 'block';
 }
 
-// ===================== ANÚNCIOS (MONETAG) =====================
+// ===================== ANÚNCIOS =====================
 function injetarAnuncios() {
     if(localStorage.getItem('streamflix_vip') === 'true') return;
-    
-    // Isca para o Push Notification
     if(localStorage.getItem('push_accepted') !== 'true') {
-        setTimeout(() => { 
-            const prompt = document.getElementById('pushPromptModal'); 
-            if(prompt) prompt.style.display = 'block'; 
-        }, 3000);
+        setTimeout(() => { const prompt = document.getElementById('pushPromptModal'); if(prompt) prompt.style.display = 'block'; }, 3000);
     } else {
         injetarOnClick();
     }
 }
-
 function aceitarPush() {
     document.getElementById('pushPromptModal').style.display = 'none';
     localStorage.setItem('push_accepted', 'true');
     injetarOnClick();
     mostrarToast("Notificações e Lançamentos ativados!");
 }
-
 function injetarOnClick() {
     if (document.getElementById('script-onclick-monetag')) return;
     const s = document.createElement('script');
@@ -108,15 +98,20 @@ function injetarOnClick() {
     s.src = 'https://al5sm.com/tag.min.js';
     document.head.appendChild(s);
 }
-
 function dispararDirectLink() {
     const isVip = localStorage.getItem('streamflix_vip') === 'true';
     if(!isVip) {
-        window.open('https://omg10.com/4/11081875', '_blank');
+        let a = document.createElement('a');
+        a.href = 'https://omg10.com/4/11081875';
+        a.target = '_blank';
+        a.rel = 'noopener noreferrer';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
     }
 }
 
-// ===================== UTILS (Vistos, Favoritos, Limpeza) =====================
+// ===================== UTILS =====================
 function mostrarToast(msg) {
     let t = document.getElementById('toast-msg'); if(!t) return;
     t.innerText = msg; t.style.opacity = '1';
@@ -124,7 +119,6 @@ function mostrarToast(msg) {
     t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3500);
 }
 function esc(str) { return (str || '').toString().replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
-
 function getWatchedList() { try { return JSON.parse(localStorage.getItem('streamflix_watched_v2')) || {}; } catch(e) { return {}; } }
 function saveWatchedList(list) { localStorage.setItem('streamflix_watched_v2', JSON.stringify(list)); }
 function getFavList() { try { return JSON.parse(localStorage.getItem('streamflix_favs')) || {}; } catch(e) { return {}; } }
@@ -147,7 +141,6 @@ function processarTitulo(nomeBruto, nomePasta) {
     if(nomeLimpo.length < 2) nomeLimpo = nomeBruto.substring(0, 20);
     return { limpo: nomeLimpo, tagsStr: tags.join(',') };
 }
-
 function processarTV(nomeBruto) {
     let nomeLimpo = nomeBruto || "Canal";
     const tags = [];
@@ -158,7 +151,6 @@ function processarTV(nomeBruto) {
     else if(/SD/i.test(nomeLimpo)) tags.push('SD');
     const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/i);
     if(estado && !tags.includes(estado[0].toUpperCase())) tags.push(estado[0].toUpperCase());
-    
     nomeLimpo = nomeLimpo.replace(/\[(FHDR|FHD|HD|4K|SD)\]/ig, '').replace(/\((FHDR|FHD|HD|4K|SD)\)/ig, '').replace(/\b(FHDR|FHD|HD|4K|SD)\b/ig, '').replace(/^[\s\|\-]+|[\s\|\-]+$/g, '').replace(/\s+/g, ' ').trim();
     if (!nomeLimpo || nomeLimpo.length < 2) nomeLimpo = nomeBruto.replace(/\[.*?\]|\(.*?\)/g, '').replace(/[>-\|*•]/g, '').trim();
     return { limpo: nomeLimpo, tagsStr: tags.join(',') };
@@ -181,7 +173,7 @@ function gerarHTMLBadges(tagsStr) {
     return html;
 }
 
-// ===================== TMDB CACHE E FETCH =====================
+// ===================== TMDB =====================
 async function tmdbFetch(endpoint) {
     const cacheKey = 'tmdb_' + endpoint.replace(/\?/g,'_').replace(/&/g,'_').replace(/=/g,'_');
     const cached = localStorage.getItem(cacheKey);
@@ -206,12 +198,9 @@ function searchTMDB(query, type='', page=1) {
     if(type && type !== 'all') url = `/search/${type}?query=${encodeURIComponent(query)}&page=${page}`;
     return tmdbFetch(url);
 }
-function getDiscover(type='movie', genreId='', page=1) {
-    return tmdbFetch(`/discover/${type}?with_genres=${genreId}&sort_by=popularity.desc&page=${page}`);
-}
+function getDiscover(type='movie', genreId='', page=1) { return tmdbFetch(`/discover/${type}?with_genres=${genreId}&sort_by=popularity.desc&page=${page}`); }
 function getUpcoming(page=1) { return tmdbFetch(`/movie/upcoming?page=${page}`); }
 
-// ===================== RENDER UI (CARDS) =====================
 function renderCard(item, type) {
     const tmdbType = item.media_type || type;
     const realType = tmdbType === 'tv' ? 'tv' : 'movie';
@@ -228,11 +217,7 @@ function renderCard(item, type) {
 function renderCarousel(title, items, type) {
     if(!items || items.length === 0) return '';
     let cards = items.map(i => renderCard(i, type)).join('');
-    return `
-    <div class="section-header">
-        <div class="section-title"><i class="fas fa-film"></i> ${esc(title)}</div>
-    </div>
-    <div class="carousel">${cards}</div>`;
+    return `<div class="section-header"><div class="section-title"><i class="fas fa-film"></i> ${esc(title)}</div></div><div class="carousel">${cards}</div>`;
 }
 function renderGrid(items, type) {
     if(!items || items.length === 0) return '<p class="loading-text" style="grid-column:span 3;">Nenhum resultado.</p>';
@@ -243,8 +228,7 @@ function renderGrid(items, type) {
 async function initApp() {
     verificarStatusVip();
     injetarAnuncios(); 
-    
-    renderGenreChips(); // Se tiver implementado a busca com filtros
+    renderGenreChips();
 
     try {
         const [trendingM, trendingS, upcoming] = await Promise.all([
@@ -255,7 +239,8 @@ async function initApp() {
         const series = trendingS.results ? trendingS.results.slice(0, 10) : [];
         const lancamentos = upcoming.results ? upcoming.results.slice(0, 10) : [];
 
-        heroItems = filmes.slice(0, 5);
+        // Pega todos para o slider e resolve detalhes para ter a sinopse na Home
+        heroItems = await Promise.all(filmes.slice(0, 5).map(f => getDetails(f.id, 'movie')));
 
         const loadingState = document.getElementById('loading-state');
         if(loadingState) loadingState.style.display = 'none';
@@ -292,25 +277,50 @@ function iniciarHeroSlider() {
     if(heroInterval) clearInterval(heroInterval);
     heroInterval = setInterval(() => { heroIndex = (heroIndex + 1) % heroItems.length; atualizarHero(); }, 5000);
 }
+
 function atualizarHero() {
     const f = heroItems[heroIndex]; if(!f) return;
     const title = f.title || f.name || 'Carregando...';
     const backdrop = f.backdrop_path ? `${TMDB_IMG}/w1280${f.backdrop_path}` : (f.poster_path ? `${TMDB_IMG}/w780${f.poster_path}` : '');
     const tags = [];
+    
     if(f.vote_average) tags.push(`<i class="fas fa-star" style="color:gold;"></i> ${f.vote_average.toFixed(1)}`);
     if(f.release_date) tags.push(f.release_date.substring(0,4));
     else if(f.first_air_date) tags.push(f.first_air_date.substring(0,4));
+    if(f.media_type === 'tv' || f.first_air_date) tags.push('SÉRIE'); else tags.push('FILME');
 
     document.getElementById('heroBanner').style.backgroundImage = `url('${backdrop}')`;
     document.getElementById('heroTitle').innerText = title;
     document.getElementById('heroTags').innerHTML = tags.join(' <span style="color:#555;">|</span> ');
-}
-function abrirHeroDetalhes() {
-    const f = heroItems[heroIndex]; if(!f) return;
-    abrirDetalhesTMDB(f.id, 'movie');
+    
+    // Injeta a sinopse na Home
+    const synopsisEl = document.getElementById('heroSynopsis');
+    if(synopsisEl) synopsisEl.innerText = f.overview ? f.overview : "Sinopse não disponível no momento.";
 }
 
-// ===================== BUSCA GLOBAL TMDB E GENEROS =====================
+function abrirHeroDetalhes() {
+    const f = heroItems[heroIndex]; if(!f) return;
+    abrirDetalhesTMDB(f.id, f.first_air_date ? 'tv' : 'movie');
+}
+
+async function abrirHeroTrailer() {
+    const f = heroItems[heroIndex]; if(!f) return;
+    const btn = document.getElementById('heroTrailerBtn');
+    const txtOriginal = btn.innerHTML;
+    btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i>`;
+    try {
+        if(f.videos && f.videos.results) {
+            const trailer = f.videos.results.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
+            if(trailer) {
+                trailerKeyAtivo = trailer.key;
+                abrirTrailer();
+            } else { mostrarToast("Trailer não encontrado."); }
+        } else { mostrarToast("Trailer não encontrado."); }
+    } catch(e) { mostrarToast("Erro ao buscar trailer."); } 
+    finally { btn.innerHTML = txtOriginal; }
+}
+
+// ===================== BUSCA E GÊNEROS =====================
 function renderGenreChips() {
     const container = document.getElementById('genreChips');
     if(!container) return;
@@ -336,19 +346,16 @@ function filtrarGenero(genreId) {
     renderGenreChips();
     pesquisarGlobal();
 }
-
 async function pesquisarGlobal() {
     clearTimeout(timeoutBusca);
     const queryEl = document.getElementById('inputBuscaGlobal');
     const query = queryEl ? queryEl.value.trim() : '';
     const container = document.getElementById('resultados-global');
-
     if(query.length < 3 && !selectedGenre) {
         if(container) container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um gênero.</p>`;
         return;
     }
     if(container) container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Buscando no catálogo...</div>`;
-
     timeoutBusca = setTimeout(async () => {
         try {
             let items = [];
@@ -366,9 +373,7 @@ async function pesquisarGlobal() {
                 items = d.results || [];
             }
             if(container) container.innerHTML = renderGrid(items, searchType === 'all' ? 'movie' : searchType);
-        } catch(e) { 
-            if(container) container.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Erro na busca.</p>`; 
-        }
+        } catch(e) { if(container) container.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Erro na busca.</p>`; }
     }, 600);
 }
 
@@ -380,10 +385,9 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     currentEpisode = 1;
 
     document.getElementById('dpTitle').innerText = 'Carregando...';
-    document.getElementById('dpMeta').innerHTML = '';
     document.getElementById('dpTmdbMeta').innerHTML = '';
     document.getElementById('dpDirector').innerText = '';
-    document.getElementById('dpSynopsis').innerText = 'Sincronizando com os Estúdios...';
+    document.getElementById('dpSynopsis').innerText = 'Aguarde...';
     document.getElementById('dpCastContainer').style.display = 'none';
     document.getElementById('dpEpisodes').style.display = 'none';
     document.getElementById('dpSimilarContainer').style.display = 'none';
@@ -416,13 +420,11 @@ async function abrirDetalhesTMDB(tmdbId, type) {
 
         document.getElementById('dpSynopsis').innerText = details.overview || "Sinopse indisponível em Português.";
 
-        // Trailer
         if(details.videos && details.videos.results) {
             const trailer = details.videos.results.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
             if(trailer) { trailerKeyAtivo = trailer.key; document.getElementById('btnTrailer').style.display = 'flex'; }
         }
 
-        // Elenco
         if(details.credits && details.credits.cast && details.credits.cast.length > 0) {
             let htmlCast = '';
             details.credits.cast.slice(0, 15).forEach(ator => {
@@ -438,7 +440,6 @@ async function abrirDetalhesTMDB(tmdbId, type) {
             document.getElementById('dpCastContainer').style.display = 'block';
         }
 
-        // Similares
         if(details.recommendations && details.recommendations.results && details.recommendations.results.length > 0) {
             let htmlSim = '';
             details.recommendations.results.slice(0, 10).forEach(rec => { htmlSim += renderCard(rec, rec.media_type || type); });
@@ -446,7 +447,6 @@ async function abrirDetalhesTMDB(tmdbId, type) {
             document.getElementById('dpSimilarContainer').style.display = 'block';
         }
 
-        // Episódios (Séries)
         if(type === 'tv' && details.seasons) {
             document.getElementById('dpEpisodes').style.display = 'block';
             let htmlEps = '';
@@ -469,7 +469,6 @@ async function abrirDetalhesTMDB(tmdbId, type) {
             document.getElementById('dpEpisodes').innerHTML = htmlEps;
         }
 
-        // Favoritos / Watched UI state
         const btnWatched = document.getElementById('btnWatched');
         const list = getWatchedList();
         if(list[tmdbId]) btnWatched.classList.add('active'); else btnWatched.classList.remove('active');
@@ -485,17 +484,19 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     } catch(err) { document.getElementById('dpSynopsis').innerText = "Erro ao carregar detalhes."; }
 }
 
-// ===================== MENUS E REPRODUÇÃO (A MÁGICA DOS SERVIDORES) =====================
+// ===================== MENUS E REPRODUÇÃO =====================
 function abrirMenuServidoresDetalhes() {
-    // Configura a ação do Servidor Nativo no momento do clique em Assistir
     const btnNativo = document.getElementById('btnServerNativo');
     if (btnNativo) {
         btnNativo.onclick = () => {
-            fecharMenuServidores();
+            // Remove as classes de forma silenciosa para não dar conflito no history
+            document.getElementById('serverModal').classList.remove('active');
+            document.getElementById('sheetOverlay').classList.remove('active');
             buscarEReproduzirNativo(currentStreamData.title, currentItemType);
         };
     }
-    abrirMenuServidores();
+    document.getElementById('serverModal').classList.add('active');
+    document.getElementById('sheetOverlay').classList.add('active');
 }
 
 async function buscarEReproduzirNativo(title, type) {
@@ -506,9 +507,7 @@ async function buscarEReproduzirNativo(title, type) {
         const data = await res.json();
         const termo = title.toLowerCase();
         
-        // Busca a correspondência mais próxima no painel IPTV
         const match = data.find(item => (item.name || '').toLowerCase().includes(termo));
-        
         if(match) {
             const isVod = type !== 'tv';
             const streamId = isVod ? match.stream_id : match.series_id;
@@ -522,13 +521,46 @@ async function buscarEReproduzirNativo(title, type) {
                 if(d.episodes && d.episodes['1'] && d.episodes['1'][0]) {
                     const ep = d.episodes['1'][0];
                     dispararPlayer(ep.id, 'episode', ep.container_extension||'mp4', title);
-                } else { mostrarToast("Episódios não encontrados no nativo."); }
+                } else { mostrarToast("Episódios não encontrados."); }
             }
         } else { 
             mostrarToast("Não disponível no Nativo. Tente um Servidor Web."); 
-            abrirMenuServidores(); 
+            // Reabre o menu silenciosamente
+            document.getElementById('serverModal').classList.add('active');
+            document.getElementById('sheetOverlay').classList.add('active');
         }
     } catch(e) { mostrarToast("Erro ao conectar no CDN."); }
+}
+
+function abrirPlayerWeb(servidor) {
+    dispararDirectLink(); // Aciona o Anúncio primeiro
+    if(!currentTmdbId) return;
+
+    // FECHAMENTO SILENCIOSO DO MODAL (Sem history.back) PARA EVITAR FECHAR A TELA
+    document.getElementById('serverModal').classList.remove('active');
+    document.getElementById('sheetOverlay').classList.remove('active');
+
+    const modal = document.getElementById('embedModal');
+    const frame = document.getElementById('embedFrame');
+    let finalUrl = "";
+    if(servidor === 'betterflix') {
+        if(currentItemType === 'movie') finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=movie`;
+        else finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=tv&season=${currentSeason}&episode=${currentEpisode}`;
+    } else if(servidor === 'embedmovies') {
+        if(currentItemType === 'movie') finalUrl = `https://myembed.biz/filme/${currentTmdbId}`;
+        else finalUrl = `https://myembed.biz/serie/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
+    } else if(servidor === 'embedplayapi') {
+        if(currentItemType === 'movie') finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}`;
+        else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
+    }
+    
+    // Atraso de 500ms para permitir que a WebView lide com o DirectLink antes de injetar o iframe
+    setTimeout(() => {
+        frame.src = finalUrl;
+        modal.style.display = 'flex';
+        document.body.classList.add('no-scroll');
+        history.pushState({ view: 'embed' }, null, "");
+    }, 500);
 }
 
 function reproduzirEpisodioTMDB(tmdbId, season, episode) {
@@ -545,7 +577,6 @@ function toggleEpWatchedTMDB(event, epId, title, thumb) {
     else { list[epId] = { id: epId, title: title, img: thumb, type: 'episode', ext: 'mp4' }; el.classList.add('active'); }
     saveWatchedList(list);
 }
-
 function toggleWatchedGlobal() {
     if(!currentStreamData.id) return;
     const list = getWatchedList();
@@ -555,13 +586,12 @@ function toggleWatchedGlobal() {
     saveWatchedList(list);
     if(document.getElementById('view-historico').classList.contains('active')) carregarHistorico();
 }
-
 function toggleFavGlobal() {
     if(!currentStreamData.id) return;
     const list = getFavList();
     const btn = document.getElementById('btnFav');
-    if(list[currentStreamData.id]) { delete list[currentStreamData.id]; btn.classList.remove('active'); mostrarToast("Removido dos Favoritos.");}
-    else { list[currentStreamData.id] = currentStreamData; btn.classList.add('active'); mostrarToast("Adicionado aos Favoritos!");}
+    if(list[currentStreamData.id]) { delete list[currentStreamData.id]; btn.classList.remove('active'); mostrarToast("Removido.");}
+    else { list[currentStreamData.id] = currentStreamData; btn.classList.add('active'); mostrarToast("Adicionado!");}
     saveFavList(list);
     if(document.getElementById('view-historico').classList.contains('active')) carregarHistorico();
 }
@@ -593,7 +623,7 @@ function carregarHistorico() {
         });
     }
     
-    if(html === "") html = `<p class="loading-text" style="grid-column: span 3; margin-top:30px;">Ainda não marcou nenhum filme.</p>`;
+    if(html === "") html = `<p class="loading-text" style="grid-column: span 3; margin-top:30px;">Ainda não marcou nada.</p>`;
     const container = document.getElementById('conteudo-historico');
     if(container) container.innerHTML = html;
 }
@@ -603,7 +633,6 @@ function removerDoHistorico(event, id) {
     carregarHistorico();
 }
 
-// ===================== ATOR =====================
 async function abrirAtor(atorId) {
     const modal = document.getElementById('actorModal');
     document.getElementById('actorName').innerText = "Carregando...";
@@ -631,7 +660,6 @@ async function abrirAtor(atorId) {
     } catch(e) { document.getElementById('actorBio').innerText = "Erro ao carregar dados."; }
 }
 
-// ===================== PLAYERS / MODAIS SECUNDÁRIOS =====================
 function abrirTrailer() {
     if(!trailerKeyAtivo) return;
     document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${trailerKeyAtivo}?autoplay=1`;
@@ -645,41 +673,10 @@ function fecharTrailer() {
     document.body.classList.remove('no-scroll');
     if(history.state && history.state.view === 'trailer') history.back();
 }
-function abrirMenuServidores() {
-    document.getElementById('serverModal').classList.add('active');
-    const overlay = document.getElementById('sheetOverlay');
-    if(overlay) overlay.classList.add('active');
-    history.pushState({ view: 'servermenu' }, null, "");
-}
 function fecharMenuServidores() {
     document.getElementById('serverModal').classList.remove('active');
     const overlay = document.getElementById('sheetOverlay');
     if(overlay) overlay.classList.remove('active');
-    if(history.state && history.state.view === 'servermenu') history.back();
-}
-
-function abrirPlayerWeb(servidor) {
-    dispararDirectLink(); // Aciona o Anúncio
-
-    if(!currentTmdbId) return;
-    fecharMenuServidores();
-    const modal = document.getElementById('embedModal');
-    const frame = document.getElementById('embedFrame');
-    let finalUrl = "";
-    if(servidor === 'betterflix') {
-        if(currentItemType === 'movie') finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=movie`;
-        else finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=tv&season=${currentSeason}&episode=${currentEpisode}`;
-    } else if(servidor === 'embedmovies') {
-        if(currentItemType === 'movie') finalUrl = `https://myembed.biz/filme/${currentTmdbId}`;
-        else finalUrl = `https://myembed.biz/serie/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
-    } else if(servidor === 'embedplayapi') {
-        if(currentItemType === 'movie') finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}`;
-        else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
-    }
-    frame.src = finalUrl;
-    modal.style.display = 'flex';
-    document.body.classList.add('no-scroll');
-    history.pushState({ view: 'embed' }, null, "");
 }
 function fecharEmbedWeb() {
     document.getElementById('embedModal').style.display = 'none';
@@ -687,7 +684,6 @@ function fecharEmbedWeb() {
     document.body.classList.remove('no-scroll');
     if(history.state && history.state.view === 'embed') history.back();
 }
-
 function fecharDetalhes() { 
     document.getElementById('detailsPage').classList.remove('active'); 
     document.body.classList.remove('no-scroll');
@@ -704,7 +700,6 @@ function abrirSheetTV(titulo, streamId, tagsStr) {
     document.getElementById('tvBadges').innerHTML = gerarHTMLBadges(tagsStr);
     const btn = document.getElementById('btnPlayTV');
     if(btn) btn.onclick = () => dispararPlayer(streamId, 'live', '', titulo);
-    
     document.getElementById('sheetOverlay').classList.add('active');
     document.getElementById('bottomSheet').classList.add('active');
     history.pushState({ view: 'sheet' }, null, "");
@@ -716,7 +711,7 @@ function fecharSheetTV() {
 }
 
 async function dispararPlayer(id, tipo, ext, titulo) {
-    dispararDirectLink(); // Aciona o Anúncio
+    dispararDirectLink(); 
 
     const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : null;
     if(btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`; btn.disabled = true; }
@@ -734,7 +729,7 @@ async function dispararPlayer(id, tipo, ext, titulo) {
         }
         if(!urlFinal) throw new Error("Link não retornado pelo CDN.");
         
-        // A MAGIA PARA NÃO DAR ERR_UNKNOWN_URL_SCHEME NO ANDROID
+        // CORREÇÃO PARA A WEBVIEW ABRIR O VLC OU PLAYER NATIVO CORRETAMENTE
         const urlLimpa = urlFinal.replace(/^https?:\/\//, '');
         const intentUrl = `intent://${urlLimpa}#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end;`;
         
@@ -749,7 +744,16 @@ async function dispararPlayer(id, tipo, ext, titulo) {
     finally { if(btn) { btn.innerHTML = `<i class="fas fa-play"></i> Assistir Agora`; btn.disabled = false; } }
 }
 
-// ===================== NAVEGAÇÃO MESTRE =====================
+// ===================== NAVEGAÇÃO E MENU PRINCIPAL =====================
+function abrirMenuPrincipal() {
+    document.getElementById('menuOverlay').classList.add('active');
+    document.getElementById('menuPrincipal').classList.add('active');
+}
+function fecharMenuPrincipal() {
+    document.getElementById('menuOverlay').classList.remove('active');
+    document.getElementById('menuPrincipal').classList.remove('active');
+}
+
 function mudarAba(idView, btn, originHistory = false) {
     if(idView !== 'view-home' && heroInterval) { clearInterval(heroInterval); heroInterval = null; }
     else if(idView === 'view-home' && !heroInterval && heroItems.length > 0) { iniciarHeroSlider(); }
@@ -761,14 +765,10 @@ function mudarAba(idView, btn, originHistory = false) {
     document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
     document.getElementById(idView).classList.add('active');
 
-    // MANTÉM O CABEÇALHO SÓ NA HOME E CONTROLA O BUG DA SETA
     const mainHeader = document.getElementById('mainHeader');
     if(mainHeader) {
-        if(idView === 'view-home') {
-            mainHeader.style.display = 'flex';
-        } else {
-            mainHeader.style.display = 'none';
-        }
+        if(idView === 'view-home') mainHeader.style.display = 'flex';
+        else mainHeader.style.display = 'none';
     }
 
     if(!originHistory && idView !== 'view-home') history.pushState({ view: idView }, null, "");
@@ -780,15 +780,12 @@ function entrarModoIPTV() {
     document.getElementById('view-iptv').classList.add('active');
     document.querySelectorAll('.view').forEach(v => { if(v.id !== 'view-iptv') v.classList.remove('active'); });
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-    
-    // ESCONDE O HEADER NA TELA IPTV
     const mainHeader = document.getElementById('mainHeader');
     if(mainHeader) mainHeader.style.display = 'none';
     
     history.pushState({ view: 'view-iptv' }, null, "");
     carregarIPTFilmes();
 }
-
 function mudarAbaIPTV(contentId, tabEl) {
     document.querySelectorAll('.iptv-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.iptv-content').forEach(c => c.classList.remove('active'));
@@ -799,7 +796,6 @@ function mudarAbaIPTV(contentId, tabEl) {
     if(contentId === 'iptv-tv' && !iptvCarregado.tv) carregarIPTTV();
 }
 
-// ===================== IPTV MODO COMPLETO (Listagem) =====================
 async function carregarIPTFilmes() {
     iptvCarregado.filmes = true;
     const div = document.getElementById('conteudo-iptv-filmes');
@@ -810,13 +806,9 @@ async function carregarIPTFilmes() {
         const validas = cats.filter(c => pastaValida(c.category_name));
         let html = '';
         validas.forEach(cat => {
-            html += `
-            <div class="category-item" onclick="abrirGradeIPTV('vod', '${cat.category_id}', '${esc(limparNomePasta(cat.category_name))}')">
-                <div style="display:flex; align-items:center; gap:15px;">
-                    <i class="fas fa-film category-icon"></i><span class="category-name">${limparNomePasta(cat.category_name)}</span>
-                </div>
-                <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 12px;"></i>
-            </div>`;
+            html += `<div class="category-item" onclick="abrirGradeIPTV('vod', '${cat.category_id}', '${esc(limparNomePasta(cat.category_name))}')">
+                <div style="display:flex; align-items:center; gap:15px;"><i class="fas fa-film category-icon"></i><span class="category-name">${limparNomePasta(cat.category_name)}</span></div>
+                <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 12px;"></i></div>`;
         });
         div.innerHTML = html || '<p class="loading-text">Nenhuma categoria.</p>';
     } catch(e) { div.innerHTML = '<p class="loading-text">Erro ao carregar.</p>'; }
@@ -831,13 +823,9 @@ async function carregarIPTSeries() {
         const validas = cats.filter(c => pastaValida(c.category_name));
         let html = '';
         validas.forEach(cat => {
-            html += `
-            <div class="category-item" onclick="abrirGradeIPTV('series', '${cat.category_id}', '${esc(limparNomePasta(cat.category_name))}')">
-                <div style="display:flex; align-items:center; gap:15px;">
-                    <i class="fas fa-tv category-icon"></i><span class="category-name">${limparNomePasta(cat.category_name)}</span>
-                </div>
-                <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 12px;"></i>
-            </div>`;
+            html += `<div class="category-item" onclick="abrirGradeIPTV('series', '${cat.category_id}', '${esc(limparNomePasta(cat.category_name))}')">
+                <div style="display:flex; align-items:center; gap:15px;"><i class="fas fa-tv category-icon"></i><span class="category-name">${limparNomePasta(cat.category_name)}</span></div>
+                <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 12px;"></i></div>`;
         });
         div.innerHTML = html || '<p class="loading-text">Nenhuma categoria.</p>';
     } catch(e) { div.innerHTML = '<p class="loading-text">Erro ao carregar.</p>'; }
@@ -852,13 +840,9 @@ async function carregarIPTTV() {
         const validas = cats.filter(c => pastaTVValida(c.category_name));
         let html = '';
         validas.forEach(cat => {
-            html += `
-            <div class="category-item" onclick="abrirGradeIPTV('live', '${cat.category_id}', '${esc(limparNomePasta(cat.category_name))}')">
-                <div style="display:flex; align-items:center; gap:15px;">
-                    <i class="fas fa-broadcast-tower category-icon"></i><span class="category-name">${limparNomePasta(cat.category_name)}</span>
-                </div>
-                <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 12px;"></i>
-            </div>`;
+            html += `<div class="category-item" onclick="abrirGradeIPTV('live', '${cat.category_id}', '${esc(limparNomePasta(cat.category_name))}')">
+                <div style="display:flex; align-items:center; gap:15px;"><i class="fas fa-broadcast-tower category-icon"></i><span class="category-name">${limparNomePasta(cat.category_name)}</span></div>
+                <i class="fas fa-chevron-right" style="color: var(--text-muted); font-size: 12px;"></i></div>`;
         });
         div.innerHTML = html || '<p class="loading-text">Nenhuma categoria.</p>';
     } catch(e) { div.innerHTML = '<p class="loading-text">Erro ao carregar.</p>'; }
@@ -878,19 +862,14 @@ async function abrirGradeIPTV(tipo, catId, nomePasta) {
             if(tipo === 'live') {
                 const fmtd = processarTV(item.name);
                 const capa = item.stream_icon;
-                html += `
-                <div class="card-movie card-tv" style="height: 110px;" onclick="abrirSheetTV('${esc(fmtd.limpo)}', '${item.stream_id}', '${esc(fmtd.tagsStr)}')">
+                html += `<div class="card-movie card-tv" style="height: 110px;" onclick="abrirSheetTV('${esc(fmtd.limpo)}', '${item.stream_id}', '${esc(fmtd.tagsStr)}')">
                     <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
                     ${capa ? `<img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/100x50/333/fff?text=TV'">` : `<i class="fas fa-tv" style="font-size:24px; color:#555; margin-bottom:5px;"></i>`}
-                    <div class="titulo-tv">${fmtd.limpo}</div>
-                </div>`;
+                    <div class="titulo-tv">${fmtd.limpo}</div></div>`;
             } else {
                 const fmtd = processarTitulo(item.name, nomePasta);
                 const capa = item.stream_icon || item.cover;
-                const argId = tipo === 'vod' ? item.stream_id : item.series_id;
-                const argExt = item.container_extension || 'mp4';
-                html += `
-                <div class="card-movie" onclick="abrirDetalhesIPTV('${esc(fmtd.limpo)}', '${esc(nomePasta)}', '${esc(capa)}', '${argId}', '${tipo}', '${argExt}', '${esc(fmtd.tagsStr)}')">
+                html += `<div class="card-movie" onclick="abrirDetalhesIPTV('${esc(fmtd.limpo)}', '${esc(nomePasta)}', '${esc(capa)}', '${tipo==='vod'?item.stream_id:item.series_id}', '${tipo}', '${item.container_extension||'mp4'}', '${esc(fmtd.tagsStr)}')">
                     <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
                     ${capa ? `<img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">` : `<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${fmtd.limpo}</div>`}
                 </div>`;
@@ -905,16 +884,12 @@ async function abrirDetalhesIPTV(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
     document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
     const capa = urlCapa || 'https://via.placeholder.com/800x600/111/fff';
     document.getElementById('dpPoster').style.backgroundImage = `url('${capa}')`;
-    document.getElementById('dpTmdbMeta').innerHTML = '';
-    document.getElementById('dpDirector').innerText = '';
+    document.getElementById('dpTmdbMeta').innerHTML = ''; document.getElementById('dpDirector').innerText = '';
     document.getElementById('dpSynopsis').innerText = 'Conteúdo do catálogo IPTV direto.';
-    document.getElementById('dpCastContainer').style.display = 'none';
-    document.getElementById('dpSimilarContainer').style.display = 'none';
-    document.getElementById('btnTrailer').style.display = 'none';
-    document.getElementById('dpEpisodes').style.display = 'none';
+    document.getElementById('dpCastContainer').style.display = 'none'; document.getElementById('dpSimilarContainer').style.display = 'none';
+    document.getElementById('btnTrailer').style.display = 'none'; document.getElementById('dpEpisodes').style.display = 'none';
 
-    currentTmdbId = null;
-    currentItemType = tipo === 'series' ? 'tv' : 'movie';
+    currentTmdbId = null; currentItemType = tipo === 'series' ? 'tv' : 'movie';
     currentStreamData = { id: id, title: titulo, img: capa, type: tipo, ext: ext };
 
     const btnPlay = document.getElementById('btnPlayFilme');
@@ -932,8 +907,6 @@ async function pesquisarTV() {
     const inputTv = document.getElementById('inputBuscaIPTVTV') || document.getElementById('inputBuscaTV');
     if(!inputTv) return;
     const query = inputTv.value.toLowerCase();
-    
-    // Identifica onde estamos a buscar (Aba TV normal ou Aba TV do Modo IPTV)
     const viewTvNormal = document.getElementById('view-tv').classList.contains('active');
     const divPastas = viewTvNormal ? document.getElementById('conteudo-tv') : document.getElementById('conteudo-iptv-tv');
     const divResultados = viewTvNormal ? document.getElementById('resultados-tv') : document.getElementById('resultados-iptv-tv');
@@ -949,12 +922,10 @@ async function pesquisarTV() {
         let html = "";
         resultados.forEach(item => {
             const fmtd = processarTV(item.name); const capa = item.stream_icon;
-            html += `
-            <div class="card-movie card-tv" style="height: 110px;" onclick="abrirSheetTV('${esc(fmtd.limpo)}', '${item.stream_id}', '${esc(fmtd.tagsStr)}')">
+            html += `<div class="card-movie card-tv" style="height: 110px;" onclick="abrirSheetTV('${esc(fmtd.limpo)}', '${item.stream_id}', '${esc(fmtd.tagsStr)}')">
                 <div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>
                 ${capa ? `<img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/100x50/333/fff?text=TV'">` : `<i class="fas fa-tv" style="font-size:24px; color:#555; margin-bottom:5px;"></i>`}
-                <div class="titulo-tv">${fmtd.limpo}</div>
-            </div>`;
+                <div class="titulo-tv">${fmtd.limpo}</div></div>`;
         });
         divResultados.innerHTML = html;
     }, 800);
@@ -962,11 +933,7 @@ async function pesquisarTV() {
 
 // ===================== EVENTOS FINAIS =====================
 window.addEventListener('popstate', function(event) {
-    if(document.getElementById('adBlockModal').style.display === 'flex') {
-        mostrarToast("Assista ao anúncio ou entre no VIP.");
-        history.pushState({ view: 'adblock' }, null, "");
-        return;
-    }
+    if(document.getElementById('adBlockModal').style.display === 'flex') { mostrarToast("Assista ao anúncio."); history.pushState({ view: 'adblock' }, null, ""); return; }
     if(event.state && event.state.view === 'vip') { fecharModalVip(); return; }
     if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); return; } 
     if(document.getElementById('embedModal').style.display === 'flex') { fecharEmbedWeb(); return; } 
@@ -974,12 +941,12 @@ window.addEventListener('popstate', function(event) {
     if(document.getElementById('actorModal').classList.contains('active')) { fecharAtor(); return; } 
     if(document.getElementById('detailsPage').classList.contains('active')) { fecharDetalhes(); return; } 
     if(document.getElementById('bottomSheet').classList.contains('active')) { fecharSheetTV(); return; }
+    if(document.getElementById('menuPrincipal').classList.contains('active')) { fecharMenuPrincipal(); return; }
     if(document.getElementById('view-iptv').classList.contains('active')) {
         document.getElementById('view-iptv').classList.remove('active');
         const mainHeader = document.getElementById('mainHeader');
-        if(mainHeader) mainHeader.style.display = 'flex'; // Volta o header principal
-        mudarAba('view-home', document.getElementById('nav-home'), true);
-        return;
+        if(mainHeader) mainHeader.style.display = 'flex';
+        mudarAba('view-home', document.getElementById('nav-home'), true); return;
     }
     if(event.state && event.state.view) { mudarAba(event.state.view, null, true); return; } 
     mudarAba('view-home', document.getElementById('nav-home'), true);
@@ -987,9 +954,5 @@ window.addEventListener('popstate', function(event) {
 
 window.onload = () => {
     history.replaceState({ view: 'view-home' }, null, "");
-    document.getElementById('sheetOverlay').onclick = function() {
-        if(document.getElementById('serverModal').classList.contains('active')) fecharMenuServidores();
-        else if(document.getElementById('bottomSheet').classList.contains('active')) fecharSheetTV();
-    };
     initApp();
 };
