@@ -33,7 +33,6 @@ function getSupabase() {
     return meuSupabase;
 }
 function isVip() { return localStorage.getItem('streamflix_vip') === 'true'; }
-
 function abrirModalVip() { 
     document.getElementById('vipModal').style.display = 'flex'; 
     document.body.classList.add('no-scroll');
@@ -53,7 +52,6 @@ function abrirTelegramVip() {
     a.click();
     document.body.removeChild(a);
 }
-
 async function fazerLoginVip() {
     const email = document.getElementById('vipEmail').value.trim();
     const senha = document.getElementById('vipSenha').value.trim();
@@ -75,18 +73,22 @@ async function fazerLoginVip() {
     } catch(e) { msg.innerText = e.message; msg.style.display = 'block'; }
     finally { btn.innerText = "Entrar na Conta VIP"; btn.disabled = false; }
 }
-
 function verificarStatusVip() {
     const btnVip = document.getElementById('btnOpenVip');
-    if(btnVip) btnVip.style.display = isVip() ? 'none' : 'block';
+    if(btnVip) {
+        btnVip.style.display = isVip() ? 'none' : 'block';
+    }
     const menuVipStatus = document.getElementById('menuVipStatus');
     if(menuVipStatus) {
-        if(isVip()) menuVipStatus.innerHTML = '<i class="fas fa-crown" style="color:gold"></i> VIP Ativo';
-        else menuVipStatus.innerHTML = '<i class="fas fa-gem" style="color:var(--accent)"></i> Gratuito';
+        if(isVip()) {
+            menuVipStatus.innerHTML = '<i class="fas fa-crown" style="color:gold"></i> VIP Ativo';
+        } else {
+            menuVipStatus.innerHTML = '<i class="fas fa-gem" style="color:var(--accent)"></i> Gratuito';
+        }
     }
 }
 
-// ===================== ADS =====================
+// ===================== ADS DESATIVAÇÃO VIP =====================
 function desativarTodosAds() {
     const scripts = document.querySelectorAll('script');
     scripts.forEach(s => {
@@ -103,31 +105,49 @@ function desativarTodosAds() {
     setTimeout(() => location.reload(), 1500);
 }
 
+// ===================== ANÚNCIOS (COMPLETO + VIP BLOCK) =====================
 function injetarAnuncios() {
-    if(isVip() || adsInjetados) return;
+    if(isVip()) return; 
+    if(adsInjetados) return;
+
     if(localStorage.getItem('push_accepted') !== 'true') {
         setTimeout(() => { 
             const prompt = document.getElementById('pushPromptModal'); 
             if(prompt) prompt.style.display = 'block'; 
         }, 2500);
     } else {
-        activarTodosAds();
+        ativarTodosAds();
     }
 }
 
 function aceitarPush() {
     document.getElementById('pushPromptModal').style.display = 'none';
     localStorage.setItem('push_accepted', 'true');
-    activarTodosAds();
+    ativarTodosAds();
     mostrarToast("Notificações ativadas!");
 }
 
 function activarTodosAds() {
     if(isVip() || adsInjetados) return;
     adsInjetados = true;
-    const s1 = document.createElement('script'); s1.src = 'https://5gvci.com/act/files/tag.min.js?z=11081861'; s1.async = true; document.head.appendChild(s1);
-    const s2 = document.createElement('script'); s2.src = 'https://5gvci.com/act/files/tag.min.js?z=11081853'; s2.async = true; document.head.appendChild(s2);
-    const s3 = document.createElement('script'); s3.dataset.zone = '11081852'; s3.src = 'https://al5sm.com/tag.min.js'; s3.async = true; document.head.appendChild(s3);
+
+    const s1 = document.createElement('script');
+    s1.src = 'https://5gvci.com/act/files/tag.min.js?z=11081861';
+    s1.setAttribute('data-cfasync', 'false');
+    s1.async = true;
+    document.head.appendChild(s1);
+
+    const s2 = document.createElement('script');
+    s2.src = 'https://5gvci.com/act/files/tag.min.js?z=11081853';
+    s2.setAttribute('data-cfasync', 'false');
+    s2.async = true;
+    document.head.appendChild(s2);
+
+    const s3 = document.createElement('script');
+    s3.dataset.zone = '11081852';
+    s3.src = 'https://al5sm.com/tag.min.js';
+    s3.async = true;
+    document.head.appendChild(s3);
 }
 
 function dispararDirectLink() {
@@ -171,7 +191,6 @@ function processarTitulo(nomeBruto, nomePasta) {
     if(nomeLimpo.length < 2) nomeLimpo = nomeBruto.substring(0, 20);
     return { limpo: nomeLimpo, tagsStr: tags.join(',') };
 }
-
 function processarTV(nomeBruto) {
     let nomeLimpo = nomeBruto || "Canal";
     const tags = [];
@@ -539,6 +558,7 @@ async function buscarEReproduzirNativo(title, type) {
 
         const matches = data.filter(item => (item.name || '').toLowerCase().includes(termo));
         if(matches.length > 0) {
+            // FILTRO INTELIGENTE ANTI-4K PARA NÃO BUGAR OU TRAVAR NO MOBILE
             let match = matches.find(m => !/(4k|uhd|2160p)/i.test((m.name || '').toLowerCase()));
             if(!match) match = matches[0]; 
 
@@ -568,6 +588,7 @@ async function buscarEReproduzirNativo(title, type) {
 
 function abrirPlayerWeb(servidor) {
     if(!currentTmdbId) return;
+
     fecharMenuServidores();
 
     const modal = document.getElementById('embedModal');
@@ -583,7 +604,6 @@ function abrirPlayerWeb(servidor) {
         if(currentItemType === 'movie') finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}`;
         else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
     } else if(servidor === 'superflix') {
-        // EXATAMENTE O FORMATO OFICIAL DO SUPERFLIX
         if(currentItemType === 'movie') finalUrl = `https://superflixapi.fit/filme/${currentTmdbId}`;
         else finalUrl = `https://superflixapi.fit/serie/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
     }
@@ -596,6 +616,7 @@ function abrirPlayerWeb(servidor) {
         document.body.classList.add('no-scroll');
         history.pushState({ view: 'embed', modal: true }, null, "");
         
+        // FORÇAR ROTAÇÃO PAISAGEM NO EMBED
         try { 
             if(screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock('landscape').catch(e => console.log(e));
@@ -730,6 +751,7 @@ function fecharEmbedWeb() {
     document.getElementById('embedModal').style.display = 'none';
     document.body.classList.remove('no-scroll');
     
+    // LIBERAR ORIENTAÇÃO DA TELA AO FECHAR O EMBED
     try { if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e) {}
     
     if(history.state && history.state.view === 'embed') history.back();
@@ -797,18 +819,14 @@ async function dispararPlayer(id, tipo, ext, titulo) {
     finally { if(btn) { btn.innerHTML = `<i class="fas fa-play"></i> Assistir Agora`; btn.disabled = false; } }
 }
 
-// ===================== NAVEGAÇÃO E MENU (AJUSTADO PARA NÃO TRAVAR ROLAGEM) =====================
+// ===================== NAVEGAÇÃO E MENU =====================
 function abrirMenuPrincipal() {
     document.getElementById('menuOverlay').classList.add('active');
     document.getElementById('menuPrincipal').classList.add('active');
-    document.body.classList.add('no-scroll'); 
-    history.pushState({ view: 'menuPrincipal', modal: true }, null, ""); 
 }
 function fecharMenuPrincipal() {
     document.getElementById('menuOverlay').classList.remove('active');
     document.getElementById('menuPrincipal').classList.remove('active');
-    document.body.classList.remove('no-scroll'); 
-    if(history.state && history.state.view === 'menuPrincipal') history.back();
 }
 
 function mudarAba(idView, btn, originHistory = false) {
@@ -998,19 +1016,11 @@ function handleTouchEnd(e) {
     const deltaY = touchEndY - touchStartY;
     const deltaX = touchEndX - touchStartX;
 
-    // Arrasto longo para baixo, sem muito desvio pros lados, fecha os modais
-    if(deltaY > 80 && Math.abs(deltaX) < 100) {
+    if(deltaY > 120 && Math.abs(deltaX) < 80) {
         const trailer = document.getElementById('trailerModal');
         const embed = document.getElementById('embedModal');
-        const menu = document.getElementById('menuPrincipal');
-        const sheetTv = document.getElementById('bottomSheet');
-        const serverMenu = document.getElementById('serverModal');
-
-        if(trailer && trailer.style.display === 'flex') fecharTrailer();
-        if(embed && embed.style.display === 'flex') fecharEmbedWeb();
-        if(menu && menu.classList.contains('active')) fecharMenuPrincipal();
-        if(sheetTv && sheetTv.classList.contains('active')) fecharSheetTV();
-        if(serverMenu && serverMenu.classList.contains('active')) fecharMenuServidores();
+        if(trailer.style.display === 'flex') fecharTrailer();
+        if(embed.style.display === 'flex') fecharEmbedWeb();
     }
 }
 
@@ -1086,7 +1096,7 @@ function fecharAdBlock() {
     document.body.classList.remove('no-scroll');
 }
 
-// ===================== INTEGRAÇÃO SUPER FLIX (CORRIGIDA) =====================
+// ===================== INTEGRAÇÃO SUPER FLIX =====================
 async function abrirSuperFlix(tipo) {
     currentSuperFlixType = tipo;
     document.getElementById('titulo-superflix').innerText = tipo === 'animes' ? 'Animes' : 'Doramas';
@@ -1144,38 +1154,20 @@ async function carregarSuperFlixLista(tipo, genero, busca = null) {
     container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>`;
     
     try {
-        let url = '';
-        
-        if (genero) {
-            let catG = tipo === 'animes' ? 'anime' : 'dorama';
-            url = `https://superflixapi.fit/lista?category=${catG}&type=tmdb&genero=${encodeURIComponent(genero.toLowerCase())}&format=json`;
-        } else {
-            let catBase = tipo === 'animes' ? 'animes' : 'dorama';
-            url = `https://superflixapi.fit/lista?category=${catBase}&format=json`;
-        }
-
-        const res = await fetch(url);
-        let dadosBrutos = await res.json();
-
-        // O superflix às vezes retorna os arrays dentro de objetos com nomes diferentes
+        let catUrlBase = tipo === 'animes' ? 'animes' : 'dorama';
         let resultados = [];
-        if (!Array.isArray(dadosBrutos)) {
-            if (dadosBrutos.data) resultados = dadosBrutos.data;
-            else if (dadosBrutos.series) resultados = dadosBrutos.series;
-            else if (dadosBrutos.animes) resultados = dadosBrutos.animes;
-            else resultados = Object.values(dadosBrutos);
+
+        if (genero) {
+            let catUrlG = tipo === 'animes' ? 'anime' : 'dorama';
+            const res = await fetch(`https://superflixapi.fit/lista?category=${catUrlG}&type=tmdb&genero=${genero.toLowerCase()}&format=json`);
+            resultados = await res.json();
+            lastSuperFlixData = resultados;
+        } else if (!busca) {
+            const res = await fetch(`https://superflixapi.fit/lista?category=${catUrlBase}&format=json`);
+            resultados = await res.json();
+            lastSuperFlixData = resultados;
         } else {
-            resultados = dadosBrutos;
-        }
-
-        lastSuperFlixData = resultados;
-
-        // Se houver busca, filtra apenas na lista que foi salva no cache local (é mais eficiente e focado)
-        if (busca && lastSuperFlixData.length > 0) {
-            resultados = lastSuperFlixData.filter(item => {
-                const t = (item.title || item.nome || item.name || '').toLowerCase();
-                return t.includes(busca.toLowerCase());
-            });
+            resultados = lastSuperFlixData.filter(item => (item.title || item.nome || '').toLowerCase().includes(busca.toLowerCase()));
         }
 
         if(!resultados || resultados.length === 0) {
@@ -1185,29 +1177,19 @@ async function carregarSuperFlixLista(tipo, genero, busca = null) {
 
         let html = '';
         resultados.slice(0, 50).forEach(item => {
-            const titulo = item.title || item.nome || item.name || 'Sem Título';
-            
-            // Alguns endpoints mandam tmdb_id, outros apenas id
-            const id = item.tmdb_id || item.id; 
-            
-            // As capas também mudam de nome
-            const capa = item.cover || item.poster || item.poster_path || 'https://via.placeholder.com/220x330/111/fff';
-            
-            // Animes e Doramas carregam o módulo de "série" no the movie database (TMDB)
-            const typeToOpen = 'tv'; 
+            const titulo = item.title || item.nome || 'Sem Título';
+            const id = item.id || item.tmdb_id;
+            const capa = item.cover || item.poster || 'https://via.placeholder.com/220x330/111/fff';
+            const isMovie = item.type === 'filme';
+            const typeToOpen = isMovie ? 'movie' : 'tv';
 
-            if(id && id !== 0) {
-                html += `<div class="card-movie" onclick="abrirDetalhesTMDB(${id}, '${typeToOpen}')">
-                    <img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">
-                    <div class="titulo-fallback" style="display:none">${esc(titulo)}</div>
-                </div>`;
-            }
+            html += `<div class="card-movie" onclick="abrirDetalhesTMDB(${id}, '${typeToOpen}')">
+                <img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">
+                <div class="titulo-fallback" style="display:none">${esc(titulo)}</div>
+            </div>`;
         });
-        
         container.innerHTML = html;
-        
     } catch(e) {
-        console.error("Erro no SuperFlix", e);
         container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Erro ao carregar do servidor.</p>';
     }
 }
