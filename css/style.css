@@ -10,7 +10,7 @@ body {
     overflow-x: hidden; padding-bottom: 90px; 
 }
 body.no-scroll { overflow: hidden; height: 100vh; }
-.header { position: absolute; top: 0; width: 100%; padding: 15px; z-index: 10; text-align: center; background: linear-gradient(to bottom, rgba(4,7,20,0.8), transparent); display: flex; justify-content: center; align-items: center; }
+.header { position: absolute; top: 0; width: 100%; padding: 15px; z-index: 9000; text-align: center; background: linear-gradient(to bottom, rgba(4,7,20,0.8), transparent); display: flex; justify-content: center; align-items: center; }
 .header-logo { font-size: 22px; font-weight: 900; color: #fff; margin: 0; letter-spacing: 1px;}
 .header-logo span { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.6); }
 .header-btn { position: absolute; color: #fff; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px;}
@@ -81,11 +81,11 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 .server-btn.ep { border-left: 4px solid #00e676; }
 .server-btn.bf { border-left: 4px solid #ff0055; }
 .server-warn { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 15px; line-height: 1.4;}
+
+/* AQUI O SEGREDO DO Z-INDEX DO BOTÃO VOLTAR */
 .details-page { position: fixed; top: 0; left: 100%; width: 100%; height: 100vh; background: var(--bg-bottom); z-index: 3000; transition: left 0.3s ease-out; overflow-y: auto; padding-bottom: 30px; }
 .details-page.active { left: 0; }
-
-/* FIX Z-INDEX PARA A SETA VOLTAR NA TELA DE DETALHES */
-.dp-back-btn { position: absolute; top: 15px; left: 20px; background: rgba(0,0,0,0.5); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; z-index: 9999; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; cursor: pointer; }
+.dp-back-btn { position: absolute; top: 15px; left: 15px; background: rgba(0,0,0,0.5); color: #fff; border: none; width: 40px; height: 40px; border-radius: 50%; font-size: 18px; z-index: 9999; backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; cursor: pointer; }
 
 .dp-poster { width: 100%; height: 60vh; background-position: top center; background-size: cover; position: relative; background-color: #111; transition: background-image 0.5s ease;}
 .dp-gradient { position: absolute; bottom: 0; width: 100%; height: 100%; background: linear-gradient(to top, var(--bg-bottom) 0%, rgba(4,7,20,0.8) 50%, transparent 100%); }
@@ -158,3 +158,4 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 .iptv-tab.active { background: rgba(0,229,255,0.1); color: var(--accent); border-color: rgba(0,229,255,0.3); }
 .iptv-content { display: none; }
 .iptv-content.active { display: block; animation: fadeIn 0.3s ease; }
+.iptv-badge { display: inline-block; background: rgba(0,229,255,0.15); color: var(--accent); font-size: 9px; font-weight: 900; padding: 3px 8px; border-radius: 4px; margin-left: 8px; }
