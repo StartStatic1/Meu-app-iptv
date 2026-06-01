@@ -17,6 +17,7 @@ let bancoFilmes = null;
 let bancoSeries = null;
 let bancoTV = null;
 let iptvCarregado = { filmes: false, series: false, tv: false };
+let adsInjetados = false;
 
 // Touch gesture vars
 let touchStartY = 0;
@@ -29,6 +30,7 @@ function getSupabase() {
     }
     return meuSupabase;
 }
+function isVip() { return localStorage.getItem('streamflix_vip') === 'true'; }
 function abrirModalVip() { 
     document.getElementById('vipModal').style.display = 'flex'; 
     document.body.classList.add('no-scroll');
@@ -40,7 +42,6 @@ function fecharModalVip() {
     if(history.state && history.state.view === 'vip') history.back();
 }
 function abrirTelegramVip() {
-    // CORREÇÃO: Usar HTTPS em vez de tg:// para funcionar na WebView
     let a = document.createElement('a');
     a.href = 'https://t.me/streamflixofc';
     a.target = '_blank';
@@ -54,66 +55,119 @@ async function fazerLoginVip() {
     const senha = document.getElementById('vipSenha').value.trim();
     const btn = document.getElementById('btnLoginBtn');
     const msg = document.getElementById('vipMsg');
-    
+
     if(!email || !senha) { msg.innerText = "Preencha os campos."; msg.style.display = 'block'; return; }
     btn.innerText = "Verificando..."; btn.disabled = true; msg.style.display = 'none';
-    
+
     try {
         const supa = getSupabase(); 
         const { data, error } = await supa.from('streamflix_users').select('*').eq('email', email).eq('senha', senha);
         if(error) throw error;
         if(data && data.length > 0) {
             if(data[0].status === 'VIP') {
-                localStorage.setItem('streamflix_vip', 'true');
-                mostrarToast("Bem-vindo! Anúncios desativados.");
-                setTimeout(() => location.reload(), 1500);
+                desativarTodosAds();
             } else { msg.innerText = "Sua conta não tem status VIP."; msg.style.display = 'block'; }
         } else { msg.innerText = "E-mail ou senha incorretos."; msg.style.display = 'block'; }
     } catch(e) { msg.innerText = e.message; msg.style.display = 'block'; }
     finally { btn.innerText = "Entrar na Conta VIP"; btn.disabled = false; }
 }
 function verificarStatusVip() {
-    const isVip = localStorage.getItem('streamflix_vip') === 'true';
     const btnVip = document.getElementById('btnOpenVip');
-    if(btnVip) btnVip.style.display = isVip ? 'none' : 'block';
-}
-
-// ===================== ANÚNCIOS (CORRIGIDO) =====================
-function injetarAnuncios() {
-    if(localStorage.getItem('streamflix_vip') === 'true') return;
-    if(localStorage.getItem('push_accepted') !== 'true') {
-        setTimeout(() => { const prompt = document.getElementById('pushPromptModal'); if(prompt) prompt.style.display = 'block'; }, 3000);
-    } else {
-        injetarOnClick();
+    if(btnVip) {
+        // Se VIP, esconde o botão. Se não VIP, mostra (display: block ou flex)
+        btnVip.style.display = isVip() ? 'none' : 'block';
+    }
+    // Atualiza status no menu também
+    const menuVipStatus = document.getElementById('menuVipStatus');
+    if(menuVipStatus) {
+        if(isVip()) {
+            menuVipStatus.innerHTML = '<i class="fas fa-crown" style="color:gold"></i> VIP Ativo';
+        } else {
+            menuVipStatus.innerHTML = '<i class="fas fa-gem" style="color:var(--accent)"></i> Gratuito';
+        }
     }
 }
+
+// ===================== ADS DESATIVAÇÃO VIP =====================
+function desativarTodosAds() {
+    // Remove todos os scripts de ads do DOM
+    const scripts = document.querySelectorAll('script');
+    scripts.forEach(s => {
+        const src = s.src || '';
+        if(src.includes('5gvci.com') || src.includes('al5sm.com') || src.includes('tag.min.js') || src.includes('omg10.com')) {
+            s.remove();
+        }
+    });
+    // Limpa flag e seta VIP
+    localStorage.setItem('streamflix_vip', 'true');
+    localStorage.setItem('push_accepted', 'false');
+    // Esconde prompt
+    const pushPrompt = document.getElementById('pushPromptModal');
+    if(pushPrompt) pushPrompt.style.display = 'none';
+    // Reload para matar tudo
+    mostrarToast("VIP Ativado! Anúncios removidos.");
+    setTimeout(() => location.reload(), 1500);
+}
+
+// ===================== ANÚNCIOS (COMPLETO + VIP BLOCK) =====================
+function injetarAnuncios() {
+    if(isVip()) return; // VIP = ZERO ADS
+    if(adsInjetados) return;
+
+    // Se ainda não aceitou push, mostra prompt bonito
+    if(localStorage.getItem('push_accepted') !== 'true') {
+        setTimeout(() => { 
+            const prompt = document.getElementById('pushPromptModal'); 
+            if(prompt) prompt.style.display = 'block'; 
+        }, 2500);
+    } else {
+        ativarTodosAds();
+    }
+}
+
 function aceitarPush() {
     document.getElementById('pushPromptModal').style.display = 'none';
     localStorage.setItem('push_accepted', 'true');
-    injetarOnClick();
+    ativarTodosAds();
     mostrarToast("Notificações ativadas!");
 }
-function injetarOnClick() {
-    if (document.getElementById('script-onclick-monetag')) return;
-    const s = document.createElement('script');
-    s.id = 'script-onclick-monetag';
-    s.async = true;
-    s.setAttribute('data-zone', '11081852');
-    s.src = 'https://al5sm.com/tag.min.js';
-    document.head.appendChild(s);
+
+function ativarTodosAds() {
+    if(isVip() || adsInjetados) return;
+    adsInjetados = true;
+
+    // 1. Push Notification z=11081861
+    const s1 = document.createElement('script');
+    s1.src = 'https://5gvci.com/act/files/tag.min.js?z=11081861';
+    s1.setAttribute('data-cfasync', 'false');
+    s1.async = true;
+    document.head.appendChild(s1);
+
+    // 2. Push Notification z=11081853
+    const s2 = document.createElement('script');
+    s2.src = 'https://5gvci.com/act/files/tag.min.js?z=11081853';
+    s2.setAttribute('data-cfasync', 'false');
+    s2.async = true;
+    document.head.appendChild(s2);
+
+    // 3. OnClick z=11081852
+    const s3 = document.createElement('script');
+    s3.dataset.zone = '11081852';
+    s3.src = 'https://al5sm.com/tag.min.js';
+    s3.async = true;
+    document.head.appendChild(s3);
 }
+
 function dispararDirectLink() {
-    const isVip = localStorage.getItem('streamflix_vip') === 'true';
-    if(!isVip) {
-        // Abre em nova aba SEM quebrar o history do app
-        let a = document.createElement('a');
-        a.href = 'https://omg10.com/4/11081875';
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
+    if(isVip()) return;
+    // Abre em nova aba sem quebrar history do app PWA
+    let a = document.createElement('a');
+    a.href = 'https://omg10.com/4/11081875';
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 
 // ===================== UTILS =====================
@@ -248,7 +302,7 @@ async function initApp() {
 
         const loadingState = document.getElementById('loading-state');
         if(loadingState) loadingState.style.display = 'none';
-        
+
         const conteudoReal = document.getElementById('conteudo-real');
         if(conteudoReal) conteudoReal.style.display = 'block';
 
@@ -287,8 +341,8 @@ function atualizarHero() {
     const title = f.title || f.name || 'Carregando...';
     const backdrop = f.backdrop_path ? `${TMDB_IMG}/w1280${f.backdrop_path}` : (f.poster_path ? `${TMDB_IMG}/w780${f.poster_path}` : '');
     const tags = [];
-    
-    if(f.vote_average) tags.push(`<<i class="fas fa-star" style="color:gold;"></i> ${f.vote_average.toFixed(1)}`);
+
+    if(f.vote_average) tags.push(`<i class="fas fa-star" style="color:gold;"></i> ${f.vote_average.toFixed(1)}`);
     if(f.release_date) tags.push(f.release_date.substring(0,4));
     else if(f.first_air_date) tags.push(f.first_air_date.substring(0,4));
     if(f.media_type === 'tv' || f.first_air_date) tags.push('SÉRIE'); else tags.push('FILME');
@@ -296,7 +350,7 @@ function atualizarHero() {
     document.getElementById('heroBanner').style.backgroundImage = `url('${backdrop}')`;
     document.getElementById('heroTitle').innerText = title;
     document.getElementById('heroTags').innerHTML = tags.join(' <span style="color:#555;">|</span> ');
-    
+
     const synopsisEl = document.getElementById('heroSynopsis');
     if(synopsisEl) synopsisEl.innerText = f.overview ? f.overview : "Sinopse não disponível.";
 }
@@ -487,7 +541,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     } catch(err) { document.getElementById('dpSynopsis').innerText = "Erro ao carregar detalhes."; }
 }
 
-// ===================== MENUS E REPRODUÇÃO (CORRIGIDO) =====================
+// ===================== MENUS E REPRODUÇÃO =====================
 function abrirMenuServidoresDetalhes() {
     const btnNativo = document.getElementById('btnServerNativo');
     if (btnNativo) {
@@ -508,13 +562,13 @@ async function buscarEReproduzirNativo(title, type) {
         const res = await fetch(`/api/iptv?action=${action}`);
         const data = await res.json();
         const termo = title.toLowerCase();
-        
+
         const match = data.find(item => (item.name || '').toLowerCase().includes(termo));
         if(match) {
             const isVod = type !== 'tv';
             const streamId = isVod ? match.stream_id : match.series_id;
             const ext = match.container_extension || 'mp4';
-            
+
             if(isVod) {
                 dispararPlayer(streamId, 'vod', ext, title);
             } else {
@@ -537,8 +591,7 @@ async function buscarEReproduzirNativo(title, type) {
 
 function abrirPlayerWeb(servidor) {
     if(!currentTmdbId) return;
-    
-    // Fecha modal de servidores SEM history.back
+
     fecharMenuServidores();
 
     const modal = document.getElementById('embedModal');
@@ -554,11 +607,9 @@ function abrirPlayerWeb(servidor) {
         if(currentItemType === 'movie') finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}`;
         else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
     }
-    
-    // Abre AD em nova aba (não quebra app)
+
     dispararDirectLink();
-    
-    // Delay para WebView processar
+
     setTimeout(() => {
         frame.src = finalUrl;
         modal.style.display = 'flex';
@@ -605,7 +656,7 @@ function carregarHistorico() {
     const listFavs = getFavList();
     const itemsVistos = Object.values(listVistos).reverse();
     const itemsFavs = Object.values(listFavs).reverse();
-    
+
     let html = "";
     if(itemsFavs.length > 0) {
         html += `<h3 style="color:#fff; padding-left:15px; margin-top:0;"><i class="fas fa-heart" style="color:#e91e63;"></i> Favoritos</h3>`;
@@ -626,7 +677,7 @@ function carregarHistorico() {
             </div>`;
         });
     }
-    
+
     if(html === "") html = `<p class="loading-text" style="grid-column: span 3; margin-top:30px;">Ainda não marcou nada.</p>`;
     const container = document.getElementById('conteudo-historico');
     if(container) container.innerHTML = html;
@@ -664,16 +715,21 @@ async function abrirAtor(atorId) {
     } catch(e) { document.getElementById('actorBio').innerText = "Erro ao carregar dados."; }
 }
 
+// ===================== TRAILER / EMBED (CORRIGIDO: MATA ÁUDIO) =====================
 function abrirTrailer() {
     if(!trailerKeyAtivo) return;
-    document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${trailerKeyAtivo}?autoplay=1&rel=0`;
+    const frame = document.getElementById('trailerFrame');
+    frame.src = `https://www.youtube.com/embed/${trailerKeyAtivo}?autoplay=1&rel=0`;
     document.getElementById('trailerModal').style.display = 'flex';
     document.body.classList.add('no-scroll');
     history.pushState({ view: 'trailer', modal: true }, null, "");
 }
 function fecharTrailer() {
+    const frame = document.getElementById('trailerFrame');
+    // CORREÇÃO: about:blank para matar o player e o áudio em segundo plano
+    frame.src = 'about:blank';
+    setTimeout(() => { frame.src = ''; }, 200);
     document.getElementById('trailerModal').style.display = 'none';
-    document.getElementById('trailerFrame').src = '';
     document.body.classList.remove('no-scroll');
     if(history.state && history.state.view === 'trailer') history.back();
 }
@@ -681,11 +737,13 @@ function fecharMenuServidores() {
     document.getElementById('serverModal').classList.remove('active');
     const overlay = document.getElementById('sheetOverlay');
     if(overlay) overlay.classList.remove('active');
-    // Não dá history.back aqui para evitar loop
 }
 function fecharEmbedWeb() {
+    const frame = document.getElementById('embedFrame');
+    // CORREÇÃO: about:blank para matar qualquer mídia rodando no embed
+    frame.src = 'about:blank';
+    setTimeout(() => { frame.src = ''; }, 200);
     document.getElementById('embedModal').style.display = 'none';
-    document.getElementById('embedFrame').src = '';
     document.body.classList.remove('no-scroll');
     if(history.state && history.state.view === 'embed') history.back();
 }
@@ -723,7 +781,6 @@ function fecharTodosOverlays() {
 }
 
 async function dispararPlayer(id, tipo, ext, titulo) {
-    // Não dispara AD aqui para não quebrar player nativo
     const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : null;
     if(btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`; btn.disabled = true; }
     try {
@@ -739,11 +796,10 @@ async function dispararPlayer(id, tipo, ext, titulo) {
             const data = await res.json(); urlFinal = data.url;
         }
         if(!urlFinal) throw new Error("Link não retornado.");
-        
-        // Intent para player nativo Android
+
         const urlLimpa = urlFinal.replace(/^https?:\/\//, '');
         const intentUrl = `intent://${urlLimpa}#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end;`;
-        
+
         const a = document.createElement('a');
         a.href = intentUrl;
         a.style.display = 'none';
@@ -755,7 +811,7 @@ async function dispararPlayer(id, tipo, ext, titulo) {
     finally { if(btn) { btn.innerHTML = `<i class="fas fa-play"></i> Assistir Agora`; btn.disabled = false; } }
 }
 
-// ===================== NAVEGAÇÃO E MENU =====================
+// ===================== NAVEGAÇÃO E MENU (REDESENHADO) =====================
 function abrirMenuPrincipal() {
     document.getElementById('menuOverlay').classList.add('active');
     document.getElementById('menuPrincipal').classList.add('active');
@@ -793,7 +849,7 @@ function entrarModoIPTV() {
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
     const mainHeader = document.getElementById('mainHeader');
     if(mainHeader) mainHeader.style.display = 'none';
-    
+
     history.pushState({ view: 'view-iptv' }, null, "");
     carregarIPTFilmes();
 }
@@ -920,11 +976,11 @@ async function pesquisarTV() {
     const query = inputTv.value.toLowerCase();
     const divPastas = document.getElementById('conteudo-iptv-tv');
     const divResultados = document.getElementById('resultados-iptv-tv');
-    
+
     if(query.length < 3) { divPastas.style.display = 'block'; divResultados.style.display = 'none'; return; }
     divPastas.style.display = 'none'; divResultados.style.display = 'grid';
     divResultados.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Buscando...</div>`;
-    
+
     timeoutBuscaTVIPTV = setTimeout(async () => {
         if(!bancoTV) { try { const res = await fetch('/api/iptv?action=get_live_streams'); bancoTV = await res.json(); } catch(e) { return; } }
         const resultados = bancoTV.filter(c => c.name && c.name.toLowerCase().includes(query)).slice(0, 50);
@@ -941,7 +997,7 @@ async function pesquisarTV() {
     }, 800);
 }
 
-// ===================== GESTOS E EVENTOS (CORRIGIDO) =====================
+// ===================== GESTOS E EVENTOS (BACK BUTTON REFORÇADO) =====================
 function handleTouchStart(e) {
     touchStartY = e.changedTouches[0].screenY;
     touchStartX = e.changedTouches[0].screenX;
@@ -951,9 +1007,8 @@ function handleTouchEnd(e) {
     const touchEndX = e.changedTouches[0].screenX;
     const deltaY = touchEndY - touchStartY;
     const deltaX = touchEndX - touchStartX;
-    
-    // Swipe down para fechar modais (mais de 100px para baixo)
-    if(deltaY > 100 && Math.abs(deltaX) < 50) {
+
+    if(deltaY > 120 && Math.abs(deltaX) < 80) {
         const trailer = document.getElementById('trailerModal');
         const embed = document.getElementById('embedModal');
         if(trailer.style.display === 'flex') fecharTrailer();
@@ -962,7 +1017,7 @@ function handleTouchEnd(e) {
 }
 
 window.addEventListener('popstate', function(event) {
-    // Sistema de pilha: fecha o modal mais recente primeiro
+    // Pilha de modais: fecha o mais recente primeiro
     const modais = [
         { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: fecharAdBlock },
         { id: 'embedModal', check: (el) => el.style.display === 'flex', close: fecharEmbedWeb },
@@ -974,7 +1029,7 @@ window.addEventListener('popstate', function(event) {
         { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: fecharMenuPrincipal },
         { id: 'vipModal', check: (el) => el.style.display === 'flex', close: fecharModalVip }
     ];
-    
+
     for(let modal of modais) {
         const el = document.getElementById(modal.id);
         if(el && modal.check(el)) {
@@ -982,8 +1037,8 @@ window.addEventListener('popstate', function(event) {
             return; // Impede saída do app
         }
     }
-    
-    // Se nenhum modal aberto, navega entre views
+
+    // Se IPTV aberto, volta para home
     if(document.getElementById('view-iptv').classList.contains('active')) {
         document.getElementById('view-iptv').classList.remove('active');
         const mainHeader = document.getElementById('mainHeader');
@@ -991,21 +1046,30 @@ window.addEventListener('popstate', function(event) {
         mudarAba('view-home', document.getElementById('nav-home'), true); 
         return;
     }
-    
-    if(event.state && event.state.view && event.state.view !== 'view-home') { 
-        mudarAba(event.state.view, null, true); 
-        return; 
-    } 
-    
-    // Se já estamos na home, deixa o Android sair (não impede)
-    if(document.getElementById('view-home').classList.contains('active')) {
-        return; // Permite fechar app
+
+    // Se view grade aberta, volta para IPTV
+    if(document.getElementById('view-grade').classList.contains('active')) {
+        document.getElementById('view-grade').classList.remove('active');
+        document.getElementById('view-iptv').classList.add('active');
+        return;
     }
-    
+
+    // Se view historico/buscar aberta, volta para home
+    if(document.getElementById('view-historico').classList.contains('active') || 
+       document.getElementById('view-buscar').classList.contains('active')) {
+        mudarAba('view-home', document.getElementById('nav-home'), true); 
+        return;
+    }
+
+    // Se já na home, permite sair do app (não impede)
+    if(document.getElementById('view-home').classList.contains('active')) {
+        return;
+    }
+
     mudarAba('view-home', document.getElementById('nav-home'), true);
 });
 
-// Bloqueia saída acidental por swipe do botão físico (Android)
+// Back button físico Android (PWA/Cordova/WebView)
 document.addEventListener('backbutton', function(e) {
     e.preventDefault();
     history.back();
