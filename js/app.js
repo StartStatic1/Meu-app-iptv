@@ -9,7 +9,6 @@ let currentEpisode = 1;
 let currentStreamData = {};
 let trailerKeyAtivo = null;
 let meuSupabase = null;
-let adBlockTimer = null;
 let timeoutBusca = null;
 let timeoutBuscaTV = null;
 let searchType = 'all';
@@ -18,6 +17,10 @@ let bancoFilmes = null;
 let bancoSeries = null;
 let bancoTV = null;
 let iptvCarregado = { filmes: false, series: false, tv: false };
+
+// Touch gesture vars
+let touchStartY = 0;
+let touchStartX = 0;
 
 // ===================== SUPABASE / VIP =====================
 function getSupabase() {
@@ -29,7 +32,7 @@ function getSupabase() {
 function abrirModalVip() { 
     document.getElementById('vipModal').style.display = 'flex'; 
     document.body.classList.add('no-scroll');
-    history.pushState({ view: 'vip' }, null, "");
+    history.pushState({ view: 'vip', modal: true }, null, "");
 }
 function fecharModalVip() { 
     document.getElementById('vipModal').style.display = 'none'; 
@@ -37,6 +40,7 @@ function fecharModalVip() {
     if(history.state && history.state.view === 'vip') history.back();
 }
 function abrirTelegramVip() {
+    // CORREÇÃO: Usar HTTPS em vez de tg:// para funcionar na WebView
     let a = document.createElement('a');
     a.href = 'https://t.me/streamflixofc';
     a.target = '_blank';
@@ -74,7 +78,7 @@ function verificarStatusVip() {
     if(btnVip) btnVip.style.display = isVip ? 'none' : 'block';
 }
 
-// ===================== ANÚNCIOS =====================
+// ===================== ANÚNCIOS (CORRIGIDO) =====================
 function injetarAnuncios() {
     if(localStorage.getItem('streamflix_vip') === 'true') return;
     if(localStorage.getItem('push_accepted') !== 'true') {
@@ -87,7 +91,7 @@ function aceitarPush() {
     document.getElementById('pushPromptModal').style.display = 'none';
     localStorage.setItem('push_accepted', 'true');
     injetarOnClick();
-    mostrarToast("Notificações e Lançamentos ativados!");
+    mostrarToast("Notificações ativadas!");
 }
 function injetarOnClick() {
     if (document.getElementById('script-onclick-monetag')) return;
@@ -101,6 +105,7 @@ function injetarOnClick() {
 function dispararDirectLink() {
     const isVip = localStorage.getItem('streamflix_vip') === 'true';
     if(!isVip) {
+        // Abre em nova aba SEM quebrar o history do app
         let a = document.createElement('a');
         a.href = 'https://omg10.com/4/11081875';
         a.target = '_blank';
@@ -224,7 +229,7 @@ function renderGrid(items, type) {
     return items.map(i => renderCard(i, type)).join('');
 }
 
-// ===================== APP INIT E HOME =====================
+// ===================== APP INIT =====================
 async function initApp() {
     verificarStatusVip();
     injetarAnuncios(); 
@@ -239,7 +244,6 @@ async function initApp() {
         const series = trendingS.results ? trendingS.results.slice(0, 10) : [];
         const lancamentos = upcoming.results ? upcoming.results.slice(0, 10) : [];
 
-        // Pega todos para o slider e resolve detalhes para ter a sinopse na Home
         heroItems = await Promise.all(filmes.slice(0, 5).map(f => getDetails(f.id, 'movie')));
 
         const loadingState = document.getElementById('loading-state');
@@ -268,7 +272,7 @@ async function initApp() {
         if(conteudoDinamico) conteudoDinamico.innerHTML = html;
     } catch(e) {
         const loadingState = document.getElementById('loading-state');
-        if(loadingState) loadingState.innerHTML = "<div class='loading-text'>Erro de conexão com TMDB. Tente novamente.</div>";
+        if(loadingState) loadingState.innerHTML = "<div class='loading-text'>Erro de conexão. Tente novamente.</div>";
     }
 }
 
@@ -284,7 +288,7 @@ function atualizarHero() {
     const backdrop = f.backdrop_path ? `${TMDB_IMG}/w1280${f.backdrop_path}` : (f.poster_path ? `${TMDB_IMG}/w780${f.poster_path}` : '');
     const tags = [];
     
-    if(f.vote_average) tags.push(`<i class="fas fa-star" style="color:gold;"></i> ${f.vote_average.toFixed(1)}`);
+    if(f.vote_average) tags.push(`<<i class="fas fa-star" style="color:gold;"></i> ${f.vote_average.toFixed(1)}`);
     if(f.release_date) tags.push(f.release_date.substring(0,4));
     else if(f.first_air_date) tags.push(f.first_air_date.substring(0,4));
     if(f.media_type === 'tv' || f.first_air_date) tags.push('SÉRIE'); else tags.push('FILME');
@@ -293,9 +297,8 @@ function atualizarHero() {
     document.getElementById('heroTitle').innerText = title;
     document.getElementById('heroTags').innerHTML = tags.join(' <span style="color:#555;">|</span> ');
     
-    // Injeta a sinopse na Home
     const synopsisEl = document.getElementById('heroSynopsis');
-    if(synopsisEl) synopsisEl.innerText = f.overview ? f.overview : "Sinopse não disponível no momento.";
+    if(synopsisEl) synopsisEl.innerText = f.overview ? f.overview : "Sinopse não disponível.";
 }
 
 function abrirHeroDetalhes() {
@@ -320,7 +323,7 @@ async function abrirHeroTrailer() {
     finally { btn.innerHTML = txtOriginal; }
 }
 
-// ===================== BUSCA E GÊNEROS =====================
+// ===================== BUSCA =====================
 function renderGenreChips() {
     const container = document.getElementById('genreChips');
     if(!container) return;
@@ -355,7 +358,7 @@ async function pesquisarGlobal() {
         if(container) container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um gênero.</p>`;
         return;
     }
-    if(container) container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Buscando no catálogo...</div>`;
+    if(container) container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Buscando...</div>`;
     timeoutBusca = setTimeout(async () => {
         try {
             let items = [];
@@ -396,7 +399,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
 
     document.getElementById('detailsPage').classList.add('active');
     document.body.classList.add('no-scroll');
-    history.pushState({ view: 'details' }, null, "");
+    history.pushState({ view: 'details', modal: true }, null, "");
 
     try {
         const details = await getDetails(tmdbId, type);
@@ -418,7 +421,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
             if(dir) document.getElementById('dpDirector').innerText = `Dirigido/Criado por ${dir.name}`;
         }
 
-        document.getElementById('dpSynopsis').innerText = details.overview || "Sinopse indisponível em Português.";
+        document.getElementById('dpSynopsis').innerText = details.overview || "Sinopse indisponível.";
 
         if(details.videos && details.videos.results) {
             const trailer = details.videos.results.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
@@ -484,23 +487,22 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     } catch(err) { document.getElementById('dpSynopsis').innerText = "Erro ao carregar detalhes."; }
 }
 
-// ===================== MENUS E REPRODUÇÃO =====================
+// ===================== MENUS E REPRODUÇÃO (CORRIGIDO) =====================
 function abrirMenuServidoresDetalhes() {
     const btnNativo = document.getElementById('btnServerNativo');
     if (btnNativo) {
         btnNativo.onclick = () => {
-            // Remove as classes de forma silenciosa para não dar conflito no history
-            document.getElementById('serverModal').classList.remove('active');
-            document.getElementById('sheetOverlay').classList.remove('active');
+            fecharMenuServidores();
             buscarEReproduzirNativo(currentStreamData.title, currentItemType);
         };
     }
     document.getElementById('serverModal').classList.add('active');
     document.getElementById('sheetOverlay').classList.add('active');
+    history.pushState({ view: 'servers', modal: true }, null, "");
 }
 
 async function buscarEReproduzirNativo(title, type) {
-    mostrarToast("Procurando no CDN Nativo...");
+    mostrarToast("Procurando no CDN...");
     try {
         let action = type === 'tv' ? 'get_series' : 'get_vod_streams';
         const res = await fetch(`/api/iptv?action=${action}`);
@@ -524,21 +526,20 @@ async function buscarEReproduzirNativo(title, type) {
                 } else { mostrarToast("Episódios não encontrados."); }
             }
         } else { 
-            mostrarToast("Não disponível no Nativo. Tente um Servidor Web."); 
-            // Reabre o menu silenciosamente
-            document.getElementById('serverModal').classList.add('active');
-            document.getElementById('sheetOverlay').classList.add('active');
+            mostrarToast("Não disponível no CDN. Tente Web."); 
+            setTimeout(() => {
+                document.getElementById('serverModal').classList.add('active');
+                document.getElementById('sheetOverlay').classList.add('active');
+            }, 1500);
         }
-    } catch(e) { mostrarToast("Erro ao conectar no CDN."); }
+    } catch(e) { mostrarToast("Erro CDN: " + e.message); }
 }
 
 function abrirPlayerWeb(servidor) {
-    dispararDirectLink(); // Aciona o Anúncio primeiro
     if(!currentTmdbId) return;
-
-    // FECHAMENTO SILENCIOSO DO MODAL (Sem history.back) PARA EVITAR FECHAR A TELA
-    document.getElementById('serverModal').classList.remove('active');
-    document.getElementById('sheetOverlay').classList.remove('active');
+    
+    // Fecha modal de servidores SEM history.back
+    fecharMenuServidores();
 
     const modal = document.getElementById('embedModal');
     const frame = document.getElementById('embedFrame');
@@ -554,13 +555,16 @@ function abrirPlayerWeb(servidor) {
         else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
     }
     
-    // Atraso de 500ms para permitir que a WebView lide com o DirectLink antes de injetar o iframe
+    // Abre AD em nova aba (não quebra app)
+    dispararDirectLink();
+    
+    // Delay para WebView processar
     setTimeout(() => {
         frame.src = finalUrl;
         modal.style.display = 'flex';
         document.body.classList.add('no-scroll');
-        history.pushState({ view: 'embed' }, null, "");
-    }, 500);
+        history.pushState({ view: 'embed', modal: true }, null, "");
+    }, 800);
 }
 
 function reproduzirEpisodioTMDB(tmdbId, season, episode) {
@@ -640,7 +644,7 @@ async function abrirAtor(atorId) {
     document.getElementById('actorCredits').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     modal.classList.add('active');
     document.body.classList.add('no-scroll');
-    history.pushState({ view: 'actor' }, null, "");
+    history.pushState({ view: 'actor', modal: true }, null, "");
     try {
         const pRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}?api_key=${TMDB_API_KEY}&language=pt-BR`);
         const pData = await pRes.json();
@@ -662,10 +666,10 @@ async function abrirAtor(atorId) {
 
 function abrirTrailer() {
     if(!trailerKeyAtivo) return;
-    document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${trailerKeyAtivo}?autoplay=1`;
+    document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${trailerKeyAtivo}?autoplay=1&rel=0`;
     document.getElementById('trailerModal').style.display = 'flex';
     document.body.classList.add('no-scroll');
-    history.pushState({ view: 'trailer' }, null, "");
+    history.pushState({ view: 'trailer', modal: true }, null, "");
 }
 function fecharTrailer() {
     document.getElementById('trailerModal').style.display = 'none';
@@ -677,6 +681,7 @@ function fecharMenuServidores() {
     document.getElementById('serverModal').classList.remove('active');
     const overlay = document.getElementById('sheetOverlay');
     if(overlay) overlay.classList.remove('active');
+    // Não dá history.back aqui para evitar loop
 }
 function fecharEmbedWeb() {
     document.getElementById('embedModal').style.display = 'none';
@@ -702,7 +707,7 @@ function abrirSheetTV(titulo, streamId, tagsStr) {
     if(btn) btn.onclick = () => dispararPlayer(streamId, 'live', '', titulo);
     document.getElementById('sheetOverlay').classList.add('active');
     document.getElementById('bottomSheet').classList.add('active');
-    history.pushState({ view: 'sheet' }, null, "");
+    history.pushState({ view: 'sheet', modal: true }, null, "");
 }
 function fecharSheetTV() { 
     document.getElementById('sheetOverlay').classList.remove('active'); 
@@ -710,9 +715,15 @@ function fecharSheetTV() {
     if(history.state && history.state.view === 'sheet') history.back();
 }
 
-async function dispararPlayer(id, tipo, ext, titulo) {
-    dispararDirectLink(); 
+// Fecha todos os overlays (útil para click no overlay escuro)
+function fecharTodosOverlays() {
+    fecharMenuServidores();
+    fecharSheetTV();
+    fecharMenuPrincipal();
+}
 
+async function dispararPlayer(id, tipo, ext, titulo) {
+    // Não dispara AD aqui para não quebrar player nativo
     const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : null;
     if(btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`; btn.disabled = true; }
     try {
@@ -727,9 +738,9 @@ async function dispararPlayer(id, tipo, ext, titulo) {
             const res = await fetch(`/api/iptv?action=get_series_url&stream_id=${id}&extension=${ext||'mp4'}`);
             const data = await res.json(); urlFinal = data.url;
         }
-        if(!urlFinal) throw new Error("Link não retornado pelo CDN.");
+        if(!urlFinal) throw new Error("Link não retornado.");
         
-        // CORREÇÃO PARA A WEBVIEW ABRIR O VLC OU PLAYER NATIVO CORRETAMENTE
+        // Intent para player nativo Android
         const urlLimpa = urlFinal.replace(/^https?:\/\//, '');
         const intentUrl = `intent://${urlLimpa}#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end;`;
         
@@ -744,7 +755,7 @@ async function dispararPlayer(id, tipo, ext, titulo) {
     finally { if(btn) { btn.innerHTML = `<i class="fas fa-play"></i> Assistir Agora`; btn.disabled = false; } }
 }
 
-// ===================== NAVEGAÇÃO E MENU PRINCIPAL =====================
+// ===================== NAVEGAÇÃO E MENU =====================
 function abrirMenuPrincipal() {
     document.getElementById('menuOverlay').classList.add('active');
     document.getElementById('menuPrincipal').classList.add('active');
@@ -773,7 +784,7 @@ function mudarAba(idView, btn, originHistory = false) {
 
     if(!originHistory && idView !== 'view-home') history.pushState({ view: idView }, null, "");
     if(idView === 'view-historico') carregarHistorico();
-    if(idView === 'view-buscar') { document.getElementById('inputBuscaGlobal').focus(); }
+    if(idView === 'view-buscar') { setTimeout(() => document.getElementById('inputBuscaGlobal').focus(), 300); }
 }
 
 function entrarModoIPTV() {
@@ -898,18 +909,17 @@ async function abrirDetalhesIPTV(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
 
     document.getElementById('detailsPage').classList.add('active');
     document.body.classList.add('no-scroll');
-    history.pushState({ view: 'details' }, null, "");
+    history.pushState({ view: 'details', modal: true }, null, "");
 }
 
 let timeoutBuscaTVIPTV = null;
 async function pesquisarTV() {
     clearTimeout(timeoutBuscaTVIPTV);
-    const inputTv = document.getElementById('inputBuscaIPTVTV') || document.getElementById('inputBuscaTV');
+    const inputTv = document.getElementById('inputBuscaIPTVTV');
     if(!inputTv) return;
     const query = inputTv.value.toLowerCase();
-    const viewTvNormal = document.getElementById('view-tv').classList.contains('active');
-    const divPastas = viewTvNormal ? document.getElementById('conteudo-tv') : document.getElementById('conteudo-iptv-tv');
-    const divResultados = viewTvNormal ? document.getElementById('resultados-tv') : document.getElementById('resultados-iptv-tv');
+    const divPastas = document.getElementById('conteudo-iptv-tv');
+    const divResultados = document.getElementById('resultados-iptv-tv');
     
     if(query.length < 3) { divPastas.style.display = 'block'; divResultados.style.display = 'none'; return; }
     divPastas.style.display = 'none'; divResultados.style.display = 'grid';
@@ -931,28 +941,83 @@ async function pesquisarTV() {
     }, 800);
 }
 
-// ===================== EVENTOS FINAIS =====================
+// ===================== GESTOS E EVENTOS (CORRIGIDO) =====================
+function handleTouchStart(e) {
+    touchStartY = e.changedTouches[0].screenY;
+    touchStartX = e.changedTouches[0].screenX;
+}
+function handleTouchEnd(e) {
+    const touchEndY = e.changedTouches[0].screenY;
+    const touchEndX = e.changedTouches[0].screenX;
+    const deltaY = touchEndY - touchStartY;
+    const deltaX = touchEndX - touchStartX;
+    
+    // Swipe down para fechar modais (mais de 100px para baixo)
+    if(deltaY > 100 && Math.abs(deltaX) < 50) {
+        const trailer = document.getElementById('trailerModal');
+        const embed = document.getElementById('embedModal');
+        if(trailer.style.display === 'flex') fecharTrailer();
+        if(embed.style.display === 'flex') fecharEmbedWeb();
+    }
+}
+
 window.addEventListener('popstate', function(event) {
-    if(document.getElementById('adBlockModal').style.display === 'flex') { mostrarToast("Assista ao anúncio."); history.pushState({ view: 'adblock' }, null, ""); return; }
-    if(event.state && event.state.view === 'vip') { fecharModalVip(); return; }
-    if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); return; } 
-    if(document.getElementById('embedModal').style.display === 'flex') { fecharEmbedWeb(); return; } 
-    if(document.getElementById('serverModal').classList.contains('active')) { fecharMenuServidores(); return; }
-    if(document.getElementById('actorModal').classList.contains('active')) { fecharAtor(); return; } 
-    if(document.getElementById('detailsPage').classList.contains('active')) { fecharDetalhes(); return; } 
-    if(document.getElementById('bottomSheet').classList.contains('active')) { fecharSheetTV(); return; }
-    if(document.getElementById('menuPrincipal').classList.contains('active')) { fecharMenuPrincipal(); return; }
+    // Sistema de pilha: fecha o modal mais recente primeiro
+    const modais = [
+        { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: fecharAdBlock },
+        { id: 'embedModal', check: (el) => el.style.display === 'flex', close: fecharEmbedWeb },
+        { id: 'trailerModal', check: (el) => el.style.display === 'flex', close: fecharTrailer },
+        { id: 'serverModal', check: (el) => el.classList.contains('active'), close: fecharMenuServidores },
+        { id: 'actorModal', check: (el) => el.classList.contains('active'), close: fecharAtor },
+        { id: 'detailsPage', check: (el) => el.classList.contains('active'), close: fecharDetalhes },
+        { id: 'bottomSheet', check: (el) => el.classList.contains('active'), close: fecharSheetTV },
+        { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: fecharMenuPrincipal },
+        { id: 'vipModal', check: (el) => el.style.display === 'flex', close: fecharModalVip }
+    ];
+    
+    for(let modal of modais) {
+        const el = document.getElementById(modal.id);
+        if(el && modal.check(el)) {
+            modal.close();
+            return; // Impede saída do app
+        }
+    }
+    
+    // Se nenhum modal aberto, navega entre views
     if(document.getElementById('view-iptv').classList.contains('active')) {
         document.getElementById('view-iptv').classList.remove('active');
         const mainHeader = document.getElementById('mainHeader');
         if(mainHeader) mainHeader.style.display = 'flex';
-        mudarAba('view-home', document.getElementById('nav-home'), true); return;
+        mudarAba('view-home', document.getElementById('nav-home'), true); 
+        return;
     }
-    if(event.state && event.state.view) { mudarAba(event.state.view, null, true); return; } 
+    
+    if(event.state && event.state.view && event.state.view !== 'view-home') { 
+        mudarAba(event.state.view, null, true); 
+        return; 
+    } 
+    
+    // Se já estamos na home, deixa o Android sair (não impede)
+    if(document.getElementById('view-home').classList.contains('active')) {
+        return; // Permite fechar app
+    }
+    
     mudarAba('view-home', document.getElementById('nav-home'), true);
 });
+
+// Bloqueia saída acidental por swipe do botão físico (Android)
+document.addEventListener('backbutton', function(e) {
+    e.preventDefault();
+    history.back();
+}, false);
 
 window.onload = () => {
     history.replaceState({ view: 'view-home' }, null, "");
     initApp();
 };
+
+// AdBlock modal helpers
+function fecharAdBlock() {
+    document.getElementById('adBlockModal').style.display = 'none';
+    document.body.classList.remove('no-scroll');
+}
