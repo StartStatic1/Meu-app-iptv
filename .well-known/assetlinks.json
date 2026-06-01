@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.itvplay.streamflix",
+    "sha256_cert_fingerprints": ["70:A2:C0:35:09:38:C1:B1:73:7B:62:B7:F3:8E:25:A5:09:98:26:6E:F6:C3:E8:1D:35:BB:03:A5:2B:C4:BC:1A"]
+  }
+}]
