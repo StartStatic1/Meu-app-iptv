@@ -20,40 +20,22 @@ const TMDB_GENRES = {
     ]
 };
 
-// ===================== EMBEDS CONFIG =====================
-const EMBED_CONFIG = {
+// Endpoints embeds atualizados
+const EMBEDS = {
     betterflix: {
         movie: (id) => `https://betterflix.click/api/player?id=${id}&type=movie`,
-        tv: (id, s, e) => `https://betterflix.click/api/player?id=${id}&type=tv&season=${s}&episode=${e}`,
-        channel: (id) => `https://betterflix.click/api/player?id=${id}&type=channel`,
-        name: 'BetterFlix'
+        tv: (id, s, e) => `https://betterflix.click/api/player?id=${id}&type=tv&season=${s}&episode=${e}`
     },
     embedmovies: {
         movie: (id) => `https://myembed.biz/filme/${id}`,
-        tv: (id, s, e) => `https://myembed.biz/serie/${id}/${s}/${e}`,
-        name: 'EmbedMovies'
+        tv: (id, s, e) => `https://myembed.biz/serie/${id}/${s}/${e}`
     },
     embedplayapi: {
         movie: (id) => `https://embedplayapi.top/embed/${id}`,
-        tv: (id, s, e) => `https://embedplayapi.top/embed/${id}/${s}/${e}`,
-        name: 'EmbedPlay'
+        tv: (id, s, e) => `https://embedplayapi.top/embed/${id}/${s}/${e}`
     },
-    megaembed: {
+    megaembedapi: {
         movie: (id) => `https://megaembedapi.site/embed/${id}`,
-        tv: (id, s, e) => `https://megaembedapi.site/embed/${id}/${s}/${e}`,
-        name: 'MegaEmbed'
+        tv: (id, s, e) => `https://megaembedapi.site/embed/${id}/${s}/${e}`
     }
 };
-
-// ===================== ANIME GENRES (Jikan) =====================
-const ANIME_GENRES = [
-    {id:1,name:'Ação'},{id:2,name:'Aventura'},{id:4,name:'Comédia'},{id:8,name:'Drama'},
-    {id:10,name:'Fantasia'},{id:14,name:'Horror'},{id:22,name:'Romance'},{id:24,name:'Sci-Fi'},
-    {id:27,name:'Shounen'},{id:42,name:'Seinen'},{id:25,name:'Shoujo'},{id:36,name:'Slice of Life'}
-];
-
-// ===================== DORAMA COUNTRIES =====================
-const DORAMA_COUNTRIES = [
-    {code:'KR',name:'K-Drama'},{code:'JP',name:'J-Drama'},
-    {code:'CN',name:'C-Drama'},{code:'TW',name:'TW-Drama'}
-];
