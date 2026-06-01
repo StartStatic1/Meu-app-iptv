@@ -1,0 +1,31 @@
+{
+  "name": "StreamFlix",
+  "short_name": "StreamFlix",
+  "description": "O melhor aplicativo de streaming de filmes, séries e TV.",
+  "start_url": "/?source=pwa",
+  "display": "standalone",
+  "background_color": "#040714",
+  "theme_color": "#1a1d29",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "https://via.placeholder.com/192",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "https://via.placeholder.com/512",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Filmes em Alta",
+      "url": "/?view=view-filmes",
+      "description": "Veja os últimos lançamentos"
+    }
+  ]
+}
