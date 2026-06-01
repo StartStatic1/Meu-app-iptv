@@ -361,8 +361,8 @@ async function initApp() {
     verificarStatusVip();
     injetarAnuncios();
     renderGenreChips();
-    carregarContinuarAssistindo();
     try {
+        carregarContinuarAssistindo();
         const [trendingM, trendingS, upcoming] = await Promise.all([
             getTrending('movie', 1), getTrending('tv', 1), getUpcoming(1)
         ]);
