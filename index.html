@@ -186,6 +186,7 @@
     </style>
 <base target="_blank">
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
 
@@ -203,7 +204,7 @@
         <button onclick="aceitarPush()" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Entendi</button>
     </div>
 
-    <!-- NOVO: Modal de bloqueio a cada 10 min para não-VIP -->
+    <!-- Modal de bloqueio a cada 10 min para não-VIP -->
     <div id="adBlockModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:5000; justify-content:center; align-items:center; flex-direction:column; padding:20px; text-align:center;">
         <div style="background:var(--bg-top); padding:30px; border-radius:15px; width:100%; max-width:350px; border:1px solid var(--accent); box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <i class="fas fa-clock" style="font-size:40px; color:var(--accent); margin-bottom:15px;"></i>
@@ -218,9 +219,7 @@
                 <i class="fab fa-telegram"></i> Entrar no Telegram VIP
             </button>
 
-            <button onclick="fecharAdBlock()" style="width:100%; padding:12px; border-radius:8px; background:rgba(255,255,255,0.1); color:#fff; font-weight:700; font-size:12px; border:none; cursor:pointer;">
-                Fechar e Continuar
-            </button>
+            <p style="color:#555; font-size:11px; margin-top:5px;">Você precisa interagir para continuar.</p>
         </div>
     </div>
 
@@ -238,7 +237,6 @@
 
             <hr style="border-color:rgba(255,255,255,0.05); margin-bottom:20px;">
             <p style="color:#8f98b0; font-size:12px; margin-bottom:10px;">Ainda não é VIP?</p>
-            <!-- CORREÇÃO 3: WhatsApp substituído por Telegram -->
             <button onclick="event.stopPropagation(); abrirTelegramVip()" style="width:100%; padding:12px; border-radius:8px; background:#0088cc; color:#fff; font-weight:bold; border:none; cursor:pointer;"><i class="fab fa-telegram"></i> Entrar no Telegram VIP</button>
         </div>
     </div>
@@ -436,9 +434,6 @@
 
         let currentStreamData = {}; 
 
-        // ==========================================
-        // VARIÁVEL GLOBAL DO SUPABASE CORRIGIDA
-        // ==========================================
         let meuSupabase = null;
 
         function getSupabase() {
@@ -450,9 +445,6 @@
             return meuSupabase;
         }
 
-        // ==========================================
-        // SISTEMA VIP (LOGIN E BLOQUEIO DE ADS)
-        // ==========================================
         function abrirModalVip() { 
             document.getElementById('vipModal').style.display = 'flex'; 
             document.body.classList.add('no-scroll');
@@ -465,12 +457,11 @@
             if(history.state && history.state.view === 'vip') history.back();
         }
 
-        // CORREÇÃO 3: WhatsApp removido, Telegram adicionado
+        // CORREÇÃO: window.open com _blank abre FORA do WebView (navegador ou app nativo)
         function abrirTelegramVip() {
-            window.location.href = "https://t.me/streamflixofc";
+            window.open('https://t.me/streamflixofc', '_blank');
         }
 
-        // CORREÇÃO 2: Botão travado no "Verificando..." - garantido que sempre volta ao normal
         async function fazerLoginVip() {
             const email = document.getElementById('vipEmail').value.trim();
             const senha = document.getElementById('vipSenha').value.trim();
@@ -483,7 +474,6 @@
                 return; 
             }
 
-            // Bloqueia botão e mostra loading
             btn.innerText = "Verificando...";
             btn.disabled = true;
             msg.style.display = 'none';
@@ -513,7 +503,6 @@
                 msg.innerText = e.message; 
                 msg.style.display = 'block'; 
             } finally {
-                // SEMPRE restaura o botão, em qualquer cenário
                 btn.innerText = "Entrar na Conta VIP";
                 btn.disabled = false;
             }
@@ -533,10 +522,10 @@
             document.getElementById('btnOpenVip').style.display = isVip ? 'none' : 'block';
         }
 
-        // ==========================================
-        // MONETIZAÇÃO - APENAS PUSH
-        // ==========================================
+        // CORREÇÃO: VIP nunca vê push de anúncios
         function injetarAnuncios() {
+            if(localStorage.getItem('streamflix_vip') === 'true') return;
+
             if(localStorage.getItem('push_accepted') !== 'true') {
                 setTimeout(() => { 
                     const prompt = document.getElementById('pushPromptModal');
@@ -548,59 +537,54 @@
         function aceitarPush() {
             document.getElementById('pushPromptModal').style.display = 'none';
             localStorage.setItem('push_accepted', 'true');
-
-            // Abre o link de anúncio omg10
             window.open('https://omg10.com/4/11081875', '_blank');
-
             mostrarToast("Notificações e Lançamentos ativados!");
         }
 
-        // ==========================================
-        // NOVO: SISTEMA DE POP-UP A CADA 10 MINUTOS
-        // ==========================================
         let adBlockTimer = null;
 
         function iniciarAdBlockTimer() {
-            // Se for VIP, não inicia
             if(localStorage.getItem('streamflix_vip') === 'true') return;
-            // Limpa timer anterior se existir
             if(adBlockTimer) clearTimeout(adBlockTimer);
 
             adBlockTimer = setTimeout(() => {
-                // Verifica novamente se não virou VIP durante a espera
                 if(localStorage.getItem('streamflix_vip') !== 'true') {
                     const modal = document.getElementById('adBlockModal');
                     if(modal) {
                         modal.style.display = 'flex';
                         document.body.classList.add('no-scroll');
+                        // Trava o botão voltar do Android enquanto modal estiver aberto
+                        history.pushState({ view: 'adblock' }, null, "");
                     }
                 }
-            }, 600000); // 600.000 ms = 10 minutos
+            }, 600000);
         }
 
         function fecharAdBlock() {
             const modal = document.getElementById('adBlockModal');
             if(modal) modal.style.display = 'none';
             document.body.classList.remove('no-scroll');
-            // Reinicia o ciclo de 10 minutos
             iniciarAdBlockTimer();
         }
 
         function assistirAnuncioAdBlock() {
-            // Abre o link de anúncio omg10 em nova aba
             window.open('https://omg10.com/4/11081875', '_blank');
             mostrarToast("Anúncio carregado! Obrigado pelo apoio.");
             fecharAdBlock();
         }
 
+        // CORREÇÃO: initApp agora esconde tudo de não-VIP se for VIP
         async function initApp() {
             verificarStatusVip();
             const isVip = localStorage.getItem('streamflix_vip') === 'true';
+
             if(!isVip) { 
                 injetarAnuncios(); 
-                // Inicia o timer de 10 minutos para não-VIP
                 iniciarAdBlockTimer();
-            } 
+            } else {
+                document.getElementById('pushPromptModal').style.display = 'none';
+                document.getElementById('adBlockModal').style.display = 'none';
+            }
 
             try {
                 let htmlConstruido = "";
@@ -808,7 +792,12 @@
             if(idView === 'view-series' && !seriesFoiCarregada) carregarCategoriasMenu('get_series_categories', 'conteudo-aba-series', 'series', 'tv');
 
             if(idView === 'view-historico') carregarHistorico();
-            if(idView === 'view-buscar') document.getElementById('inputBuscaGlobal').focus();
+
+            // CORREÇÃO: pré-carrega banco em background ao entrar na busca (evita travamento no teclado)
+            if(idView === 'view-buscar') {
+                document.getElementById('inputBuscaGlobal').focus();
+                garantirBancoCarregado().catch(()=>{});
+            }
         }
 
         function redirecionarPesquisa(nomeTMDB) {
@@ -941,22 +930,38 @@
             }, 800);
         }
 
+        // CORREÇÃO: pesquisa global com yield para não travar o teclado no celular
+        let timeoutBuscaGlobal = null;
         async function pesquisarGlobal() {
-            clearTimeout(timeoutBusca);
+            clearTimeout(timeoutBuscaGlobal);
             const query = document.getElementById('inputBuscaGlobal').value.toLowerCase();
             const container = document.getElementById('resultados-global');
 
-            if(query.length < 3) { container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras...</p>`; return; }
+            if(query.length < 3) { 
+                container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras...</p>`; 
+                return; 
+            }
 
             container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> A procurar no catálogo...</div>`;
 
-            timeoutBusca = setTimeout(async () => {
+            timeoutBuscaGlobal = setTimeout(async () => {
                 try {
                     await garantirBancoCarregado();
+
+                    // Yield para UI respirar (evita travamento do teclado no celular)
+                    await new Promise(r => setTimeout(r, 10));
+
                     const resFilmes = bancoFilmes.filter(f => f.name && f.name.toLowerCase().includes(query)).slice(0, 30);
+
+                    // Outro yield entre filtros pesados
+                    await new Promise(r => setTimeout(r, 0));
+
                     const resSeries = bancoSeries.filter(s => s.name && s.name.toLowerCase().includes(query)).slice(0, 15);
 
-                    if(resFilmes.length === 0 && resSeries.length === 0) { container.innerHTML = `<p class="loading-text" style="grid-column: span 3;">Nada encontrado.</p>`; return; }
+                    if(resFilmes.length === 0 && resSeries.length === 0) { 
+                        container.innerHTML = `<p class="loading-text" style="grid-column: span 3;">Nada encontrado.</p>`; 
+                        return; 
+                    }
 
                     let html = "";
                     resFilmes.forEach(item => {
@@ -977,7 +982,9 @@
                         </div>`;
                     });
                     container.innerHTML = html;
-                } catch(e) { container.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Erro na busca.</p>`; }
+                } catch(e) { 
+                    container.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Erro na busca.</p>`; 
+                }
             }, 800);
         }
 
@@ -1372,7 +1379,14 @@
             }
         }
 
+        // CORREÇÃO: popstate agora trava back button quando AdBlockModal está aberto
         window.addEventListener('popstate', function(event) {
+            if(document.getElementById('adBlockModal').style.display === 'flex') {
+                mostrarToast("Assista ao anúncio ou entre no VIP para continuar.");
+                history.pushState({ view: 'adblock' }, null, "");
+                return;
+            }
+
             if(event.state && event.state.view === 'vip') { fecharModalVip(); return; }
             if(document.getElementById('trailerModal').style.display === 'flex') { fecharTrailer(); return; } 
             if (document.getElementById('embedModal').style.display === 'flex') { fecharEmbedWeb(); return; } 
