@@ -251,8 +251,18 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 .trailer-close { position: absolute; top: 15px; right: 15px; color: #fff; font-size: 28px; cursor: pointer; padding: 15px; z-index: 4502; text-shadow: 0 0 10px #000; background: rgba(0,0,0,0.4); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
 .trailer-frame { width: 100%; height: 100%; background: #000; border: none; pointer-events: auto; }
 
-.embed-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 3800; display: none; overflow: hidden; }
-.embed-frame { width: 100%; height: 100%; background: #000; border: none; z-index: 3801; pointer-events: auto; }
+.embed-modal { 
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+    background: #000; z-index: 3800; display: none; 
+    align-items: center; justify-content: center; /* Centraliza o player */
+    overflow: hidden; 
+}
+.embed-frame { 
+    width: 100% !important; 
+    height: auto !important; 
+    aspect-ratio: 16/9; /* Mantém proporção de TV/Mobile */
+    background: #000; border: none; z-index: 3801; pointer-events: auto; 
+}
 
 .trailer-frame, .embed-frame {
     -webkit-user-drag: none;
