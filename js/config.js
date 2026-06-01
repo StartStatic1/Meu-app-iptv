@@ -1,8 +1,7 @@
-// ===================== CONFIG =====================
+// ===================== CONFIGURACOES =====================
 const TMDB_API_KEY = '46230929e061f1d2f3df518aed983e08';
 const TMDB_IMG = 'https://image.tmdb.org/t/p';
 
-// Gêneros TMDB (pt-BR)
 const TMDB_GENRES = {
     movie: [
         {id:28,name:'Ação'},{id:12,name:'Aventura'},{id:16,name:'Animação'},{id:35,name:'Comédia'},
