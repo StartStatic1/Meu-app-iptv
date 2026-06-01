@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-    <!-- PWA REQUIRED TAGS -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1a1d29">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -20,23 +19,19 @@
 
     <div id="toast-msg"></div>
 
-    <!-- OVERLAY UNIVERSAL -->
     <div class="bottom-sheet-overlay" id="sheetOverlay" onclick="fecharTodosOverlays()"></div>
 
-    <!-- CABEÇALHO -->
     <div class="header" id="mainHeader">
         <h1 class="header-logo">Stream<span>Flix</span></h1>
         <i class="fas fa-crown header-btn header-vip-btn" id="btnOpenVip" onclick="abrirModalVip()"></i>
     </div>
 
-    <!-- PUSH PROMPT -->
     <div id="pushPromptModal" style="display:none; position:fixed; bottom:80px; left:5%; width:90%; background:linear-gradient(45deg, #00e5ff, #0055ff); padding:15px; border-radius:12px; z-index:4000; box-shadow:0 5px 15px rgba(0,229,255,0.4); text-align:center;">
         <h3 style="margin:0 0 5px; color:#fff; font-size:16px;"><i class="fas fa-bell" style="color:gold;"></i> Lançamentos Exclusivos</h3>
         <p style="margin:0 0 10px; color:#fff; font-size:12px;">Ative as notificações para ser avisado quando novos filmes chegarem!</p>
         <button onclick="aceitarPush()" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Ativar Agora</button>
     </div>
 
-    <!-- MODAL VIP -->
     <div class="embed-modal" id="vipModal" style="padding:20px; align-items:center; z-index:3900; background: rgba(0,0,0,0.95); display:none;" onclick="if(event.target === this) fecharModalVip()">
         <div style="background:var(--bg-top); padding:25px; border-radius:15px; width:100%; max-width:350px; text-align:center; border: 1px solid gold; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <i class="fas fa-times" onclick="event.stopPropagation(); fecharModalVip()" style="position:absolute; right:15px; top:15px; color:#fff; font-size:20px; cursor:pointer; padding:10px;"></i>
@@ -50,7 +45,6 @@
         </div>
     </div>
 
-    <!-- VIEW HOME -->
     <div id="view-home" class="view active" style="padding-top: 60px;">
         <div id="loading-state">
             <div class="skeleton skel-hero"></div>
@@ -73,7 +67,6 @@
         </div>
     </div>
 
-    <!-- VIEW HISTÓRICO -->
     <div id="view-historico" class="view" style="padding-top: 60px;">
         <div class="page-header" style="padding-top: 20px;">
             <i class="fas fa-arrow-left" onclick="history.back()"></i>
@@ -82,7 +75,6 @@
         <div class="grid-container" id="conteudo-historico"></div>
     </div>
 
-    <!-- VIEW GRADE -->
     <div id="view-grade" class="view">
         <div class="page-header">
             <i class="fas fa-arrow-left" onclick="history.back()"></i>
@@ -91,7 +83,6 @@
         <div class="grid-container" id="conteudo-grade"></div>
     </div>
 
-    <!-- VIEW BUSCA -->
     <div id="view-buscar" class="view">
         <div class="search-container" style="margin-top: 80px;">
             <i class="fas fa-search search-icon"></i>
@@ -111,7 +102,6 @@
         </div>
     </div>
 
-    <!-- VIEW IPTV -->
     <div id="view-iptv" class="view">
         <div class="iptv-header">
             <div class="page-header" style="padding-top:20px; background:none;">
@@ -133,21 +123,29 @@
         </div>
     </div>
 
-    <!-- BOTTOM NAV -->
+    <div id="view-superflix" class="view" style="padding-top: 60px;">
+        <div class="page-header" style="padding-top: 20px;">
+            <i class="fas fa-arrow-left" onclick="history.back()"></i>
+            <h2 class="page-title" style="color: var(--accent);" id="titulo-superflix">Animes</h2>
+        </div>
+        <div class="search-container" style="margin: 15px auto;">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="search-bar" id="inputBuscaSuperFlix" placeholder="Buscar..." oninput="pesquisarSuperFlix()">
+        </div>
+        <div class="genre-chips" id="genreChipsSuperFlix"></div>
+        <div class="grid-container" id="conteudo-superflix"></div>
+    </div>
+
     <div class="bottom-nav" id="bottomNav">
         <div class="nav-item active" id="nav-home" onclick="mudarAba('view-home', this)"><i class="fas fa-home"></i><span>Início</span></div>
         <div class="nav-item" id="nav-buscar" onclick="mudarAba('view-buscar', this)"><i class="fas fa-search"></i><span>Buscar</span></div>
         <div class="nav-item" id="nav-menu" onclick="abrirMenuPrincipal()"><i class="fas fa-bars"></i><span>Menu</span></div>
     </div>
 
-    <!-- ==========================================
-         MENU PRINCIPAL REDESENHADO (V2.3)
-         ========================================== -->
     <div class="bottom-sheet-overlay" id="menuOverlay" onclick="fecharMenuPrincipal()"></div>
     <div class="bottom-sheet" id="menuPrincipal">
         <div class="sheet-handle" onclick="fecharMenuPrincipal()"></div>
 
-        <!-- Header do Menu -->
         <div class="menu-header">
             <div class="menu-avatar"><i class="fas fa-user"></i></div>
             <div class="menu-user-info">
@@ -156,7 +154,6 @@
             </div>
         </div>
 
-        <!-- Seção: Minha Lista -->
         <div class="menu-section">
             <div class="menu-section-title"><i class="fas fa-bookmark"></i> Minha Lista</div>
             <div class="menu-grid">
@@ -175,7 +172,6 @@
             </div>
         </div>
 
-        <!-- Seção: Explorar -->
         <div class="menu-section">
             <div class="menu-section-title"><i class="fas fa-compass"></i> Explorar</div>
             <div class="menu-grid">
@@ -191,10 +187,21 @@
                     </div>
                     <span>Buscar</span>
                 </div>
+                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); abrirSuperFlix('animes');">
+                    <div class="menu-icon-box" style="background: linear-gradient(135deg, #f50057, #ff4081);">
+                        <i class="fas fa-dragon"></i>
+                    </div>
+                    <span>Animes</span>
+                </div>
+                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); abrirSuperFlix('dorama');">
+                    <div class="menu-icon-box" style="background: linear-gradient(135deg, #00b0ff, #00e5ff);">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <span>Doramas</span>
+                </div>
             </div>
         </div>
 
-        <!-- Seção: Conta -->
         <div class="menu-section">
             <div class="menu-section-title"><i class="fas fa-cog"></i> Conta</div>
             <div class="menu-list">
@@ -209,7 +216,6 @@
             </div>
         </div>
 
-        <!-- Seção: Comunidade -->
         <div class="menu-section">
             <div class="menu-section-title"><i class="fas fa-users"></i> Comunidade</div>
             <div class="menu-list">
@@ -235,7 +241,6 @@
         <div class="menu-footer">StreamFlix v2.3</div>
     </div>
 
-    <!-- MODAL SERVIDORES -->
     <div class="server-modal" id="serverModal">
         <div class="sheet-handle" onclick="fecharMenuServidores()"></div>
         <div class="server-title">Escolha um Servidor</div>
@@ -245,13 +250,13 @@
             <i class="fas fa-play" style="font-size:10px; color:#fff;"></i>
         </div>
 
+        <div class="server-btn em" onclick="abrirPlayerWeb('superflix')"><div><i class="fas fa-play-circle" style="color:#b388ff;"></i> &nbsp; Servidor SuperFlix (Novo)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-btn em" onclick="abrirPlayerWeb('embedmovies')"><div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; Servidor Web 1 (Legendado/Dub)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-btn ep" onclick="abrirPlayerWeb('embedplayapi')"><div><i class="fas fa-play-circle" style="color:#00e676;"></i> &nbsp; Servidor Web 2 (Dublado)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-btn bf" onclick="abrirPlayerWeb('betterflix')"><div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; Servidor Web 3 (Rápido)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-warn">* Os Servidores Web podem conter pop-ups. Para experiência livre, use o Servidor App.</div>
     </div>
 
-    <!-- BOTTOM SHEET TV -->
     <div class="bottom-sheet" id="bottomSheet">
         <div class="sheet-handle" onclick="fecharSheetTV()"></div>
         <div class="card-badges" id="tvBadges" style="position: relative; left:0; top:0; flex-direction: row; margin-bottom:10px;"></div>
@@ -259,7 +264,6 @@
         <button class="sheet-btn" id="btnPlayTV"><i class="fas fa-play"></i> Assistir Agora</button>
     </div>
 
-    <!-- DETALHES TMDB -->
     <div class="details-page" id="detailsPage">
         <button class="dp-back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
         <div class="dp-poster" id="dpPoster" style="background-image: url('');"><div class="dp-gradient"></div></div>
@@ -297,7 +301,6 @@
         </div>
     </div>
 
-    <!-- ATOR -->
     <div class="actor-modal" id="actorModal">
         <button class="dp-back-btn" style="position: fixed;" onclick="history.back()"><i class="fas fa-arrow-down"></i></button>
         <div class="actor-header">
@@ -315,28 +318,24 @@
         </div>
     </div>
 
-    <!-- TRAILER -->
     <div class="trailer-modal" id="trailerModal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)">
         <i class="fas fa-times trailer-close" onclick="fecharTrailer()"></i>
         <div class="swipe-indicator" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; z-index:4503;"></div>
         <iframe id="trailerFrame" class="trailer-frame" allowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-presentation"></iframe>
     </div>
 
-    <!-- EMBED WEB -->
     <div class="embed-modal" id="embedModal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)">
         <i class="fas fa-times trailer-close" onclick="fecharEmbedWeb()"></i>
         <div class="swipe-indicator" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; z-index:4503;"></div>
-        <iframe id="embedFrame" class="embed-frame" allow="fullscreen; autoplay; encrypted-media; picture-in-picture" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe>
+        <iframe id="embedFrame" class="embed-frame" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *; accelerometer *; gyroscope *; web-share *" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-forms allow-presentation allow-popups allow-popups-to-escape-sandbox"></iframe>
     </div>
 
-    <!-- AD BLOCK MODAL -->
     <div class="embed-modal" id="adBlockModal" style="z-index:5000; display:none; background:rgba(0,0,0,0.95); padding:20px; text-align:center; align-items:center; justify-content:center; flex-direction:column;">
         <h2 style="color:#fff; margin-bottom:10px;"><i class="fas fa-ad" style="color:gold;"></i> Apoie o StreamFlix</h2>
         <p style="color:#ccc; font-size:14px; max-width:300px; margin-bottom:20px;">Assista ao anúncio para liberar o player. Isso mantém o app gratuito!</p>
         <button onclick="fecharAdBlock()" style="background:var(--accent); color:#000; border:none; padding:12px 30px; border-radius:8px; font-weight:900; font-size:14px; cursor:pointer;">Já Assisti / Fechar</button>
     </div>
 
-    <!-- Script PWA Registration -->
     <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
