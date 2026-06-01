@@ -1025,9 +1025,15 @@ function handleTouchEnd(e) {
 }
 
 window.addEventListener('popstate', function(event) {
+    // BUG FIX 4: Embed verificado PRIMEIRO (mais prioritário)
+    const embedModal = document.getElementById('embedModal');
+    if(embedModal && embedModal.style.display === 'flex') {
+        fecharEmbedWeb();
+        return; 
+    }
+
     const modais = [
         { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: fecharAdBlock },
-        { id: 'embedModal', check: (el) => el.style.display === 'flex', close: fecharEmbedWeb },
         { id: 'trailerModal', check: (el) => el.style.display === 'flex', close: fecharTrailer },
         { id: 'serverModal', check: (el) => el.classList.contains('active'), close: fecharMenuServidores },
         { id: 'actorModal', check: (el) => el.classList.contains('active'), close: fecharAtor },
