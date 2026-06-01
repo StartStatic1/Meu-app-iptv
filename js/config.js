@@ -1,8 +1,6 @@
 // ===================== CONFIGURACOES =====================
 const TMDB_API_KEY = '46230929e061f1d2f3df518aed983e08';
-const TMDB_API_KEY_FALLBACK = '072730d77b46330bda51e5fcaac85d75';
 const TMDB_IMG = 'https://image.tmdb.org/t/p';
-const WATCHMODE_API_KEY = 'gwOmzXcaSHNcNTFVo6pDCEogdkkwgSyumajryJV8';
 
 const TMDB_GENRES = {
     movie: [
@@ -18,24 +16,4 @@ const TMDB_GENRES = {
         {id:9648,name:'Mistério'},{id:10763,name:'Notícias'},{id:10764,name:'Reality'},{id:10765,name:'Sci-Fi & Fantasia'},
         {id:10766,name:'Novela'},{id:10767,name:'Talk Show'},{id:10768,name:'Guerra & Política'},{id:37,name:'Faroeste'}
     ]
-};
-
-// Endpoints embeds atualizados
-const EMBEDS = {
-    betterflix: {
-        movie: (id) => `https://betterflix.click/api/player?id=${id}&type=movie`,
-        tv: (id, s, e) => `https://betterflix.click/api/player?id=${id}&type=tv&season=${s}&episode=${e}`
-    },
-    embedmovies: {
-        movie: (id) => `https://myembed.biz/filme/${id}`,
-        tv: (id, s, e) => `https://myembed.biz/serie/${id}/${s}/${e}`
-    },
-    embedplayapi: {
-        movie: (id) => `https://embedplayapi.top/embed/${id}`,
-        tv: (id, s, e) => `https://embedplayapi.top/embed/${id}/${s}/${e}`
-    },
-    megaembedapi: {
-        movie: (id) => `https://megaembedapi.site/embed/${id}`,
-        tv: (id, s, e) => `https://megaembedapi.site/embed/${id}/${s}/${e}`
-    }
 };

@@ -17,6 +17,7 @@ let bancoFilmes = null;
 let bancoSeries = null;
 let bancoTV = null;
 let iptvCarregado = { filmes: false, series: false, tv: false };
+let adsInjetados = false;
 
 // Touch gesture vars
 let touchStartY = 0;
@@ -29,6 +30,7 @@ function getSupabase() {
     }
     return meuSupabase;
 }
+function isVip() { return localStorage.getItem('streamflix_vip') === 'true'; }
 function abrirModalVip() { 
     document.getElementById('vipModal').style.display = 'flex'; 
     document.body.classList.add('no-scroll');
@@ -40,7 +42,6 @@ function fecharModalVip() {
     if(history.state && history.state.view === 'vip') history.back();
 }
 function abrirTelegramVip() {
-    // CORREÇÃO: Usar HTTPS em vez de tg:// para funcionar na WebView
     let a = document.createElement('a');
     a.href = 'https://t.me/streamflixofc';
     a.target = '_blank';
@@ -54,66 +55,119 @@ async function fazerLoginVip() {
     const senha = document.getElementById('vipSenha').value.trim();
     const btn = document.getElementById('btnLoginBtn');
     const msg = document.getElementById('vipMsg');
-    
+
     if(!email || !senha) { msg.innerText = "Preencha os campos."; msg.style.display = 'block'; return; }
     btn.innerText = "Verificando..."; btn.disabled = true; msg.style.display = 'none';
-    
+
     try {
         const supa = getSupabase(); 
         const { data, error } = await supa.from('streamflix_users').select('*').eq('email', email).eq('senha', senha);
         if(error) throw error;
         if(data && data.length > 0) {
             if(data[0].status === 'VIP') {
-                localStorage.setItem('streamflix_vip', 'true');
-                mostrarToast("Bem-vindo! Anúncios desativados.");
-                setTimeout(() => location.reload(), 1500);
+                desativarTodosAds();
             } else { msg.innerText = "Sua conta não tem status VIP."; msg.style.display = 'block'; }
         } else { msg.innerText = "E-mail ou senha incorretos."; msg.style.display = 'block'; }
     } catch(e) { msg.innerText = e.message; msg.style.display = 'block'; }
     finally { btn.innerText = "Entrar na Conta VIP"; btn.disabled = false; }
 }
 function verificarStatusVip() {
-    const isVip = localStorage.getItem('streamflix_vip') === 'true';
     const btnVip = document.getElementById('btnOpenVip');
-    if(btnVip) btnVip.style.display = isVip ? 'none' : 'block';
-}
-
-// ===================== ANÚNCIOS (CORRIGIDO) =====================
-function injetarAnuncios() {
-    if(localStorage.getItem('streamflix_vip') === 'true') return;
-    if(localStorage.getItem('push_accepted') !== 'true') {
-        setTimeout(() => { const prompt = document.getElementById('pushPromptModal'); if(prompt) prompt.style.display = 'block'; }, 3000);
-    } else {
-        injetarOnClick();
+    if(btnVip) {
+        // Se VIP, esconde o botão. Se não VIP, mostra (display: block ou flex)
+        btnVip.style.display = isVip() ? 'none' : 'block';
+    }
+    // Atualiza status no menu também
+    const menuVipStatus = document.getElementById('menuVipStatus');
+    if(menuVipStatus) {
+        if(isVip()) {
+            menuVipStatus.innerHTML = '<i class="fas fa-crown" style="color:gold"></i> VIP Ativo';
+        } else {
+            menuVipStatus.innerHTML = '<i class="fas fa-gem" style="color:var(--accent)"></i> Gratuito';
+        }
     }
 }
+
+// ===================== ADS DESATIVAÇÃO VIP =====================
+function desativarTodosAds() {
+    // Remove todos os scripts de ads do DOM
+    const scripts = document.querySelectorAll('script');
+    scripts.forEach(s => {
+        const src = s.src || '';
+        if(src.includes('5gvci.com') || src.includes('al5sm.com') || src.includes('tag.min.js') || src.includes('omg10.com')) {
+            s.remove();
+        }
+    });
+    // Limpa flag e seta VIP
+    localStorage.setItem('streamflix_vip', 'true');
+    localStorage.setItem('push_accepted', 'false');
+    // Esconde prompt
+    const pushPrompt = document.getElementById('pushPromptModal');
+    if(pushPrompt) pushPrompt.style.display = 'none';
+    // Reload para matar tudo
+    mostrarToast("VIP Ativado! Anúncios removidos.");
+    setTimeout(() => location.reload(), 1500);
+}
+
+// ===================== ANÚNCIOS (COMPLETO + VIP BLOCK) =====================
+function injetarAnuncios() {
+    if(isVip()) return; // VIP = ZERO ADS
+    if(adsInjetados) return;
+
+    // Se ainda não aceitou push, mostra prompt bonito
+    if(localStorage.getItem('push_accepted') !== 'true') {
+        setTimeout(() => { 
+            const prompt = document.getElementById('pushPromptModal'); 
+            if(prompt) prompt.style.display = 'block'; 
+        }, 2500);
+    } else {
+        ativarTodosAds();
+    }
+}
+
 function aceitarPush() {
     document.getElementById('pushPromptModal').style.display = 'none';
     localStorage.setItem('push_accepted', 'true');
-    injetarOnClick();
+    ativarTodosAds();
     mostrarToast("Notificações ativadas!");
 }
-function injetarOnClick() {
-    if (document.getElementById('script-onclick-monetag')) return;
-    const s = document.createElement('script');
-    s.id = 'script-onclick-monetag';
-    s.async = true;
-    s.setAttribute('data-zone', '11081852');
-    s.src = 'https://al5sm.com/tag.min.js';
-    document.head.appendChild(s);
+
+function ativarTodosAds() {
+    if(isVip() || adsInjetados) return;
+    adsInjetados = true;
+
+    // 1. Push Notification z=11081861
+    const s1 = document.createElement('script');
+    s1.src = 'https://5gvci.com/act/files/tag.min.js?z=11081861';
+    s1.setAttribute('data-cfasync', 'false');
+    s1.async = true;
+    document.head.appendChild(s1);
+
+    // 2. Push Notification z=11081853
+    const s2 = document.createElement('script');
+    s2.src = 'https://5gvci.com/act/files/tag.min.js?z=11081853';
+    s2.setAttribute('data-cfasync', 'false');
+    s2.async = true;
+    document.head.appendChild(s2);
+
+    // 3. OnClick z=11081852
+    const s3 = document.createElement('script');
+    s3.dataset.zone = '11081852';
+    s3.src = 'https://al5sm.com/tag.min.js';
+    s3.async = true;
+    document.head.appendChild(s3);
 }
+
 function dispararDirectLink() {
-    const isVip = localStorage.getItem('streamflix_vip') === 'true';
-    if(!isVip) {
-        // Abre em nova aba SEM quebrar o history do app
-        let a = document.createElement('a');
-        a.href = 'https://omg10.com/4/11081875';
-        a.target = '_blank';
-        a.rel = 'noopener noreferrer';
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-    }
+    if(isVip()) return;
+    // Abre em nova aba sem quebrar history do app PWA
+    let a = document.createElement('a');
+    a.href = 'https://omg10.com/4/11081875';
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 
 // ===================== UTILS =====================
@@ -179,8 +233,7 @@ function gerarHTMLBadges(tagsStr) {
 }
 
 // ===================== TMDB =====================
-async function tmdbFetch(endpoint, useFallback = false) {
-    const key = useFallback ? TMDB_API_KEY_FALLBACK : TMDB_API_KEY;
+async function tmdbFetch(endpoint) {
     const cacheKey = 'tmdb_' + endpoint.replace(/\?/g,'_').replace(/&/g,'_').replace(/=/g,'_');
     const cached = localStorage.getItem(cacheKey);
     if(cached) {
@@ -191,14 +244,11 @@ async function tmdbFetch(endpoint, useFallback = false) {
         } catch(e){}
     }
     try {
-        const res = await fetch(`https://api.themoviedb.org/3${endpoint}&api_key=${key}&language=pt-BR`);
+        const res = await fetch(`https://api.themoviedb.org/3${endpoint}&api_key=${TMDB_API_KEY}&language=pt-BR`);
         const data = await res.json();
         localStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
         return data;
-    } catch(e) { 
-        if(!useFallback) return tmdbFetch(endpoint, true);
-        return { results: [] }; 
-    }
+    } catch(e) { return { results: [] }; }
 }
 function getTrending(type='movie', page=1) { return tmdbFetch(`/trending/${type}/week?page=${page}`); }
 function getDetails(id, type='movie') { return tmdbFetch(`/${type}/${id}?append_to_response=credits,videos,recommendations`); }
@@ -238,7 +288,6 @@ async function initApp() {
     verificarStatusVip();
     injetarAnuncios(); 
     renderGenreChips();
-    renderContinueWatching();
 
     try {
         const [trendingM, trendingS, upcoming] = await Promise.all([
@@ -253,7 +302,7 @@ async function initApp() {
 
         const loadingState = document.getElementById('loading-state');
         if(loadingState) loadingState.style.display = 'none';
-        
+
         const conteudoReal = document.getElementById('conteudo-real');
         if(conteudoReal) conteudoReal.style.display = 'block';
 
@@ -292,8 +341,8 @@ function atualizarHero() {
     const title = f.title || f.name || 'Carregando...';
     const backdrop = f.backdrop_path ? `${TMDB_IMG}/w1280${f.backdrop_path}` : (f.poster_path ? `${TMDB_IMG}/w780${f.poster_path}` : '');
     const tags = [];
-    
-    if(f.vote_average) tags.push(`<<i class="fas fa-star" style="color:gold;"></i> ${f.vote_average.toFixed(1)}`);
+
+    if(f.vote_average) tags.push(`<i class="fas fa-star" style="color:gold;"></i> ${f.vote_average.toFixed(1)}`);
     if(f.release_date) tags.push(f.release_date.substring(0,4));
     else if(f.first_air_date) tags.push(f.first_air_date.substring(0,4));
     if(f.media_type === 'tv' || f.first_air_date) tags.push('SÉRIE'); else tags.push('FILME');
@@ -301,7 +350,7 @@ function atualizarHero() {
     document.getElementById('heroBanner').style.backgroundImage = `url('${backdrop}')`;
     document.getElementById('heroTitle').innerText = title;
     document.getElementById('heroTags').innerHTML = tags.join(' <span style="color:#555;">|</span> ');
-    
+
     const synopsisEl = document.getElementById('heroSynopsis');
     if(synopsisEl) synopsisEl.innerText = f.overview ? f.overview : "Sinopse não disponível.";
 }
@@ -492,7 +541,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     } catch(err) { document.getElementById('dpSynopsis').innerText = "Erro ao carregar detalhes."; }
 }
 
-// ===================== MENUS E REPRODUÇÃO (CORRIGIDO) =====================
+// ===================== MENUS E REPRODUÇÃO =====================
 function abrirMenuServidoresDetalhes() {
     const btnNativo = document.getElementById('btnServerNativo');
     if (btnNativo) {
@@ -513,13 +562,13 @@ async function buscarEReproduzirNativo(title, type) {
         const res = await fetch(`/api/iptv?action=${action}`);
         const data = await res.json();
         const termo = title.toLowerCase();
-        
+
         const match = data.find(item => (item.name || '').toLowerCase().includes(termo));
         if(match) {
             const isVod = type !== 'tv';
             const streamId = isVod ? match.stream_id : match.series_id;
             const ext = match.container_extension || 'mp4';
-            
+
             if(isVod) {
                 dispararPlayer(streamId, 'vod', ext, title);
             } else {
@@ -542,8 +591,7 @@ async function buscarEReproduzirNativo(title, type) {
 
 function abrirPlayerWeb(servidor) {
     if(!currentTmdbId) return;
-    
-    // Fecha modal de servidores SEM history.back
+
     fecharMenuServidores();
 
     const modal = document.getElementById('embedModal');
@@ -559,11 +607,9 @@ function abrirPlayerWeb(servidor) {
         if(currentItemType === 'movie') finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}`;
         else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
     }
-    
-    // Abre AD em nova aba (não quebra app)
+
     dispararDirectLink();
-    
-    // Delay para WebView processar
+
     setTimeout(() => {
         frame.src = finalUrl;
         modal.style.display = 'flex';
@@ -610,7 +656,7 @@ function carregarHistorico() {
     const listFavs = getFavList();
     const itemsVistos = Object.values(listVistos).reverse();
     const itemsFavs = Object.values(listFavs).reverse();
-    
+
     let html = "";
     if(itemsFavs.length > 0) {
         html += `<h3 style="color:#fff; padding-left:15px; margin-top:0;"><i class="fas fa-heart" style="color:#e91e63;"></i> Favoritos</h3>`;
@@ -631,7 +677,7 @@ function carregarHistorico() {
             </div>`;
         });
     }
-    
+
     if(html === "") html = `<p class="loading-text" style="grid-column: span 3; margin-top:30px;">Ainda não marcou nada.</p>`;
     const container = document.getElementById('conteudo-historico');
     if(container) container.innerHTML = html;
@@ -652,12 +698,8 @@ async function abrirAtor(atorId) {
     history.pushState({ view: 'actor', modal: true }, null, "");
     try {
         const pRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}?api_key=${TMDB_API_KEY}&language=pt-BR`);
-        let pData = await pRes.json();
-        if(!pData || pData.success === false) {
-            const pRes2 = await fetch(`https://api.themoviedb.org/3/person/${atorId}?api_key=${TMDB_API_KEY_FALLBACK}&language=pt-BR`);
-            pData = await pRes2.json();
-        }
-        document.getElementById('actorName').innerText = pData.name || "Nome indisponível";
+        const pData = await pRes.json();
+        document.getElementById('actorName').innerText = pData.name;
         document.getElementById('actorImg').src = pData.profile_path ? `${TMDB_IMG}/w300${pData.profile_path}` : 'https://via.placeholder.com/150';
         let idade = "";
         if(pData.birthday) { const nasc = new Date(pData.birthday); const ageDifMs = Date.now() - nasc.getTime(); const ageDate = new Date(ageDifMs); idade = ` • ${Math.abs(ageDate.getUTCFullYear() - 1970)} anos`; }
@@ -665,38 +707,29 @@ async function abrirAtor(atorId) {
         document.getElementById('actorPlace').innerText = pData.place_of_birth || "";
         document.getElementById('actorBio').innerText = pData.biography || "Biografia indisponível.";
         const cRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}/combined_credits?api_key=${TMDB_API_KEY}&language=pt-BR`);
-        let cData = await cRes.json();
-        if(!cData || !cData.cast || cData.cast.length === 0) {
-            const cRes2 = await fetch(`https://api.themoviedb.org/3/person/${atorId}/combined_credits?api_key=${TMDB_API_KEY_FALLBACK}&language=pt-BR`);
-            cData = await cRes2.json();
-        }
+        const cData = await cRes.json();
         if(cData.cast && cData.cast.length > 0) {
-            const obras = cData.cast.sort((a,b) => b.popularity - a.popularity).slice(0, 50);
+            const obras = cData.cast.sort((a,b) => b.popularity - a.popularity).slice(0, 20);
             document.getElementById('actorCredits').innerHTML = renderGrid(obras, 'movie');
         } else { document.getElementById('actorCredits').innerHTML = "Nenhuma obra encontrada."; }
-    } catch(e) { 
-        document.getElementById('actorBio').innerText = "Erro ao carregar dados.";
-        try {
-            const wRes = await fetch(`https://api.watchmode.com/v1/person/${atorId}/?apiKey=${WATCHMODE_API_KEY}`);
-            const wData = await wRes.json();
-            if(wData.name) {
-                document.getElementById('actorName').innerText = wData.name;
-                document.getElementById('actorBio').innerText = wData.bio || "Biografia indisponível.";
-            }
-        } catch(wErr) {}
-    }
+    } catch(e) { document.getElementById('actorBio').innerText = "Erro ao carregar dados."; }
 }
 
+// ===================== TRAILER / EMBED (CORRIGIDO: MATA ÁUDIO) =====================
 function abrirTrailer() {
     if(!trailerKeyAtivo) return;
-    document.getElementById('trailerFrame').src = `https://www.youtube.com/embed/${trailerKeyAtivo}?autoplay=1&rel=0`;
+    const frame = document.getElementById('trailerFrame');
+    frame.src = `https://www.youtube.com/embed/${trailerKeyAtivo}?autoplay=1&rel=0`;
     document.getElementById('trailerModal').style.display = 'flex';
     document.body.classList.add('no-scroll');
     history.pushState({ view: 'trailer', modal: true }, null, "");
 }
 function fecharTrailer() {
+    const frame = document.getElementById('trailerFrame');
+    // CORREÇÃO: about:blank para matar o player e o áudio em segundo plano
+    frame.src = 'about:blank';
+    setTimeout(() => { frame.src = ''; }, 200);
     document.getElementById('trailerModal').style.display = 'none';
-    document.getElementById('trailerFrame').src = '';
     document.body.classList.remove('no-scroll');
     if(history.state && history.state.view === 'trailer') history.back();
 }
@@ -704,18 +737,13 @@ function fecharMenuServidores() {
     document.getElementById('serverModal').classList.remove('active');
     const overlay = document.getElementById('sheetOverlay');
     if(overlay) overlay.classList.remove('active');
-    // Não dá history.back aqui para evitar loop
 }
 function fecharEmbedWeb() {
-    const modal = document.getElementById('embedModal');
     const frame = document.getElementById('embedFrame');
-    if(document.exitFullscreen) { document.exitFullscreen().catch(() => {}); }
-    else if(document.webkitExitFullscreen) { document.webkitExitFullscreen(); }
-    else if(document.mozCancelFullScreen) { document.mozCancelFullScreen(); }
-    else if(document.msExitFullscreen) { document.msExitFullscreen(); }
-    if(screen.orientation && screen.orientation.unlock) { screen.orientation.unlock(); }
-    modal.style.display = 'none';
-    frame.src = '';
+    // CORREÇÃO: about:blank para matar qualquer mídia rodando no embed
+    frame.src = 'about:blank';
+    setTimeout(() => { frame.src = ''; }, 200);
+    document.getElementById('embedModal').style.display = 'none';
     document.body.classList.remove('no-scroll');
     if(history.state && history.state.view === 'embed') history.back();
 }
@@ -753,7 +781,6 @@ function fecharTodosOverlays() {
 }
 
 async function dispararPlayer(id, tipo, ext, titulo) {
-    // Não dispara AD aqui para não quebrar player nativo
     const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : null;
     if(btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`; btn.disabled = true; }
     try {
@@ -769,11 +796,10 @@ async function dispararPlayer(id, tipo, ext, titulo) {
             const data = await res.json(); urlFinal = data.url;
         }
         if(!urlFinal) throw new Error("Link não retornado.");
-        
-        // Intent para player nativo Android
+
         const urlLimpa = urlFinal.replace(/^https?:\/\//, '');
         const intentUrl = `intent://${urlLimpa}#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end;`;
-        
+
         const a = document.createElement('a');
         a.href = intentUrl;
         a.style.display = 'none';
@@ -785,7 +811,7 @@ async function dispararPlayer(id, tipo, ext, titulo) {
     finally { if(btn) { btn.innerHTML = `<i class="fas fa-play"></i> Assistir Agora`; btn.disabled = false; } }
 }
 
-// ===================== NAVEGAÇÃO E MENU =====================
+// ===================== NAVEGAÇÃO E MENU (REDESENHADO) =====================
 function abrirMenuPrincipal() {
     document.getElementById('menuOverlay').classList.add('active');
     document.getElementById('menuPrincipal').classList.add('active');
@@ -815,7 +841,6 @@ function mudarAba(idView, btn, originHistory = false) {
     if(!originHistory && idView !== 'view-home') history.pushState({ view: idView }, null, "");
     if(idView === 'view-historico') carregarHistorico();
     if(idView === 'view-buscar') { setTimeout(() => document.getElementById('inputBuscaGlobal').focus(), 300); }
-    if(idView === 'view-home') renderContinueWatching();
 }
 
 function entrarModoIPTV() {
@@ -824,7 +849,7 @@ function entrarModoIPTV() {
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
     const mainHeader = document.getElementById('mainHeader');
     if(mainHeader) mainHeader.style.display = 'none';
-    
+
     history.pushState({ view: 'view-iptv' }, null, "");
     carregarIPTFilmes();
 }
@@ -951,11 +976,11 @@ async function pesquisarTV() {
     const query = inputTv.value.toLowerCase();
     const divPastas = document.getElementById('conteudo-iptv-tv');
     const divResultados = document.getElementById('resultados-iptv-tv');
-    
+
     if(query.length < 3) { divPastas.style.display = 'block'; divResultados.style.display = 'none'; return; }
     divPastas.style.display = 'none'; divResultados.style.display = 'grid';
     divResultados.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Buscando...</div>`;
-    
+
     timeoutBuscaTVIPTV = setTimeout(async () => {
         if(!bancoTV) { try { const res = await fetch('/api/iptv?action=get_live_streams'); bancoTV = await res.json(); } catch(e) { return; } }
         const resultados = bancoTV.filter(c => c.name && c.name.toLowerCase().includes(query)).slice(0, 50);
@@ -972,7 +997,7 @@ async function pesquisarTV() {
     }, 800);
 }
 
-// ===================== GESTOS E EVENTOS (CORRIGIDO) =====================
+// ===================== GESTOS E EVENTOS (BACK BUTTON REFORÇADO) =====================
 function handleTouchStart(e) {
     touchStartY = e.changedTouches[0].screenY;
     touchStartX = e.changedTouches[0].screenX;
@@ -982,9 +1007,8 @@ function handleTouchEnd(e) {
     const touchEndX = e.changedTouches[0].screenX;
     const deltaY = touchEndY - touchStartY;
     const deltaX = touchEndX - touchStartX;
-    
-    // Swipe down para fechar modais (mais de 100px para baixo)
-    if(deltaY > 100 && Math.abs(deltaX) < 50) {
+
+    if(deltaY > 120 && Math.abs(deltaX) < 80) {
         const trailer = document.getElementById('trailerModal');
         const embed = document.getElementById('embedModal');
         if(trailer.style.display === 'flex') fecharTrailer();
@@ -993,7 +1017,7 @@ function handleTouchEnd(e) {
 }
 
 window.addEventListener('popstate', function(event) {
-    // Sistema de pilha: fecha o modal mais recente primeiro
+    // Pilha de modais: fecha o mais recente primeiro
     const modais = [
         { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: fecharAdBlock },
         { id: 'embedModal', check: (el) => el.style.display === 'flex', close: fecharEmbedWeb },
@@ -1005,7 +1029,7 @@ window.addEventListener('popstate', function(event) {
         { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: fecharMenuPrincipal },
         { id: 'vipModal', check: (el) => el.style.display === 'flex', close: fecharModalVip }
     ];
-    
+
     for(let modal of modais) {
         const el = document.getElementById(modal.id);
         if(el && modal.check(el)) {
@@ -1013,8 +1037,8 @@ window.addEventListener('popstate', function(event) {
             return; // Impede saída do app
         }
     }
-    
-    // Se nenhum modal aberto, navega entre views
+
+    // Se IPTV aberto, volta para home
     if(document.getElementById('view-iptv').classList.contains('active')) {
         document.getElementById('view-iptv').classList.remove('active');
         const mainHeader = document.getElementById('mainHeader');
@@ -1022,21 +1046,30 @@ window.addEventListener('popstate', function(event) {
         mudarAba('view-home', document.getElementById('nav-home'), true); 
         return;
     }
-    
-    if(event.state && event.state.view && event.state.view !== 'view-home') { 
-        mudarAba(event.state.view, null, true); 
-        return; 
-    } 
-    
-    // Se já estamos na home, deixa o Android sair (não impede)
-    if(document.getElementById('view-home').classList.contains('active')) {
-        return; // Permite fechar app
+
+    // Se view grade aberta, volta para IPTV
+    if(document.getElementById('view-grade').classList.contains('active')) {
+        document.getElementById('view-grade').classList.remove('active');
+        document.getElementById('view-iptv').classList.add('active');
+        return;
     }
-    
+
+    // Se view historico/buscar aberta, volta para home
+    if(document.getElementById('view-historico').classList.contains('active') || 
+       document.getElementById('view-buscar').classList.contains('active')) {
+        mudarAba('view-home', document.getElementById('nav-home'), true); 
+        return;
+    }
+
+    // Se já na home, permite sair do app (não impede)
+    if(document.getElementById('view-home').classList.contains('active')) {
+        return;
+    }
+
     mudarAba('view-home', document.getElementById('nav-home'), true);
 });
 
-// Bloqueia saída acidental por swipe do botão físico (Android)
+// Back button físico Android (PWA/Cordova/WebView)
 document.addEventListener('backbutton', function(e) {
     e.preventDefault();
     history.back();
@@ -1051,202 +1084,4 @@ window.onload = () => {
 function fecharAdBlock() {
     document.getElementById('adBlockModal').style.display = 'none';
     document.body.classList.remove('no-scroll');
-}
-
-
-// ===================== CONTINUAR ASSISTINDO =====================
-function getContinueWatching() { try { return JSON.parse(localStorage.getItem('streamflix_continue')) || []; } catch(e) { return []; } }
-function saveContinueWatching(list) { localStorage.setItem('streamflix_continue', JSON.stringify(list)); }
-function addToContinueWatching(data) {
-    let list = getContinueWatching();
-    list = list.filter(item => item.id !== data.id);
-    list.unshift(data);
-    if(list.length > 10) list = list.slice(0, 10);
-    saveContinueWatching(list);
-}
-function removeFromContinueWatching(id) {
-    let list = getContinueWatching().filter(item => item.id !== id);
-    saveContinueWatching(list);
-    renderContinueWatching();
-}
-function renderContinueWatching() {
-    const container = document.getElementById('continuar-assistindo-container');
-    const listEl = document.getElementById('continuar-assistindo-list');
-    const list = getContinueWatching();
-    if(!list || list.length === 0) { if(container) container.style.display = 'none'; return; }
-    let html = '';
-    list.forEach(item => {
-        const progress = item.progress || 0;
-        const epInfo = item.season ? `S${item.season}E${item.episode}` : '';
-        html += `<div class="continue-watching" onclick="retomarAssistindo('${item.id}', '${item.type}', ${item.season||1}, ${item.episode||1})">
-            <div class="continue-close" onclick="event.stopPropagation(); removeFromContinueWatching('${item.id}')"><i class="fas fa-times"></i></div>
-            <div class="continue-thumb" style="background-image: url('${item.img}');"><div class="continue-play-icon"><i class="fas fa-play"></i></div></div>
-            <div class="continue-info">
-                <div class="continue-title">${esc(item.title)}</div>
-                <div class="continue-meta">${epInfo} ${item.type === 'tv' ? '• Série' : '• Filme'}</div>
-                <div class="continue-progress-bar"><div class="continue-progress-fill" style="width:${progress}%"></div></div>
-            </div>
-        </div>`;
-    });
-    if(listEl) listEl.innerHTML = html;
-    if(container) container.style.display = 'block';
-}
-function retomarAssistindo(tmdbId, type, season, episode) {
-    currentTmdbId = parseInt(tmdbId);
-    currentItemType = type;
-    currentSeason = season;
-    currentEpisode = episode;
-    abrirMenuServidoresDetalhes();
-}
-
-// ===================== FORÇAR FULLSCREEN EMBED =====================
-function forcarFullscreenEmbed() {
-    const modal = document.getElementById('embedModal');
-    const frame = document.getElementById('embedFrame');
-    if(frame.requestFullscreen) { frame.requestFullscreen().catch(() => {}); }
-    else if(frame.webkitRequestFullscreen) { frame.webkitRequestFullscreen(); }
-    else if(frame.mozRequestFullScreen) { frame.mozRequestFullScreen(); }
-    else if(frame.msRequestFullscreen) { frame.msRequestFullscreen(); }
-    if(modal.requestFullscreen) { modal.requestFullscreen().catch(() => {}); }
-    else if(modal.webkitRequestFullscreen) { modal.webkitRequestFullscreen(); }
-    if(screen.orientation && screen.orientation.lock) { screen.orientation.lock('landscape').catch(() => {}); }
-}
-
-// ===================== MODO ANIME (JIKAN API) =====================
-let animeCarregado = { populares: false, temporada: false, acao: false, romance: false, terror: false };
-function entrarModoAnime() {
-    document.getElementById('view-anime').classList.add('active');
-    document.querySelectorAll('.view').forEach(v => { if(v.id !== 'view-anime') v.classList.remove('active'); });
-    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-    const mainHeader = document.getElementById('mainHeader');
-    if(mainHeader) mainHeader.style.display = 'none';
-    history.pushState({ view: 'view-anime' }, null, "");
-    carregarAnimePopulares();
-}
-function mudarAbaAnime(contentId, tabEl) {
-    document.querySelectorAll('.anime-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.anime-content').forEach(c => c.classList.remove('active'));
-    tabEl.classList.add('active');
-    document.getElementById(contentId).classList.add('active');
-    if(contentId === 'anime-populares' && !animeCarregado.populares) carregarAnimePopulares();
-    if(contentId === 'anime-temporada' && !animeCarregado.temporada) carregarAnimeTemporada();
-    if(contentId === 'anime-acao' && !animeCarregado.acao) carregarAnimePorGenero(1, 'acao');
-    if(contentId === 'anime-romance' && !animeCarregado.romance) carregarAnimePorGenero(22, 'romance');
-    if(contentId === 'anime-terror' && !animeCarregado.terror) carregarAnimePorGenero(14, 'terror');
-}
-async function carregarAnimePopulares() {
-    animeCarregado.populares = true;
-    const div = document.getElementById('conteudo-anime-populares');
-    div.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Carregando animes...</p>';
-    try {
-        const res = await fetch('https://api.jikan.moe/v4/top/anime?limit=24');
-        const data = await res.json();
-        div.innerHTML = renderAnimeGrid(data.data || []);
-    } catch(e) { div.innerHTML = '<p class="loading-text">Erro ao carregar animes.</p>'; }
-}
-async function carregarAnimeTemporada() {
-    animeCarregado.temporada = true;
-    const div = document.getElementById('conteudo-anime-temporada');
-    div.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Carregando temporada...</p>';
-    try {
-        const res = await fetch('https://api.jikan.moe/v4/seasons/now?limit=24');
-        const data = await res.json();
-        div.innerHTML = renderAnimeGrid(data.data || []);
-    } catch(e) { div.innerHTML = '<p class="loading-text">Erro ao carregar temporada.</p>'; }
-}
-async function carregarAnimePorGenero(genreId, key) {
-    animeCarregado[key] = true;
-    const div = document.getElementById('conteudo-anime-' + key);
-    div.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Carregando...</p>';
-    try {
-        const res = await fetch(`https://api.jikan.moe/v4/anime?genres=${genreId}&order_by=popularity&limit=24`);
-        const data = await res.json();
-        div.innerHTML = renderAnimeGrid(data.data || []);
-    } catch(e) { div.innerHTML = '<p class="loading-text">Erro ao carregar.</p>'; }
-}
-function renderAnimeGrid(animes) {
-    if(!animes || animes.length === 0) return '<p class="loading-text" style="grid-column:span 3;">Nenhum anime encontrado.</p>';
-    return animes.map(a => {
-        const img = a.images?.jpg?.large_image_url || a.images?.jpg?.image_url || 'https://via.placeholder.com/220x330/111/fff';
-        const nota = a.score ? `<span style="position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.7); color:gold; font-size:10px; font-weight:900; padding:3px 6px; border-radius:4px;"><i class="fas fa-star"></i> ${a.score}</span>` : '';
-        return `<div class="card-movie" onclick="abrirDetalhesAnime(${a.mal_id})">${nota}<img src="${img}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';"><div class="titulo-fallback" style="display:none">${esc(a.title)}</div></div>`;
-    }).join('');
-}
-async function abrirDetalhesAnime(malId) {
-    mostrarToast("Carregando anime...");
-    try {
-        const res = await fetch(`https://api.jikan.moe/v4/anime/${malId}/full`);
-        const data = await res.json();
-        const anime = data.data;
-        const title = anime.title || anime.title_english || 'Sem Título';
-        const searchRes = await fetch(`https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(title)}&api_key=${TMDB_API_KEY}&language=pt-BR`);
-        const searchData = await searchRes.json();
-        if(searchData.results && searchData.results.length > 0) {
-            const match = searchData.results[0];
-            abrirDetalhesTMDB(match.id, match.media_type === 'tv' ? 'tv' : 'movie');
-        } else { mostrarToast("Anime não encontrado no catálogo."); }
-    } catch(e) { mostrarToast("Erro ao carregar anime."); }
-}
-
-// ===================== MODO DORAMA =====================
-let doramaCarregado = { coreano: false, japones: false, chines: false, romance: false, comedia: false };
-function entrarModoDorama() {
-    document.getElementById('view-dorama').classList.add('active');
-    document.querySelectorAll('.view').forEach(v => { if(v.id !== 'view-dorama') v.classList.remove('active'); });
-    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-    const mainHeader = document.getElementById('mainHeader');
-    if(mainHeader) mainHeader.style.display = 'none';
-    history.pushState({ view: 'view-dorama' }, null, "");
-    carregarDoramaCoreano();
-}
-function mudarAbaDorama(contentId, tabEl) {
-    document.querySelectorAll('.dorama-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.dorama-content').forEach(c => c.classList.remove('active'));
-    tabEl.classList.add('active');
-    document.getElementById(contentId).classList.add('active');
-    if(contentId === 'dorama-coreano' && !doramaCarregado.coreano) carregarDoramaCoreano();
-    if(contentId === 'dorama-japones' && !doramaCarregado.japones) carregarDoramaJapones();
-    if(contentId === 'dorama-chines' && !doramaCarregado.chines) carregarDoramaChines();
-    if(contentId === 'dorama-romance' && !doramaCarregado.romance) carregarDoramaPorGenero(10749, 'romance');
-    if(contentId === 'dorama-comedia' && !doramaCarregado.comedia) carregarDoramaPorGenero(35, 'comedia');
-}
-async function carregarDoramaCoreano() {
-    doramaCarregado.coreano = true;
-    const div = document.getElementById('conteudo-dorama-coreano');
-    div.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Carregando doramas...</p>';
-    try {
-        const res = await fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&language=pt-BR&with_original_language=ko&sort_by=popularity.desc&page=1`);
-        const data = await res.json();
-        div.innerHTML = renderGrid(data.results || [], 'tv');
-    } catch(e) { div.innerHTML = '<p class="loading-text">Erro ao carregar.</p>'; }
-}
-async function carregarDoramaJapones() {
-    doramaCarregado.japones = true;
-    const div = document.getElementById('conteudo-dorama-japones');
-    div.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Carregando doramas...</p>';
-    try {
-        const res = await fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&language=pt-BR&with_original_language=ja&sort_by=popularity.desc&page=1`);
-        const data = await res.json();
-        div.innerHTML = renderGrid(data.results || [], 'tv');
-    } catch(e) { div.innerHTML = '<p class="loading-text">Erro ao carregar.</p>'; }
-}
-async function carregarDoramaChines() {
-    doramaCarregado.chines = true;
-    const div = document.getElementById('conteudo-dorama-chines');
-    div.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Carregando doramas...</p>';
-    try {
-        const res = await fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&language=pt-BR&with_original_language=zh&sort_by=popularity.desc&page=1`);
-        const data = await res.json();
-        div.innerHTML = renderGrid(data.results || [], 'tv');
-    } catch(e) { div.innerHTML = '<p class="loading-text">Erro ao carregar.</p>'; }
-}
-async function carregarDoramaPorGenero(genreId, key) {
-    doramaCarregado[key] = true;
-    const div = document.getElementById('conteudo-dorama-' + key);
-    div.innerHTML = '<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Carregando...</p>';
-    try {
-        const res = await fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${TMDB_API_KEY}&language=pt-BR&with_original_language=ko&with_genres=${genreId}&sort_by=popularity.desc&page=1`);
-        const data = await res.json();
-        div.innerHTML = renderGrid(data.results || [], 'tv');
-    } catch(e) { div.innerHTML = '<p class="loading-text">Erro ao carregar.</p>'; }
 }
