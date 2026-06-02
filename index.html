@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
 
-    <link rel="stylesheet" href="/css/style.css?v=2.7">
+    <link rel="stylesheet" href="/css/style.css?v=2.8">
 </head>
 <body>
 
@@ -32,16 +32,16 @@
     </div>
 
     <div id="pushPromptModal" style="display:none; position:fixed; bottom:80px; left:5%; width:90%; background:linear-gradient(45deg, #00e5ff, #0055ff); padding:15px; border-radius:12px; z-index:4000; box-shadow:0 5px 15px rgba(0,229,255,0.4); text-align:center;">
-        <h3 style="margin:0 0 5px; color:#fff; font-size:16px;"><i class="fas fa-bell" style="color:gold;"></i> Lançamentos Exclusivos</h3>
-        <p style="margin:0 0 10px; color:#fff; font-size:12px;">Ative as notificações para ser avisado quando novos filmes chegarem!</p>
+        <h3 style="margin:0 0 5px; color:#fff; font-size:16px;"><i class="fas fa-bell" style="color:gold;"></i> Lan\u00e7amentos Exclusivos</h3>
+        <p style="margin:0 0 10px; color:#fff; font-size:12px;">Ative as notifica\u00e7\u00f5es para ser avisado quando novos filmes chegarem!</p>
         <button onclick="aceitarPush()" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Ativar Agora</button>
     </div>
 
     <div class="embed-modal" id="vipModal" style="padding:20px; align-items:center; z-index:3900; background: rgba(0,0,0,0.95); display:none;" onclick="if(event.target === this) fecharModalVip()">
         <div style="background:var(--bg-top); padding:25px; border-radius:15px; width:100%; max-width:350px; text-align:center; border: 1px solid gold; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <i class="fas fa-times" onclick="event.stopPropagation(); fecharModalVip()" style="position:absolute; right:15px; top:15px; color:#fff; font-size:20px; cursor:pointer; padding:10px;"></i>
-            <h2 style="color:#fff; margin-top:5px; font-weight:900;"><i class="fas fa-crown" style="color:gold;"></i> Área VIP</h2>
-            <p style="color:#ccc; font-size:13px; margin-bottom:25px;">Faça login para remover todos os anúncios.</p>
+            <h2 style="color:#fff; margin-top:5px; font-weight:900;"><i class="fas fa-crown" style="color:gold;"></i> \u00c1rea VIP</h2>
+            <p style="color:#ccc; font-size:13px; margin-bottom:25px;">Fa\u00e7a login para remover todos os an\u00fancios.</p>
             <input type="email" id="vipEmail" placeholder="Seu E-mail VIP" style="width:100%; padding:15px; margin-bottom:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.5); color:#fff; outline:none;">
             <input type="password" id="vipSenha" placeholder="Sua Senha" style="width:100%; padding:15px; margin-bottom:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.5); color:#fff; outline:none;">
             <button onclick="event.stopPropagation(); fazerLoginVip()" style="width:100%; padding:15px; border-radius:8px; background:gold; color:#000; font-weight:900; font-size:15px; border:none; margin-bottom:15px; cursor:pointer; text-transform:uppercase;" id="btnLoginBtn">Entrar na Conta VIP</button>
@@ -91,12 +91,12 @@
     <div id="view-buscar" class="view">
         <div class="search-container" style="margin-top: 80px;">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-bar" id="inputBuscaGlobal" placeholder="Qual filme ou série você procura?" oninput="pesquisarGlobal()">
+            <input type="text" class="search-bar" id="inputBuscaGlobal" placeholder="Qual filme ou s\u00e9rie voc\u00ea procura?" oninput="pesquisarGlobal()">
         </div>
         <div class="type-toggle" style="flex-wrap: wrap; gap: 5px;">
             <div class="type-btn active" id="type-all" onclick="setSearchType('all')">Todos</div>
             <div class="type-btn" id="type-movie" onclick="setSearchType('movie')">Filmes</div>
-            <div class="type-btn" id="type-tv" onclick="setSearchType('tv')">Séries</div>
+            <div class="type-btn" id="type-tv" onclick="setSearchType('tv')">S\u00e9ries</div>
             <div class="type-btn" id="type-animes" onclick="setSearchType('animes')">Animes</div>
             <div class="type-btn" id="type-dorama" onclick="setSearchType('dorama')">Doramas</div>
         </div>
@@ -104,7 +104,7 @@
         <div id="resultados-busca-container">
             <div class="section-title" style="margin-left: 15px; margin-top:10px;"><i class="fas fa-film"></i> Resultados</div>
             <div class="grid-container" id="resultados-global">
-                <p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um gênero.</p>
+                <p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um g\u00eanero.</p>
             </div>
         </div>
     </div>
@@ -118,7 +118,7 @@
         </div>
         <div class="iptv-tabs">
             <div class="iptv-tab active" onclick="mudarAbaIPTV('iptv-filmes', this)"><i class="fas fa-film"></i> Filmes</div>
-            <div class="iptv-tab" onclick="mudarAbaIPTV('iptv-series', this)"><i class="fas fa-tv"></i> Séries</div>
+            <div class="iptv-tab" onclick="mudarAbaIPTV('iptv-series', this)"><i class="fas fa-tv"></i> S\u00e9ries</div>
             <div class="iptv-tab" onclick="mudarAbaIPTV('iptv-tv', this)"><i class="fas fa-broadcast-tower"></i> TV Ao Vivo</div>
         </div>
         <div id="iptv-filmes" class="iptv-content active"><div id="conteudo-iptv-filmes"><p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A carregar categorias...</p></div></div>
@@ -131,7 +131,7 @@
     </div>
 
     <div class="bottom-nav" id="bottomNav">
-        <div class="nav-item active" id="nav-home" onclick="mudarAba('view-home', this)"><i class="fas fa-home"></i><span>Início</span></div>
+        <div class="nav-item active" id="nav-home" onclick="mudarAba('view-home', this)"><i class="fas fa-home"></i><span>In\u00edcio</span></div>
         <div class="nav-item" id="nav-buscar" onclick="mudarAba('view-buscar', this)"><i class="fas fa-search"></i><span>Buscar</span></div>
         <div class="nav-item" id="nav-menu" onclick="abrirMenuPrincipal()"><i class="fas fa-bars"></i><span>Menu</span></div>
     </div>
@@ -183,8 +183,8 @@
                 <div class="menu-list-item" onclick="fecharMenuPrincipal(); abrirModalVip();">
                     <div class="menu-list-icon" style="color:gold;"><i class="fas fa-crown"></i></div>
                     <div class="menu-list-text">
-                        <div class="menu-list-title">Área VIP</div>
-                        <div class="menu-list-sub">Remova anúncios</div>
+                        <div class="menu-list-title">\u00c1rea VIP</div>
+                        <div class="menu-list-sub">Remova an\u00fancios</div>
                     </div>
                     <i class="fas fa-chevron-right" style="color:#666; font-size:10px;"></i>
                 </div>
@@ -210,7 +210,7 @@
             </div>
         </div>
 
-        <div class="menu-footer">StreamFlix v2.7</div>
+        <div class="menu-footer">StreamFlix v2.8</div>
     </div>
 
     <div class="server-modal" id="serverModal">
@@ -225,7 +225,7 @@
         <div class="server-btn em" onclick="abrirPlayerWeb('superflix')"><div><i class="fas fa-play-circle" style="color:#b388ff;"></i> &nbsp; Servidor SuperFlix (Novo)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-btn em" onclick="abrirPlayerWeb('embedmovies')"><div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; Servidor Web 1 (Legendado/Dub)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-btn ep" onclick="abrirPlayerWeb('embedplayapi')"><div><i class="fas fa-play-circle" style="color:#00e676;"></i> &nbsp; Servidor Web 2 (Dublado)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
-        <div class="server-btn bf" onclick="abrirPlayerWeb('betterflix')"><div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; Servidor Web 3 (Rápido)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-btn bf" onclick="abrirPlayerWeb('betterflix')"><div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; Servidor Web 3 (R\u00e1pido)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
     </div>
 
     <div class="bottom-sheet" id="bottomSheet">
@@ -239,7 +239,7 @@
         <button class="dp-back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
         <div class="dp-poster" id="dpPoster" style="background-image: url('');"><div class="dp-gradient"></div></div>
         <div class="dp-content">
-            <h1 class="dp-title" id="dpTitle">Título</h1>
+            <h1 class="dp-title" id="dpTitle">T\u00edtulo</h1>
             <div class="dp-tmdb-meta" id="dpTmdbMeta"></div>
             <div class="dp-director" id="dpDirector"></div>
             <div class="dp-meta" id="dpMeta"></div>
@@ -308,18 +308,17 @@
             });
         }
     </script>
-    <!-- ORDEM DOS MÓDULOS: Config -> Utils -> VIP -> Ads -> Hero -> Filmes -> Busca -> Séries -> TV -> Modal -> Player -> Navegação -->
-    <script src="/js/config.js?v=2.7"></script>
-    <script src="/js/utils.js?v=2.7"></script>
-    <script src="/js/vip.js?v=2.7"></script>
-    <script src="/js/ads.js?v=2.7"></script>
-    <script src="/js/hero.js?v=2.7"></script>
-    <script src="/js/filmes.js?v=2.7"></script>
-    <script src="/js/busca.js?v=2.7"></script>
-    <script src="/js/series.js?v=2.7"></script>
-    <script src="/js/tv.js?v=2.7"></script>
-    <script src="/js/modal.js?v=2.7"></script>
-    <script src="/js/player.js?v=2.7"></script>
-    <script src="/js/navigation.js?v=2.7"></script>
+    <script src="/js/config.js?v=2.8"></script>
+    <script src="/js/utils.js?v=2.8"></script>
+    <script src="/js/vip.js?v=2.8"></script>
+    <script src="/js/ads.js?v=2.8"></script>
+    <script src="/js/hero.js?v=2.8"></script>
+    <script src="/js/filmes.js?v=2.8"></script>
+    <script src="/js/busca.js?v=2.8"></script>
+    <script src="/js/series.js?v=2.8"></script>
+    <script src="/js/tv.js?v=2.8"></script>
+    <script src="/js/modal.js?v=2.8"></script>
+    <script src="/js/player.js?v=2.8"></script>
+    <script src="/js/navigation.js?v=2.8"></script>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'streamflix-cache-v2.7';
+const CACHE_NAME = 'streamflix-cache-v2.8';
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
@@ -6,9 +6,19 @@ self.addEventListener('install', (event) => {
             return cache.addAll([
                 '/',
                 '/index.html',
-                '/css/style.css',
-                '/js/app.js',
-                '/js/config.js'
+                '/css/style.css?v=2.8',
+                '/js/config.js?v=2.8',
+                '/js/utils.js?v=2.8',
+                '/js/vip.js?v=2.8',
+                '/js/ads.js?v=2.8',
+                '/js/hero.js?v=2.8',
+                '/js/filmes.js?v=2.8',
+                '/js/busca.js?v=2.8',
+                '/js/series.js?v=2.8',
+                '/js/tv.js?v=2.8',
+                '/js/modal.js?v=2.8',
+                '/js/player.js?v=2.8',
+                '/js/navigation.js?v=2.8'
             ]);
         })
     );
@@ -28,17 +38,26 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// ESTRATÉGIA NETWORK FIRST (Internet primeiro, Cache como backup)
+// ESTRATÉGIA STALE-WHILE-REVALIDATE (Cache primeiro, atualiza depois)
 self.addEventListener('fetch', (event) => {
+    // Não intercepta chamadas de API
+    if (event.request.url.includes('/api/') || event.request.url.includes('api.themoviedb.org') || event.request.url.includes('superflixapi.fit')) {
+        return;
+    }
+
     event.respondWith(
-        fetch(event.request).then((response) => {
-            const responseClone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-                cache.put(event.request, responseClone);
-            });
-            return response;
-        }).catch(() => {
-            return caches.match(event.request);
+        caches.match(event.request).then((cachedResponse) => {
+            const fetchPromise = fetch(event.request).then((networkResponse) => {
+                if (networkResponse && networkResponse.status === 200) {
+                    const responseClone = networkResponse.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseClone);
+                    });
+                }
+                return networkResponse;
+            }).catch(() => cachedResponse);
+
+            return cachedResponse || fetchPromise;
         })
     );
 });
