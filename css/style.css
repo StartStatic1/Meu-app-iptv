@@ -1,6 +1,3 @@
-/* =========================================
-   VARIÁVEIS E RESET
-========================================= */
 :root { 
     --bg-top: #1a1d29; 
     --bg-bottom: #040714; 
@@ -41,10 +38,16 @@ body {
     padding-bottom: 90px; 
 }
 
-body.no-scroll { overflow: hidden; height: 100vh; }
+/* CORRECAO BUG #1: Menu rolando por baixo - overscroll-behavior e touch-action */
+body.no-scroll { 
+    overflow: hidden; 
+    height: 100vh; 
+    overscroll-behavior: none;
+    touch-action: none;
+}
 
 /* =========================================
-   CABEÇALHO PRINCIPAL
+   CABECALHO PRINCIPAL
 ========================================= */
 .header { position: absolute; top: 0; width: 100%; padding: 15px; z-index: 100; text-align: center; background: linear-gradient(to bottom, rgba(4,7,20,0.9), transparent); display: flex; justify-content: center; align-items: center; }
 .header-logo { font-size: 22px; font-weight: 900; color: #fff; margin: 0; letter-spacing: 1px;}
@@ -72,7 +75,7 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 .hero-trailer-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
 
 /* =========================================
-   VIEWS E ANIMAÇÕES
+   VIEWS E ANIMACOES
 ========================================= */
 .view { display: none; animation: fadeIn 0.3s ease; }
 .view.active { display: block; }
@@ -94,7 +97,7 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 15px 20px 15px; }
 .grid-container .card-movie { flex: unset; width: 100%; height: 160px; }
 
-/* Histórico e TV */
+/* Historico e TV */
 .card-history { flex: unset; width: 100%; height: 120px; border-radius: 8px; background-color: #2a2d3e; cursor: pointer; position: relative !important; box-shadow: 0 4px 10px rgba(0,0,0,0.4); overflow: hidden;}
 .card-tv { flex: 0 0 140px; height: 100px; border-radius: 8px; background-color: rgba(255,255,255,0.05); scroll-snap-align: start; overflow: hidden; display: flex; justify-content: center; align-items: center; border: 1px solid rgba(255,255,255,0.1); position: relative; cursor: pointer; flex-direction: column; padding: 8px 5px;}
 .card-tv img { width: 50%; height: 45%; object-fit: contain; margin-bottom: 8px; -webkit-user-drag: none; }
@@ -148,9 +151,14 @@ body.no-scroll { overflow: hidden; height: 100vh; }
     z-index: 2000; padding: 25px 20px; 
     transition: transform 0.4s ease; 
     border-top: 1px solid rgba(255,255,255,0.05); 
-    transform: translateY(100%); /* Esconde perfeito baseado na altura real */
+    transform: translateY(100%);
+    /* CORRECAO BUG #1: Previne scroll do menu por baixo */
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    max-height: 85vh;
+    overflow-y: auto;
 }
-.bottom-sheet.active { transform: translateY(0); } /* Sobe revelando o menu */
+.bottom-sheet.active { transform: translateY(0); }
 
 .sheet-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto 20px; cursor: pointer; }
 .sheet-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; text-transform: uppercase; cursor: pointer; }
@@ -184,7 +192,7 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 .menu-footer { text-align: center; font-size: 10px; color: var(--text-muted); margin-top: 10px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
 
 /* =========================================
-   SERVIDORES (CORRIGIDO O MESMO BUG)
+   SERVIDORES (CORRIGIDO)
 ========================================= */
 .server-modal { 
     position: fixed; bottom: 0; left: 0; width: 100%; 
@@ -192,7 +200,12 @@ body.no-scroll { overflow: hidden; height: 100vh; }
     z-index: 3700; padding: 25px 20px; 
     transition: transform 0.4s ease; 
     border-top: 1px solid rgba(255,255,255,0.05); 
-    transform: translateY(100%); 
+    transform: translateY(100%);
+    /* CORRECAO BUG #1 */
+    overscroll-behavior: contain;
+    touch-action: pan-y;
+    max-height: 85vh;
+    overflow-y: auto;
 }
 .server-modal.active { transform: translateY(0); }
 
@@ -202,7 +215,7 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 .server-warn { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 15px; line-height: 1.4;}
 
 /* =========================================
-   PÁGINA DE DETALHES TMDB
+   PAGINA DE DETALHES TMDB
 ========================================= */
 .details-page { position: fixed; top: 0; left: 100%; width: 100%; height: 100vh; background: var(--bg-bottom); z-index: 3000; transition: left 0.3s ease-out; overflow-y: auto; padding-bottom: 30px; }
 .details-page.active { left: 0; }
@@ -290,7 +303,27 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 }
 
 .loading-text { text-align: center; color: var(--text-muted); font-size: 12px; width: 100%; padding: 20px; }
-#toast-msg { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.92); color: #fff; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; border: 1px solid rgba(255,255,255,0.1); max-width: 90%; text-align: center; }
+
+/* CORRECAO BUG #14: Toast nao fica sobreposto pela bottom nav */
+#toast-msg { 
+    position: fixed; 
+    bottom: 90px; /* Aumentado de 100px para ficar acima da nav */ 
+    left: 50%; 
+    transform: translateX(-50%); 
+    background: rgba(0,0,0,0.92); 
+    color: #fff; 
+    padding: 12px 20px; 
+    border-radius: 8px; 
+    z-index: 10000; 
+    font-size: 13px; 
+    font-weight: 600; 
+    opacity: 0; 
+    transition: opacity 0.3s; 
+    pointer-events: none; 
+    border: 1px solid rgba(255,255,255,0.1); 
+    max-width: 90%; 
+    text-align: center; 
+}
 
 /* =========================================
    FILTROS E MODO IPTV
@@ -317,3 +350,16 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
 #vipModal { align-items: center; justify-content: center; }
 a.server-btn { display: flex; width: 100%; box-sizing: border-box; }
+
+/* CORRECAO BUG #3: Previne overscroll no embed/trailer */
+.trailer-modal, .embed-modal {
+    overscroll-behavior: none;
+}
+
+/* CORRECAO: Scroll suave nos modais */
+.bottom-sheet, .server-modal {
+    -webkit-overflow-scrolling: touch;
+}
+'''
+
+print("style.css criado - tamanho:", len(style_css))
