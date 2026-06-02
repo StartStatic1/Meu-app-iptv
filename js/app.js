@@ -20,24 +20,6 @@ let iptvCarregado = { filmes: false, series: false, tv: false };
 let adsInjetados = false;
 let lastSuperFlixData = [];
 
-// ===================== CONSTANTES =====================
-const TMDB_API_KEY = '46230929e061f1d2f3df518aed983e08';
-const TMDB_IMG = 'https://image.tmdb.org/t/p';
-
-const TMDB_GENRES = {
-    movie: [
-        {id:28,name:'Ação'},{id:12,name:'Aventura'},{id:16,name:'Animação'},{id:35,name:'Comédia'},
-        {id:80,name:'Crime'},{id:99,name:'Documentário'},{id:18,name:'Drama'},{id:10751,name:'Família'},
-        {id:14,name:'Fantasia'},{id:36,name:'História'},{id:27,name:'Terror'},{id:10402,name:'Música'},
-        {id:9648,name:'Mistério'},{id:10749,name:'Romance'},{id:878,name:'Ficção Científica'}
-    ],
-    tv: [
-        {id:10759,name:'Ação & Aventura'},{id:16,name:'Animação'},{id:35,name:'Comédia'},{id:80,name:'Crime'},
-        {id:99,name:'Documentário'},{id:18,name:'Drama'},{id:10751,name:'Família'},{id:10762,name:'Infantil'},
-        {id:9648,name:'Mistério'},{id:10764,name:'Reality'},{id:10765,name:'Sci-Fi & Fantasia'}
-    ]
-};
-
 // ===================== UTILS =====================
 function mostrarToast(msg) {
     let t = document.getElementById('toast-msg'); if(!t) return;
