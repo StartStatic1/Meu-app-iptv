@@ -28,7 +28,7 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
-// NETWORK FIRST: Pega da internet primeiro. Se falhar (offline), puxa do cache.
+// ESTRATÉGIA NETWORK FIRST (Internet primeiro, Cache como backup)
 self.addEventListener('fetch', (event) => {
     event.respondWith(
         fetch(event.request).then((response) => {
