@@ -44,7 +44,6 @@ function getSupabase() {
     return meuSupabase;
 }
 function isVip() { return localStorage.getItem('streamflix_vip') === 'true'; }
-
 function abrirModalVip() { 
     document.getElementById('vipModal').style.display = 'flex'; 
     addNoScroll();
@@ -56,6 +55,7 @@ function fecharModalVip() {
     if(history.state && history.state.view === 'vip') { fromPopState = true; history.back(); }
 }
 function abrirWhatsAppVip() {
+    // Abre no navegador externo para evitar bloqueio do WebView
     window.open('https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87', '_blank');
 }
 async function fazerLoginVip() {
@@ -81,16 +81,12 @@ async function fazerLoginVip() {
 }
 function verificarStatusVip() {
     const btnVip = document.getElementById('btnOpenVip');
-    if(btnVip) {
-        btnVip.style.display = isVip() ? 'none' : 'block';
-    }
+    if(btnVip) btnVip.style.display = isVip() ? 'none' : 'block';
+    
     const menuVipStatus = document.getElementById('menuVipStatus');
     if(menuVipStatus) {
-        if(isVip()) {
-            menuVipStatus.innerHTML = '<i class="fas fa-crown" style="color:gold"></i> VIP Ativo';
-        } else {
-            menuVipStatus.innerHTML = '<i class="fas fa-gem" style="color:var(--accent)"></i> Gratuito';
-        }
+        if(isVip()) menuVipStatus.innerHTML = '<i class="fas fa-crown" style="color:gold"></i> VIP Ativo';
+        else menuVipStatus.innerHTML = '<i class="fas fa-gem" style="color:var(--accent)"></i> Gratuito';
     }
 }
 
@@ -112,9 +108,7 @@ function desativarTodosAds() {
 }
 
 function injetarAnuncios() {
-    if(isVip()) return; 
-    if(adsInjetados) return;
-
+    if(isVip() || adsInjetados) return;
     if(localStorage.getItem('push_accepted') !== 'true') {
         setTimeout(() => { 
             const prompt = document.getElementById('pushPromptModal'); 
@@ -135,24 +129,9 @@ function aceitarPush() {
 function ativarTodosAds() {
     if(isVip() || adsInjetados) return;
     adsInjetados = true;
-
-    const s1 = document.createElement('script');
-    s1.src = 'https://5gvci.com/act/files/tag.min.js?z=11081861';
-    s1.setAttribute('data-cfasync', 'false');
-    s1.async = true;
-    document.head.appendChild(s1);
-
-    const s2 = document.createElement('script');
-    s2.src = 'https://5gvci.com/act/files/tag.min.js?z=11081853';
-    s2.setAttribute('data-cfasync', 'false');
-    s2.async = true;
-    document.head.appendChild(s2);
-
-    const s3 = document.createElement('script');
-    s3.dataset.zone = '11081852';
-    s3.src = 'https://al5sm.com/tag.min.js';
-    s3.async = true;
-    document.head.appendChild(s3);
+    const s1 = document.createElement('script'); s1.src = 'https://5gvci.com/act/files/tag.min.js?z=11081861'; s1.setAttribute('data-cfasync', 'false'); s1.async = true; document.head.appendChild(s1);
+    const s2 = document.createElement('script'); s2.src = 'https://5gvci.com/act/files/tag.min.js?z=11081853'; s2.setAttribute('data-cfasync', 'false'); s2.async = true; document.head.appendChild(s2);
+    const s3 = document.createElement('script'); s3.dataset.zone = '11081852'; s3.src = 'https://al5sm.com/tag.min.js'; s3.async = true; document.head.appendChild(s3);
 }
 
 function dispararDirectLink() {
@@ -199,6 +178,7 @@ function processarTitulo(nomeBruto, nomePasta) {
     if(nomeLimpo.length < 2) nomeLimpo = nomeBruto.substring(0, 20);
     return { limpo: nomeLimpo, tagsStr: tags.join(',') };
 }
+
 function processarTV(nomeBruto) {
     let nomeLimpo = nomeBruto || "Canal";
     const tags = [];
@@ -441,6 +421,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     currentSeason = 1;
     currentEpisode = 1;
 
+    // Reset do botão PLAY do TMDB
     const btnPlayFilme = document.getElementById('btnPlayFilme');
     if(btnPlayFilme) {
         btnPlayFilme.disabled = false;
@@ -551,7 +532,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     } catch(err) { document.getElementById('dpSynopsis').innerText = "Erro ao carregar detalhes."; }
 }
 
-// ===================== MENUS E REPRODUÇÃO =====================
+// ===================== MENUS DE SERVIDORES E CDN NATIVO =====================
 function abrirMenuServidoresDetalhes() {
     if(document.activeElement) document.activeElement.blur();
     const btnNativo = document.getElementById('btnServerNativo');
@@ -563,6 +544,7 @@ function abrirMenuServidoresDetalhes() {
     }
     document.getElementById('serverModal').classList.add('active');
     
+    // Altera z-index temporário para cobrir os detalhes na cor preta
     const overlay = document.getElementById('sheetOverlay');
     if(overlay) {
         overlay.style.zIndex = "3600";
@@ -574,7 +556,7 @@ function abrirMenuServidoresDetalhes() {
 }
 
 async function buscarEReproduzirNativo(title, type) {
-    mostrarToast("Procurando no CDN...");
+    mostrarToast("Procurando no CDN Premium...");
     try {
         let action = type === 'tv' ? 'get_series' : 'get_vod_streams';
         const res = await fetch(`/api/iptv?action=${action}`);
@@ -583,6 +565,7 @@ async function buscarEReproduzirNativo(title, type) {
 
         const matches = data.filter(item => (item.name || '').toLowerCase().includes(termo));
         if(matches.length > 0) {
+            // Tenta achar link sem ser 4k para rodar leve no Android
             let match = matches.find(m => !/(4k|uhd|2160p)/i.test((m.name || '').toLowerCase()));
             if(!match) match = matches[0]; 
 
@@ -601,7 +584,7 @@ async function buscarEReproduzirNativo(title, type) {
                 } else { mostrarToast("Episódios não encontrados."); }
             }
         } else { 
-            mostrarToast("Não disponível no CDN. Tente Web."); 
+            mostrarToast("Não disponível no CDN. Tente um Servidor Web."); 
             setTimeout(() => {
                 document.getElementById('serverModal').classList.add('active');
                 const overlay = document.getElementById('sheetOverlay');
@@ -614,6 +597,7 @@ async function buscarEReproduzirNativo(title, type) {
 function abrirPlayerWeb(servidor) {
     if(!currentTmdbId) return;
 
+    // FECHA O MENU SEM MEXER NO HISTORY PARA EVITAR O BUG TELA PRETA
     document.getElementById('serverModal').classList.remove('active');
     const overlay = document.getElementById('sheetOverlay');
     if(overlay) {
@@ -635,7 +619,7 @@ function abrirPlayerWeb(servidor) {
         if(currentItemType === 'movie') finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}`;
         else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
     } else if(servidor === 'superflix') {
-        // Redirecionado para WAREZCDN
+        // CORRIGIDO: INTEGRAÇÃO DIRETA DO WAREZCDN PARA FILMES E SÉRIES
         if(currentItemType === 'movie') finalUrl = `https://warezcdn.lat/filme/${currentTmdbId}`;
         else finalUrl = `https://warezcdn.lat/serie/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
     }
@@ -646,6 +630,7 @@ function abrirPlayerWeb(servidor) {
         frame.src = finalUrl;
         modal.style.display = 'flex';
         
+        // SUBSTITUI O ESTADO 'SERVERS' POR 'EMBED' NO HISTORY (Evita travamento)
         if(history.state && history.state.view === 'servers') {
             history.replaceState({ view: 'embed', modal: true }, null, "");
         } else {
@@ -757,7 +742,7 @@ async function abrirAtor(atorId) {
     } catch(e) { document.getElementById('actorBio').innerText = "Erro ao carregar dados."; }
 }
 
-// ===================== TRAILER / EMBED =====================
+// ===================== TRAILER E FECHAMENTO DE MODAIS =====================
 function abrirTrailer() {
     if(!trailerKeyAtivo) return;
     const frame = document.getElementById('trailerFrame');
@@ -857,6 +842,7 @@ async function dispararPlayer(id, tipo, ext, titulo) {
     } catch(e) { 
         mostrarToast("Erro: " + e.message); 
     } finally { 
+        // 1s delay reset para garantir que se o Android falhar em abrir o app de vídeo, o botão volta ao normal
         setTimeout(() => {
             if(btn) { btn.innerHTML = `<i class="fas fa-play"></i> Assistir`; btn.disabled = false; } 
         }, 1000);
@@ -875,6 +861,22 @@ function fecharMenuPrincipal(fromPopState = false) {
     document.getElementById('menuPrincipal').classList.remove('active');
     removeNoScroll();
     if(!fromPopState && history.state && history.state.view === 'menu') { fromPopState = true; history.back(); }
+}
+
+// FUNÇÃO PARA ATIVAR OS BOTÕES DO NOVO MENU COMPACTO (ANIMES, DORAMAS, ETC)
+function navegarAbaDoMenu(aba) {
+    fecharMenuPrincipal(false); // Fecha o menu com transição
+    setTimeout(() => {
+        if(aba === 'animes' || aba === 'doramas') {
+            abrirSuperFlix(aba);
+        } else if(aba === 'iptv') {
+            entrarModoIPTV();
+        } else if(aba === 'historico') {
+            mudarAba('view-historico', null);
+        } else if(aba === 'vip') {
+            abrirModalVip();
+        }
+    }, 150);
 }
 
 function mudarAba(idView, btn, originHistory = false) {
@@ -1010,6 +1012,7 @@ async function abrirDetalhesIPTV(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
         btnPlayFilme.innerHTML = '<i class="fas fa-play"></i> <span>Assistir</span>';
         btnPlayFilme.style.pointerEvents = 'auto';
         btnPlayFilme.style.display = 'flex';
+        // Redefine para abrir direto se for conteúdo do modo IPTV
         btnPlayFilme.onclick = () => dispararPlayer(id, tipo, ext, titulo);
     }
 
@@ -1061,7 +1064,7 @@ async function pesquisarTV() {
     }, 800);
 }
 
-// ===================== GESTOS E EVENTOS =====================
+// ===================== GESTOS E EVENTOS E POPSTATE =====================
 function handleTouchStart(e) {
     touchStartY = e.changedTouches[0].screenY;
     touchStartX = e.changedTouches[0].screenX;
@@ -1161,7 +1164,7 @@ function fecharAdBlock() {
     removeNoScroll();
 }
 
-// ===================== INTEGRAÇÃO SUPER FLIX E WAREZ CDN =====================
+// ===================== INTEGRAÇÃO SUPER FLIX (API BLINDADA WAREZCDN) =====================
 async function abrirSuperFlix(tipo) {
     if(heroInterval) { clearInterval(heroInterval); heroInterval = null; }
     currentSuperFlixType = tipo;
@@ -1266,7 +1269,8 @@ async function carregarSuperFlixLista(tipo, genero, busca = null) {
             const titulo = item.title || item.nome || item.name || 'Sem Título';
             const id = item.tmdb_id || item.id;
             const capa = item.cover || item.poster || item.poster_path || 'https://via.placeholder.com/220x330/111/fff';
-            const typeToOpen = 'tv'; // Dorama e Anime são classificados como séries no TMDB
+            // Usa TV por padrão pois Anime/Dorama é classificado como Série no banco do TMDB
+            const typeToOpen = 'tv';
 
             if(id && id !== 0 && id !== "0") {
                 html += `<div class="card-movie" onclick="abrirDetalhesTMDB(${id}, '${typeToOpen}')">
