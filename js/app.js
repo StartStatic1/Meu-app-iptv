@@ -28,11 +28,11 @@ let noScrollCount = 0;
 
 function addNoScroll() {
     noScrollCount++;
-    addNoScroll();
+    document.body.classList.add('no-scroll');
 }
 function removeNoScroll() {
     noScrollCount = Math.max(0, noScrollCount - 1);
-    if(noScrollCount === 0) removeNoScroll();
+    if(noScrollCount === 0) document.body.classList.remove('no-scroll');
 }
 
 // ===================== SUPABASE / VIP =====================
@@ -178,7 +178,15 @@ function mostrarToast(msg) {
     clearTimeout(t._timer);
     t._timer = setTimeout(() => { t.style.opacity = '0'; }, 3500);
 }
-function esc(str) { return (str || '').toString().replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;'); }
+function esc(str) {
+    if(!str) return '';
+    return str.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
 function getWatchedList() { try { return JSON.parse(localStorage.getItem('streamflix_watched_v2')) || {}; } catch(e) { return {}; } }
 function saveWatchedList(list) { localStorage.setItem('streamflix_watched_v2', JSON.stringify(list)); }
 function getFavList() { try { return JSON.parse(localStorage.getItem('streamflix_favs')) || {}; } catch(e) { return {}; } }
