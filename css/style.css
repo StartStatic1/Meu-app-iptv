@@ -1,6 +1,3 @@
-/* =========================================
-   VARIÁVEIS E RESET
-========================================= */
 :root { 
     --bg-top: #1a1d29; 
     --bg-bottom: #040714; 
@@ -10,7 +7,7 @@
     --text-muted: #8f98b0;
 }
 
-* { 
+ { 
     -webkit-touch-callout: none; 
     -webkit-user-select: none; 
     user-select: none; 
@@ -137,7 +134,7 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 .nav-item span { font-size: 9px; font-weight: 700; text-transform: uppercase; }
 
 /* =========================================
-   BOTTOM SHEETS E MODAIS (CORRIGIDO)
+   BOTTOM SHEETS E MODAIS
 ========================================= */
 .bottom-sheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1999; opacity: 0; pointer-events: none; transition: 0.3s ease; }
 .bottom-sheet-overlay.active { opacity: 1; pointer-events: all; }
@@ -152,7 +149,7 @@ body.no-scroll { overflow: hidden; height: 100vh; }
     max-height: 85vh;
     overflow-y: auto;
 }
-.bottom-sheet.active { transform: translateY(0); } /* Sobe revelando o menu */
+.bottom-sheet.active { transform: translateY(0); }
 
 .sheet-handle { width: 40px; height: 5px; background: rgba(255,255,255,0.2); border-radius: 10px; margin: 0 auto 20px; cursor: pointer; }
 .sheet-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; text-transform: uppercase; cursor: pointer; }
@@ -186,7 +183,7 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 .menu-footer { text-align: center; font-size: 10px; color: var(--text-muted); margin-top: 10px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); }
 
 /* =========================================
-   SERVIDORES (CORRIGIDO O MESMO BUG)
+   SERVIDORES
 ========================================= */
 .server-modal { 
     position: fixed; bottom: 0; left: 0; width: 100%; 
@@ -270,11 +267,11 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 .actor-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
 .actor-bio { font-size: 13px; color: #ccc; line-height: 1.5; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 
-.trailer-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 3600; display: none; }
+.trailer-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 4500; display: none; }
 .trailer-close { position: absolute; top: 15px; right: 15px; color: #fff; font-size: 28px; cursor: pointer; padding: 15px; z-index: 4502; text-shadow: 0 0 10px #000; background: rgba(0,0,0,0.4); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
 .trailer-frame { width: 100%; height: 100%; background: #000; border: none; pointer-events: auto; }
 
-/* EMBED MODAL E PLAYERS (CORRIGIDO 16/9) */
+/* EMBED MODAL E PLAYERS - SEM SANDBOX */
 .embed-modal { 
     position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
     background: #000; z-index: 3800; display: none; 
@@ -322,3 +319,30 @@ body.no-scroll { overflow: hidden; height: 100vh; }
 @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
 #vipModal { align-items: center; justify-content: center; }
 a.server-btn { display: flex; width: 100%; box-sizing: border-box; }
+
+/* =========================================
+   CONTINUAR ASSISTINDO
+========================================= */
+.continue-card { position: relative; }
+.continue-card .continue-play {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 36px;
+    height: 36px;
+    background: rgba(0,229,255,0.9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #000;
+    font-size: 14px;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+.continue-card:active .continue-play,
+.continue-card:hover .continue-play {
+    opacity: 1;
+}
