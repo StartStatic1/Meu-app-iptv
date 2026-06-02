@@ -48,10 +48,10 @@ function abrirModalVip() {
     addNoScroll();
     history.pushState({ view: 'vip', modal: true }, null, "");
 }
-function fecharModalVip() { 
+function fecharModalVip(fromPopState = false) { 
     document.getElementById('vipModal').style.display = 'none'; 
     removeNoScroll();
-    if(history.state && history.state.view === 'vip') history.back();
+    if(!fromPopState && history.state && history.state.view === 'vip') history.back();
 }
 function abrirTelegramVip() {
     let a = document.createElement('a');
@@ -115,7 +115,6 @@ function desativarTodosAds() {
     setTimeout(() => location.reload(), 1500);
 }
 
-// ===================== ANÚNCIOS (COMPLETO + VIP BLOCK) =====================
 function injetarAnuncios() {
     if(isVip()) return; 
     if(adsInjetados) return;
@@ -253,7 +252,8 @@ async function tmdbFetch(endpoint) {
         } catch(e){}
     }
     try {
-        const res = await fetch(`https://api.themoviedb.org/3${endpoint}&api_key=${TMDB_API_KEY}&language=pt-BR`);
+        const connector = endpoint.includes('?') ? '&' : '?';
+        const res = await fetch(`https://api.themoviedb.org/3${endpoint}${connector}api_key=${TMDB_API_KEY}&language=pt-BR`);
         const data = await res.json();
         localStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
         return data;
@@ -450,6 +450,17 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     currentSeason = 1;
     currentEpisode = 1;
 
+    // Reset explícito para evitar botão cinzento/desabilitado
+    const btnPlayFilme = document.getElementById('btnPlayFilme');
+    if(btnPlayFilme) {
+        btnPlayFilme.disabled = false;
+        btnPlayFilme.innerHTML = '<i class="fas fa-play"></i> <span>Assistir</span>';
+        btnPlayFilme.style.pointerEvents = 'auto';
+        btnPlayFilme.style.display = 'flex';
+        // Restaura a função de clique correta do TMDB (que abre os servidores web/CDN)
+        btnPlayFilme.onclick = () => abrirMenuServidoresDetalhes();
+    }
+
     document.getElementById('dpTitle').innerText = 'Carregando...';
     document.getElementById('dpTmdbMeta').innerHTML = '';
     document.getElementById('dpDirector').innerText = '';
@@ -458,7 +469,6 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     document.getElementById('dpEpisodes').style.display = 'none';
     document.getElementById('dpSimilarContainer').style.display = 'none';
     document.getElementById('btnTrailer').style.display = 'none';
-    if(document.getElementById('btnPlayFilme')) document.getElementById('btnPlayFilme').style.display = 'flex';
     trailerKeyAtivo = null;
 
     document.getElementById('detailsPage').classList.add('active');
@@ -549,11 +559,16 @@ async function abrirDetalhesTMDB(tmdbId, type) {
 
         currentStreamData = { id: tmdbId, title: title, img: poster, type: type };
 
-    } catch(err) { document.getElementById('dpSynopsis').innerText = "Erro ao carregar detalhes."; }
+    } catch(err) { 
+        document.getElementById('dpSynopsis').innerText = "Erro ao carregar detalhes."; 
+    }
 }
 
 // ===================== MENUS E REPRODUÇÃO =====================
 function abrirMenuServidoresDetalhes() {
+    // Evitar que o botão fique com estado de "focus/active" preso no mobile
+    if(document.activeElement) document.activeElement.blur();
+    
     const btnNativo = document.getElementById('btnServerNativo');
     if (btnNativo) {
         btnNativo.onclick = () => {
@@ -741,7 +756,7 @@ async function abrirAtor(atorId) {
     } catch(e) { document.getElementById('actorBio').innerText = "Erro ao carregar dados."; }
 }
 
-// ===================== TRAILER / EMBED =====================
+// ===================== TRAILER / EMBED / FECHAR MODAIS (SISTEMA SEGURO) =====================
 function abrirTrailer() {
     if(!trailerKeyAtivo) return;
     const frame = document.getElementById('trailerFrame');
@@ -750,22 +765,22 @@ function abrirTrailer() {
     addNoScroll();
     history.pushState({ view: 'trailer', modal: true }, null, "");
 }
-function fecharTrailer() {
+function fecharTrailer(fromPopState = false) {
     const frame = document.getElementById('trailerFrame');
     frame.src = 'about:blank';
     setTimeout(() => { frame.src = ''; }, 200);
     document.getElementById('trailerModal').style.display = 'none';
     removeNoScroll();
-    if(history.state && history.state.view === 'trailer') history.back();
+    if(!fromPopState && history.state && history.state.view === 'trailer') history.back();
 }
-function fecharMenuServidores() {
+function fecharMenuServidores(fromPopState = false) {
     document.getElementById('serverModal').classList.remove('active');
     const overlay = document.getElementById('sheetOverlay');
     if(overlay) overlay.classList.remove('active');
     removeNoScroll();
-    if(history.state && history.state.view === 'servers') history.back();
+    if(!fromPopState && history.state && history.state.view === 'servers') history.back();
 }
-function fecharEmbedWeb() {
+function fecharEmbedWeb(fromPopState = false) {
     const frame = document.getElementById('embedFrame');
     frame.src = 'about:blank';
     setTimeout(() => { frame.src = ''; }, 200);
@@ -775,34 +790,40 @@ function fecharEmbedWeb() {
     // LIBERAR ORIENTAÇÃO DA TELA AO FECHAR O EMBED
     try { if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e) {}
     
-    if(history.state && history.state.view === 'embed') history.back();
+    if(!fromPopState && history.state && history.state.view === 'embed') history.back();
 }
-function fecharDetalhes() { 
+function fecharDetalhes(fromPopState = false) { 
     document.getElementById('detailsPage').classList.remove('active'); 
     removeNoScroll();
-    if(history.state && history.state.view === 'details') history.back();
+    if(!fromPopState && history.state && history.state.view === 'details') history.back();
 }
-function fecharAtor() { 
+function fecharAtor(fromPopState = false) { 
     document.getElementById('actorModal').classList.remove('active'); 
     removeNoScroll();
-    if(history.state && history.state.view === 'actor') history.back();
+    if(!fromPopState && history.state && history.state.view === 'actor') history.back();
 }
 
 function abrirSheetTV(titulo, streamId, tagsStr) {
+    // Reset do botão antes de mostrar
+    const btnPlayTV = document.getElementById('btnPlayTV');
+    if(btnPlayTV) {
+        btnPlayTV.disabled = false;
+        btnPlayTV.innerHTML = '<i class="fas fa-play"></i> Assistir Agora';
+        btnPlayTV.onclick = () => dispararPlayer(streamId, 'live', '', titulo);
+    }
     document.getElementById('tvTitle').innerText = titulo;
     document.getElementById('tvBadges').innerHTML = gerarHTMLBadges(tagsStr);
-    const btn = document.getElementById('btnPlayTV');
-    if(btn) btn.onclick = () => dispararPlayer(streamId, 'live', '', titulo);
+    
     document.getElementById('sheetOverlay').classList.add('active');
     document.getElementById('bottomSheet').classList.add('active');
     addNoScroll();
     history.pushState({ view: 'sheet', modal: true }, null, "");
 }
-function fecharSheetTV() { 
+function fecharSheetTV(fromPopState = false) { 
     document.getElementById('sheetOverlay').classList.remove('active'); 
     document.getElementById('bottomSheet').classList.remove('active'); 
     removeNoScroll();
-    if(history.state && history.state.view === 'sheet') history.back();
+    if(!fromPopState && history.state && history.state.view === 'sheet') history.back();
 }
 
 function fecharTodosOverlays() {
@@ -812,7 +833,7 @@ function fecharTodosOverlays() {
 }
 
 async function dispararPlayer(id, tipo, ext, titulo) {
-    const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : null;
+    const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
     if(btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`; btn.disabled = true; }
     try {
         let urlFinal = "";
@@ -839,7 +860,12 @@ async function dispararPlayer(id, tipo, ext, titulo) {
         document.body.removeChild(a);
 
     } catch(e) { mostrarToast("Erro: " + e.message); }
-    finally { if(btn) { btn.innerHTML = `<i class="fas fa-play"></i> Assistir Agora`; btn.disabled = false; } }
+    finally { 
+        if(btn) { 
+            btn.innerHTML = `<i class="fas fa-play"></i> Assistir`; 
+            btn.disabled = false; 
+        } 
+    }
 }
 
 // ===================== NAVEGAÇÃO E MENU =====================
@@ -849,11 +875,11 @@ function abrirMenuPrincipal() {
     addNoScroll();
     history.pushState({ view: 'menu', modal: true }, null, "");
 }
-function fecharMenuPrincipal() {
+function fecharMenuPrincipal(fromPopState = false) {
     document.getElementById('menuOverlay').classList.remove('active');
     document.getElementById('menuPrincipal').classList.remove('active');
     removeNoScroll();
-    if(history.state && history.state.view === 'menu') history.back();
+    if(!fromPopState && history.state && history.state.view === 'menu') history.back();
 }
 
 function mudarAba(idView, btn, originHistory = false) {
@@ -983,21 +1009,30 @@ async function abrirGradeIPTV(tipo, catId, nomePasta) {
 }
 
 async function abrirDetalhesIPTV(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
+    // Reset do botão de Play para filmes VOD que usam o direct link do app
+    const btnPlayFilme = document.getElementById('btnPlayFilme');
+    if(btnPlayFilme) {
+        btnPlayFilme.disabled = false;
+        btnPlayFilme.innerHTML = '<i class="fas fa-play"></i> <span>Assistir</span>';
+        btnPlayFilme.style.pointerEvents = 'auto';
+        btnPlayFilme.style.display = 'flex';
+        // ASSINAR FUNÇÃO DIRETA PARA IPTVS (Sem ir pro servidor Web)
+        btnPlayFilme.onclick = () => dispararPlayer(id, tipo, ext, titulo);
+    }
+
     document.getElementById('dpTitle').innerText = titulo;
     document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
     const capa = urlCapa || 'https://via.placeholder.com/800x600/111/fff';
     document.getElementById('dpPoster').style.backgroundImage = `url('${capa}')`;
     document.getElementById('dpTmdbMeta').innerHTML = ''; document.getElementById('dpDirector').innerText = '';
-    document.getElementById('dpSynopsis').innerText = 'Conteúdo do catálogo IPTV direto.';
+    document.getElementById('dpSynopsis').innerText = 'Conteúdo do catálogo direto.';
     document.getElementById('dpCastContainer').style.display = 'none'; document.getElementById('dpSimilarContainer').style.display = 'none';
     document.getElementById('btnTrailer').style.display = 'none'; document.getElementById('dpEpisodes').style.display = 'none';
 
     currentTmdbId = null; currentItemType = tipo === 'series' ? 'tv' : 'movie';
     currentStreamData = { id: id, title: titulo, img: capa, type: tipo, ext: ext };
 
-    const btnPlay = document.getElementById('btnPlayFilme');
-    btnPlay.style.display = 'flex';
-    btnPlay.onclick = () => dispararPlayer(id, tipo, ext, titulo);
+    if(tipo === 'series') btnPlayFilme.style.display = 'none'; // Séries mostram botões nos eps
 
     document.getElementById('detailsPage').classList.add('active');
     addNoScroll();
@@ -1044,38 +1079,42 @@ function handleTouchEnd(e) {
     const deltaY = touchEndY - touchStartY;
     const deltaX = touchEndX - touchStartX;
 
-    if(deltaY > 120 && Math.abs(deltaX) < 80) {
+    // Se puxar para baixo consideravelmente sem desviar pros lados (fecha tudo)
+    if(deltaY > 80 && Math.abs(deltaX) < 100) {
         const trailer = document.getElementById('trailerModal');
         const embed = document.getElementById('embedModal');
-        if(trailer.style.display === 'flex') fecharTrailer();
-        if(embed.style.display === 'flex') fecharEmbedWeb();
+        const menu = document.getElementById('menuPrincipal');
+        const sheetTv = document.getElementById('bottomSheet');
+        const serverModal = document.getElementById('serverModal');
+
+        if(trailer && trailer.style.display === 'flex') fecharTrailer();
+        if(embed && embed.style.display === 'flex') fecharEmbedWeb();
+        if(menu && menu.classList.contains('active')) fecharMenuPrincipal();
+        if(sheetTv && sheetTv.classList.contains('active')) fecharSheetTV();
+        if(serverModal && serverModal.classList.contains('active')) fecharMenuServidores();
     }
 }
 
+// LÓGICA BLINDADA DO POPSTATE PARA NÃO QUEBRAR HISTÓRICO
 window.addEventListener('popstate', function(event) {
     const modais = [
-        { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: fecharAdBlock },
-        { id: 'embedModal', check: (el) => el.style.display === 'flex', close: fecharEmbedWeb },
-        { id: 'trailerModal', check: (el) => el.style.display === 'flex', close: fecharTrailer },
-        { id: 'serverModal', check: (el) => el.classList.contains('active'), close: fecharMenuServidores },
-        { id: 'actorModal', check: (el) => el.classList.contains('active'), close: fecharAtor },
-        { id: 'detailsPage', check: (el) => el.classList.contains('active'), close: fecharDetalhes },
-        { id: 'bottomSheet', check: (el) => el.classList.contains('active'), close: fecharSheetTV },
-        { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: fecharMenuPrincipal },
-        { id: 'vipModal', check: (el) => el.style.display === 'flex', close: fecharModalVip }
+        { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: () => fecharAdBlock() }, // Sem pushstate neste ad block
+        { id: 'embedModal', check: (el) => el.style.display === 'flex', close: () => fecharEmbedWeb(true) },
+        { id: 'trailerModal', check: (el) => el.style.display === 'flex', close: () => fecharTrailer(true) },
+        { id: 'serverModal', check: (el) => el.classList.contains('active'), close: () => fecharMenuServidores(true) },
+        { id: 'actorModal', check: (el) => el.classList.contains('active'), close: () => fecharAtor(true) },
+        { id: 'detailsPage', check: (el) => el.classList.contains('active'), close: () => fecharDetalhes(true) },
+        { id: 'bottomSheet', check: (el) => el.classList.contains('active'), close: () => fecharSheetTV(true) },
+        { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: () => fecharMenuPrincipal(true) },
+        { id: 'vipModal', check: (el) => el.style.display === 'flex', close: () => fecharModalVip(true) }
     ];
 
     for(let modal of modais) {
         const el = document.getElementById(modal.id);
         if(el && modal.check(el)) {
             modal.close();
-            return; 
+            return; // Bloqueia o loop para fechar um modal de cada vez sem encavalar
         }
-    }
-
-    if(document.getElementById('menuPrincipal').classList.contains('active')) {
-        fecharMenuPrincipal();
-        return;
     }
 
     if(document.getElementById('view-superflix') && document.getElementById('view-superflix').classList.contains('active')) {
