@@ -55,7 +55,6 @@ function fecharModalVip() {
     if(history.state && history.state.view === 'vip') { fromPopState = true; history.back(); }
 }
 function abrirWhatsAppVip() {
-    // URL Web segura que evita o erro ERR_UNKNOWN_URL_SCHEME no Android
     window.open('https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87', '_blank');
 }
 async function fazerLoginVip() {
@@ -231,24 +230,20 @@ function gerarHTMLBadges(tagsStr) {
     return html;
 }
 
-// ===================== TMDB =====================
+// ===================== TMDB API (CORRIGIDA - SEM CACHE BUGADO) =====================
 async function tmdbFetch(endpoint) {
-    const cacheKey = 'tmdb_' + endpoint.replace(/\?/g,'_').replace(/&/g,'_').replace(/=/g,'_');
-    const cached = localStorage.getItem(cacheKey);
-    if(cached) {
-        try {
-            const { data, ts } = JSON.parse(cached);
-            const ttl = endpoint.includes('trending') ? 3600000 : endpoint.includes('search') ? 600000 : 86400000;
-            if((Date.now() - ts) < ttl) return data;
-        } catch(e){}
-    }
     try {
         const connector = endpoint.includes('?') ? '&' : '?';
-        const res = await fetch(`https://api.themoviedb.org/3${endpoint}${connector}api_key=${TMDB_API_KEY}&language=pt-BR`);
+        const url = `https://api.themoviedb.org/3${endpoint}${connector}api_key=${TMDB_API_KEY}&language=pt-BR`;
+        
+        // Removemos o localStorage. O navegador gerencia o cache e evitamos o erro da sinopse sumir.
+        const res = await fetch(url, { cache: 'no-store' }); 
         const data = await res.json();
-        localStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
         return data;
-    } catch(e) { return { results: [] }; }
+    } catch(e) { 
+        console.error("TMDB Fetch Error:", e);
+        return { results: [] }; 
+    }
 }
 function getTrending(type='movie', page=1) { return tmdbFetch(`/trending/${type}/week?page=${page}`); }
 function getDetails(id, type='movie') { return tmdbFetch(`/${type}/${id}?append_to_response=credits,videos,recommendations`); }
@@ -352,7 +347,8 @@ function atualizarHero() {
     document.getElementById('heroTags').innerHTML = tags.join(' <span style="color:#555;">|</span> ');
 
     const synopsisEl = document.getElementById('heroSynopsis');
-    if(synopsisEl) synopsisEl.innerText = f.overview ? f.overview : "Sinopse não disponível.";
+    // Agora que tiramos o LocalStorage bugado, a sinopse sempre virá corretamente da API
+    if(synopsisEl) synopsisEl.innerText = f.overview ? f.overview : "Sinopse não disponível no momento.";
 }
 
 function abrirHeroDetalhes() {
@@ -441,7 +437,6 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     currentSeason = 1;
     currentEpisode = 1;
 
-    // Reset explícito para garantir que o botão "Assistir" nunca fique cinzento ou preso em outra função
     const btnPlayFilme = document.getElementById('btnPlayFilme');
     if(btnPlayFilme) {
         btnPlayFilme.disabled = false;
@@ -564,7 +559,6 @@ function abrirMenuServidoresDetalhes() {
     }
     document.getElementById('serverModal').classList.add('active');
     
-    // Altera z-index temporário para cobrir os detalhes na cor preta
     const overlay = document.getElementById('sheetOverlay');
     if(overlay) {
         overlay.style.zIndex = "3600";
@@ -616,7 +610,6 @@ async function buscarEReproduzirNativo(title, type) {
 function abrirPlayerWeb(servidor) {
     if(!currentTmdbId) return;
 
-    // FECHA VISUALMENTE SEM MEXER NO HISTÓRICO PARA EVITAR BUG AO VOLTAR
     document.getElementById('serverModal').classList.remove('active');
     const overlay = document.getElementById('sheetOverlay');
     if(overlay) {
@@ -648,7 +641,6 @@ function abrirPlayerWeb(servidor) {
         frame.src = finalUrl;
         modal.style.display = 'flex';
         
-        // SUBSTITUI PARA NÃO CRIAR LOOP FANTASMA NA VOLTA
         if(history.state && history.state.view === 'servers') {
             history.replaceState({ view: 'embed', modal: true }, null, "");
         } else {
@@ -860,14 +852,13 @@ async function dispararPlayer(id, tipo, ext, titulo) {
     } catch(e) { 
         mostrarToast("Erro: " + e.message); 
     } finally { 
-        // Restaurar o botão sempre após 1 segundo para evitar que congele se o intent não disparar o Player
         setTimeout(() => {
             if(btn) { btn.innerHTML = `<i class="fas fa-play"></i> Assistir`; btn.disabled = false; } 
         }, 1000);
     }
 }
 
-// ===================== NAVEGAÇÃO E MENU =====================
+// ===================== NAVEGAÇÃO E MENU (CORRIGIDA) =====================
 function abrirMenuPrincipal() {
     document.getElementById('menuOverlay').classList.add('active');
     document.getElementById('menuPrincipal').classList.add('active');
@@ -879,6 +870,28 @@ function fecharMenuPrincipal(fromPopState = false) {
     document.getElementById('menuPrincipal').classList.remove('active');
     removeNoScroll();
     if(!fromPopState && history.state && history.state.view === 'menu') { fromPopState = true; history.back(); }
+}
+
+// NOVA FUNÇÃO: Substitui os conflitos de histórico ao clicar no Menu
+function acionarMenu(acao) {
+    // 1. Fecha o menu visualmente sem acionar o botão voltar automático
+    document.getElementById('menuOverlay').classList.remove('active');
+    document.getElementById('menuPrincipal').classList.remove('active');
+    removeNoScroll();
+    
+    // 2. Corrige a pilha de histórico do Android
+    if (history.state && history.state.view === 'menu') {
+        fromPopState = true; 
+        history.back(); 
+    }
+    
+    // 3. Aguarda o fechamento e abre a nova aba suavemente
+    setTimeout(() => {
+        if (acao === 'iptv') entrarModoIPTV();
+        else if (acao === 'buscar') mudarAba('view-buscar', null);
+        else if (acao === 'historico') mudarAba('view-historico', null);
+        else if (acao === 'vip') abrirModalVip();
+    }, 100);
 }
 
 function mudarAba(idView, btn, originHistory = false) {
@@ -1014,7 +1027,6 @@ async function abrirDetalhesIPTV(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
         btnPlayFilme.innerHTML = '<i class="fas fa-play"></i> <span>Assistir</span>';
         btnPlayFilme.style.pointerEvents = 'auto';
         btnPlayFilme.style.display = 'flex';
-        // Redefine para abrir direto se for conteúdo do modo IPTV
         btnPlayFilme.onclick = () => dispararPlayer(id, tipo, ext, titulo);
     }
 
@@ -1115,14 +1127,6 @@ window.addEventListener('popstate', function(event) {
         }
     }
 
-    if(document.getElementById('view-superflix') && document.getElementById('view-superflix').classList.contains('active')) {
-        document.getElementById('view-superflix').classList.remove('active');
-        const mainHeader = document.getElementById('mainHeader');
-        if(mainHeader) mainHeader.style.display = 'flex';
-        mudarAba('view-home', document.getElementById('nav-home'), true);
-        return;
-    }
-
     if(document.getElementById('view-iptv').classList.contains('active')) {
         document.getElementById('view-iptv').classList.remove('active');
         const mainHeader = document.getElementById('mainHeader');
@@ -1164,135 +1168,4 @@ window.onload = () => {
 function fecharAdBlock() {
     document.getElementById('adBlockModal').style.display = 'none';
     removeNoScroll();
-}
-
-// ===================== INTEGRAÇÃO SUPER FLIX (API BLINDADA) =====================
-async function abrirSuperFlix(tipo) {
-    if(heroInterval) { clearInterval(heroInterval); heroInterval = null; }
-    currentSuperFlixType = tipo;
-    document.getElementById('titulo-superflix').innerText = tipo === 'animes' ? 'Animes' : 'Doramas';
-    document.getElementById('inputBuscaSuperFlix').value = '';
-    
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-    document.getElementById('view-superflix').classList.add('active');
-    document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-    
-    const mainHeader = document.getElementById('mainHeader');
-    if(mainHeader) mainHeader.style.display = 'none';
-
-    carregarSuperFlixGeneros(tipo);
-    carregarSuperFlixLista(tipo, null);
-    history.pushState({ view: 'view-superflix' }, null, "");
-}
-
-async function carregarSuperFlixGeneros(tipo) {
-    let catUrl = tipo === 'animes' ? 'anime' : 'dorama';
-    try {
-        const res = await fetch(`https://superflixapi.fit/lista?category=${catUrl}&type=generos&format=json`);
-        const generos = await res.json();
-        let html = `<div class="genre-chip active" onclick="filtrarSuperFlix(null, this)">Todos</div>`;
-        if(generos && generos.length > 0) {
-            generos.forEach(g => {
-                const nomeCat = g.name || g;
-                html += `<div class="genre-chip" onclick="filtrarSuperFlix('${nomeCat}', this)">${nomeCat}</div>`;
-            });
-        }
-        document.getElementById('genreChipsSuperFlix').innerHTML = html;
-    } catch(e) { console.error("Erro gêneros", e); }
-}
-
-function filtrarSuperFlix(genero, el) {
-    document.querySelectorAll('#genreChipsSuperFlix .genre-chip').forEach(c => c.classList.remove('active'));
-    if(el) el.classList.add('active');
-    carregarSuperFlixLista(currentSuperFlixType, genero);
-}
-
-let timeoutSfBusca = null;
-function pesquisarSuperFlix() {
-    clearTimeout(timeoutSfBusca);
-    const query = document.getElementById('inputBuscaSuperFlix').value.trim();
-    timeoutSfBusca = setTimeout(() => {
-        if(query.length >= 3) {
-            carregarSuperFlixLista(currentSuperFlixType, null, query);
-        } else if (query.length === 0) {
-            carregarSuperFlixLista(currentSuperFlixType, null);
-        }
-    }, 800);
-}
-
-async function carregarSuperFlixLista(tipo, genero, busca = null) {
-    const container = document.getElementById('conteudo-superflix');
-    container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>`;
-    
-    try {
-        let url = '';
-        if (genero) {
-            let catG = tipo === 'animes' ? 'anime' : 'dorama';
-            url = `https://superflixapi.fit/lista?category=${catG}&type=tmdb&genero=${encodeURIComponent(genero.toLowerCase())}&format=json`;
-        } else if (busca) {
-            let catB = tipo === 'animes' ? 'animes' : 'dorama';
-            url = `https://superflixapi.fit/lista?category=${catB}&format=json`;
-        } else {
-            // Prevenção contra bug da API retornar arquivo HTML na listagem crua
-            let catB = tipo === 'animes' ? 'animes' : 'dorama';
-            url = `https://superflixapi.fit/lista?category=${catB}&type=tmdb&order=desc&format=json`;
-        }
-
-        const res = await fetch(url);
-        const text = await res.text();
-        
-        let dadosBrutos;
-        try {
-            dadosBrutos = JSON.parse(text);
-        } catch(err) {
-            // Se a API teimar em jogar HTML, tenta um fallback usando TMDB IDs diretos
-            if(tipo === 'doramas') {
-                const fRes = await fetch(`https://superflixapi.fit/lista?category=dorama&type=imdb&format=json`);
-                dadosBrutos = await fRes.json();
-            } else {
-                throw err;
-            }
-        }
-
-        let resultados = [];
-        if (!Array.isArray(dadosBrutos)) {
-            if (dadosBrutos.data) resultados = dadosBrutos.data;
-            else if (dadosBrutos.series) resultados = dadosBrutos.series;
-            else if (dadosBrutos.animes) resultados = dadosBrutos.animes;
-            else resultados = Object.values(dadosBrutos);
-        } else {
-            resultados = dadosBrutos;
-        }
-
-        lastSuperFlixData = resultados;
-
-        if (busca && lastSuperFlixData.length > 0) {
-            resultados = lastSuperFlixData.filter(item => (item.title || item.nome || item.name || '').toLowerCase().includes(busca.toLowerCase()));
-        }
-
-        if(!resultados || resultados.length === 0) {
-            container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Nenhum resultado encontrado.</p>';
-            return;
-        }
-
-        let html = '';
-        resultados.slice(0, 50).forEach(item => {
-            const titulo = item.title || item.nome || item.name || 'Sem Título';
-            const id = item.tmdb_id || item.id;
-            const capa = item.cover || item.poster || item.poster_path || 'https://via.placeholder.com/220x330/111/fff';
-            // Usa TV por padrão pois Anime/Dorama é classificado como Série no banco do TMDB
-            const typeToOpen = 'tv';
-
-            if(id && id !== 0) {
-                html += `<div class="card-movie" onclick="abrirDetalhesTMDB(${id}, '${typeToOpen}')">
-                    <img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">
-                    <div class="titulo-fallback" style="display:none">${esc(titulo)}</div>
-                </div>`;
-            }
-        });
-        container.innerHTML = html;
-    } catch(e) {
-        console.error(e);
-        container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Erro ao carregar os títulos do servidor.</p>';
-    }
 }
