@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
     
-    <!-- TAG ?v=2.7 FORÇA O CELULAR A APAGAR O CACHE ANTIGO IMEDIATAMENTE -->
+    <!-- FORÇA ATUALIZAÇÃO DO CACHE -->
     <link rel="stylesheet" href="/css/style.css?v=2.7">
 
     <style>
@@ -96,7 +96,7 @@
         .nav-item span { font-size: 9px; font-weight: 700; text-transform: uppercase; }
 
         /* =========================================
-           MENU PRINCIPAL COMPACTO CORRIGIDO (CLICÁVEL)
+           MENU PRINCIPAL COMPACTO
         ========================================= */
         .bottom-sheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1999; opacity: 0; pointer-events: none; transition: 0.3s ease; }
         .bottom-sheet-overlay.active { opacity: 1; pointer-events: all; }
@@ -104,7 +104,7 @@
         .bottom-sheet { 
             position: fixed; bottom: 0; left: 0; width: 100%; 
             background: var(--bg-top); border-radius: 20px 20px 0 0; 
-            z-index: 2000; padding: 15px 15px 40px; /* Aumentei o bottom padding para evitar corte */
+            z-index: 2000; padding: 15px 15px 25px; 
             transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1); 
             border-top: 1px solid rgba(255,255,255,0.05); 
             transform: translateY(100%); 
@@ -118,24 +118,22 @@
         .menu-user-info h3 { margin: 0; font-size: 13px; color: #fff; }
         .menu-user-info p { margin: 2px 0 0 0; font-size: 9px; color: var(--text-muted); }
 
-        .menu-section { margin-bottom: 15px; }
+        .menu-section { margin-bottom: 12px; }
         .menu-section-title { font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; display: flex; align-items: center; gap: 4px; }
         
         .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; }
-        .menu-grid-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s; position: relative; z-index: 10; pointer-events: auto; }
+        .menu-grid-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 8px; display: flex; flex-direction: column; align-items: center; gap: 6px; cursor: pointer; transition: 0.2s; }
         .menu-grid-item:active { transform: scale(0.96); background: rgba(255,255,255,0.08); }
         .menu-grid-item span { font-size: 10px; font-weight: 700; color: #ccc; }
         .menu-icon-box { width: 28px; height: 28px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 12px; color: #fff; box-shadow: 0 2px 5px rgba(0,0,0,0.3); }
 
         .menu-list { display: flex; flex-direction: column; gap: 6px; }
-        /* CORREÇÃO DO MENU APAGADO AQUI */
-        .menu-list-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 12px 15px; display: flex; align-items: center; gap: 10px; cursor: pointer; position: relative; z-index: 10; opacity: 1 !important; pointer-events: auto !important; }
-        .menu-list-item:active { background: rgba(255,255,255,0.15); }
+        .menu-list-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 8px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; }
+        .menu-list-item:active { background: rgba(255,255,255,0.08); }
         .menu-list-icon { font-size: 14px; width: 18px; text-align: center; }
         .menu-list-title { font-size: 11px; font-weight: 700; color: #fff; margin-bottom: 1px; }
         .menu-list-sub { font-size: 8px; color: var(--text-muted); }
-
-        .menu-footer { text-align: center; font-size: 9px; color: var(--text-muted); margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
+        .menu-footer { text-align: center; font-size: 9px; color: var(--text-muted); margin-top: 5px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.05); }
 
         /* =========================================
            SERVIDORES E FILTROS
@@ -170,6 +168,8 @@
         .secondary-actions { display: flex; gap: 8px; width: 100%; }
         .sec-btn { flex: 1; background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.2); padding: 10px; border-radius: 8px; font-weight: 700; font-size: 11px; display: flex; justify-content: center; align-items: center; gap: 6px; text-transform: uppercase; cursor: pointer; text-align: center;}
         .sec-btn.watched.active { background: rgba(0, 230, 118, 0.15); border-color: #00e676; color: #00e676; }
+        .sec-btn.fav i { color: #ff4081; }
+        .sec-btn.fav.active { background: rgba(255, 64, 129, 0.15); border-color: #ff4081; color: #ff4081; }
         .dp-synopsis { font-size: 14px; color: #ccc; line-height: 1.6; margin-bottom: 25px; }
 
         .cast-section { margin-bottom: 25px; }
@@ -194,6 +194,7 @@
         .ep-number { font-size: 11px; color: var(--accent); font-weight: 900; margin-bottom: 4px; letter-spacing: 1px;}
         .ep-name { font-size: 11px; color: #ccc; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal; font-weight: 600; line-height: 1.3;}
 
+        /* IFRAME REFEITO (SEM SANDBOX PARA EVITAR ERRO 404 DO SUPERFLIX/WAREZCDN) */
         .trailer-modal, .embed-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 3800; display: none; overflow: hidden; }
         .trailer-close { position: absolute; top: 20px; right: 20px; color: #fff; font-size: 30px; cursor: pointer; padding: 10px; z-index: 4502; text-shadow: 0 0 10px #000; }
         .embed-frame { width: 100%; height: 100%; background: #000; border: none; z-index: 3801; }
@@ -229,7 +230,7 @@
             <input type="password" id="vipSenha" placeholder="Sua Senha" style="width:100%; padding:15px; margin-bottom:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.5); color:#fff; outline:none;">
             <button onclick="event.stopPropagation(); fazerLoginVip()" style="width:100%; padding:15px; border-radius:8px; background:gold; color:#000; font-weight:900; font-size:15px; border:none; margin-bottom:15px; cursor:pointer; text-transform:uppercase;" id="btnLoginBtn">Entrar na Conta VIP</button>
             <p id="vipMsg" style="color:#ff3d00; font-size:12px; margin-bottom:15px; display:none; font-weight:bold;"></p>
-            <a href="https://t.me/streamflixofc" target="_blank" style="color:var(--accent); font-size:12px; text-decoration:none; display:block; margin-top:5px;">Comprar VIP no Telegram</a>
+            <a href="javascript:void(0)" onclick="abrirWhatsAppVip()" style="color:var(--accent); font-size:12px; text-decoration:none; display:block; margin-top:5px;">Comprar VIP no Telegram</a>
         </div>
     </div>
 
@@ -316,7 +317,7 @@
         <div class="nav-item" id="nav-menu" onclick="abrirMenuPrincipal()"><i class="fas fa-bars"></i><span>Menu</span></div>
     </div>
 
-    <!-- MENU PRINCIPAL (COMPACTO COM CORREÇÃO DE OPACIDADE E CLIQUE) -->
+    <!-- MENU PRINCIPAL (COMPACTO COM SOLUÇÃO DE ROTAS) -->
     <div class="bottom-sheet-overlay" id="menuOverlay" onclick="fecharMenuPrincipal()"></div>
     <div class="bottom-sheet" id="menuPrincipal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)" style="touch-action: pan-y;">
         <div class="sheet-handle" onclick="fecharMenuPrincipal()"></div>
@@ -359,7 +360,7 @@
             </div>
         </div>
 
-        <div class="menu-section" style="margin-bottom: 25px;"> <!-- Margem extra para não cortar os itens -->
+        <div class="menu-section">
             <div class="menu-list">
                 <div class="menu-list-item" onclick="navegarAbaDoMenu('vip')">
                     <div class="menu-list-icon" style="color:gold;"><i class="fas fa-crown"></i></div>
@@ -369,32 +370,25 @@
                     </div>
                     <i class="fas fa-chevron-right" style="color:#666; font-size:10px;"></i>
                 </div>
-                <div class="menu-list-item" onclick="abrirWhatsAppVip()">
+                <a href="javascript:void(0)" onclick="abrirWhatsAppVip()" class="menu-list-item" style="text-decoration:none;">
                     <div class="menu-list-icon" style="color:#0088cc;"><i class="fab fa-telegram"></i></div>
                     <div style="flex:1;">
                         <div class="menu-list-title">Canal Telegram</div>
                         <div class="menu-list-sub">Notícias e Avisos</div>
                     </div>
                     <i class="fas fa-external-link-alt" style="color:#666; font-size:10px;"></i>
-                </div>
+                </a>
             </div>
         </div>
         <div class="menu-footer">StreamFlix v2.7 (PWA)</div>
     </div>
 
-    <!-- MODAL SERVIDORES (COM O CDN DE VOLTA E WAREZ CDN INTEGRADO) -->
+    <!-- MODAL SERVIDORES -->
     <div class="server-modal" id="serverModal">
         <div class="sheet-handle" onclick="fecharMenuServidores()"></div>
         <div class="server-title">Servidores Alternativos (Web)</div>
-        
-        <!-- O BOTÃO NATIVO DE VOLTA -->
-        <div class="server-btn" id="btnServerNativo" style="border-left: 4px solid #00e5ff; background: rgba(0, 229, 255, 0.05);">
-            <div><i class="fas fa-bolt" style="color:#00e5ff;"></i> &nbsp; Servidor App (CDN Premium)</div>
-            <i class="fas fa-play" style="font-size:10px; color:#fff;"></i>
-        </div>
-
         <div class="server-btn" onclick="abrirPlayerWeb('superflix')" style="border-left: 4px solid #b388ff;">
-            <div><i class="fas fa-play-circle" style="color:#b388ff;"></i> &nbsp; Servidor WarezCDN (Recomendado)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
+            <div><i class="fas fa-play-circle" style="color:#b388ff;"></i> &nbsp; Servidor SuperFlix (Recomendado)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
         </div>
         <div class="server-btn" onclick="abrirPlayerWeb('embedmovies')" style="border-left: 4px solid var(--accent);">
             <div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; Servidor Embed (Leg/Dub)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i>
@@ -413,7 +407,7 @@
         <button class="sheet-btn" id="btnPlayTV"><i class="fas fa-play"></i> Assistir Agora</button>
     </div>
 
-    <!-- DETALHES TMDB -->
+    <!-- DETALHES TMDB (LAYOUT EXATO QUE VOCÊ QUERIA) -->
     <div class="details-page" id="detailsPage">
         <button class="dp-back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
         <div class="dp-poster" id="dpPoster" style="background-image: url('');">
@@ -426,11 +420,14 @@
             <div class="dp-meta" id="dpMeta"></div>
 
             <div class="action-container" id="boxAcoes">
-                <button class="dp-play-btn" id="btnPlayFilme"><i class="fas fa-play"></i> Assistir</button>
-                <div class="secondary-actions" id="boxSecundario" style="display:none;">
+                <button class="dp-play-btn" id="btnPlayFilme" onclick="abrirMenuServidoresDetalhes()">
+                    <i class="fas fa-play"></i> <span>Assistir</span>
+                </button>
+
+                <div class="secondary-actions" id="boxSecundario">
                     <div class="sec-btn watched" id="btnWatched" onclick="toggleWatchedGlobal()"><i class="fas fa-check"></i> Visto</div>
+                    <div class="sec-btn fav" id="btnFav" onclick="toggleFavGlobal()"><i class="fas fa-heart"></i> Favorito</div>
                     <div class="sec-btn trailer" id="btnTrailer" onclick="abrirTrailer()" style="display:none;"><i class="fas fa-film"></i> Trailer</div>
-                    <div class="sec-btn" id="btnAltServer" onclick="abrirMenuServidores()"><i class="fas fa-server"></i> Servers</div>
                 </div>
             </div>
 
@@ -453,7 +450,7 @@
         <iframe id="trailerFrame" class="embed-frame" allowfullscreen="true"></iframe>
     </div>
 
-    <!-- PLAYER WEB -->
+    <!-- PLAYER WEB COM PERMISSÕES OFICIAIS DA WAREZCDN E SUPERFLIX -->
     <div class="embed-modal" id="embedModal">
         <i class="fas fa-times trailer-close" onclick="fecharEmbedWeb()"></i>
         <iframe id="embedFrame" class="embed-frame" frameborder="0" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *; accelerometer *; gyroscope *; web-share *" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
