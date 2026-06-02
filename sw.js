@@ -1,4 +1,5 @@
-const CACHE_NAME = 'streamflix-cache-v1';
+// Mudamos para V2 para forçar a limpeza do cache antigo do Poco M6!
+const CACHE_NAME = 'streamflix-cache-v2';
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
