@@ -360,6 +360,4 @@ a.server-btn { display: flex; width: 100%; box-sizing: border-box; }
 .bottom-sheet, .server-modal {
     -webkit-overflow-scrolling: touch;
 }
-'''
 
-print("style.css criado - tamanho:", len(style_css))
