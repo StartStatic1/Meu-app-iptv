@@ -33,10 +33,10 @@ async function buscarEReproduzirNativo(title, type) {
                 if(d.episodes && d.episodes['1'] && d.episodes['1'][0]) {
                     const ep = d.episodes['1'][0];
                     dispararPlayer(ep.id, 'episode', ep.container_extension||'mp4', title);
-                } else { mostrarToast("Episódios não encontrados."); }
+                } else { mostrarToast("Episodios nao encontrados."); }
             }
         } else {
-            mostrarToast("Não disponível no CDN. Tente Web.");
+            mostrarToast("Nao disponivel no CDN. Tente Web.");
             setTimeout(() => {
                 document.getElementById('serverModal').classList.add('active');
                 const overlay = document.getElementById('sheetOverlay');
@@ -96,7 +96,7 @@ async function dispararPlayer(id, tipo, ext, titulo) {
             const res = await fetch(`/api/iptv?action=get_series_url&stream_id=${id}&extension=${ext||'mp4'}`);
             const data = await res.json(); urlFinal = data.url;
         }
-        if(!urlFinal) throw new Error("Link não retornado.");
+        if(!urlFinal) throw new Error("Link nao retornado.");
         if (window.AndroidApp && window.AndroidApp.abrirVideoNativo) {
             window.AndroidApp.abrirVideoNativo(urlFinal);
         } else {
@@ -136,12 +136,8 @@ function fecharMenuServidores(fromPopState = false) {
 
 function fecharEmbedWeb(fromPopState = false) {
     const frame = document.getElementById('embedFrame');
-    // CORREÇÃO: Limpa iframe de forma mais agressiva
     frame.src = 'about:blank';
-    try {
-        frame.contentWindow.location.href = 'about:blank';
-    } catch(e) {}
-    // Remove e recria o iframe para garantir que o vídeo pare
+    try { frame.contentWindow.location.href = 'about:blank'; } catch(e) {}
     const parent = frame.parentNode;
     const newFrame = frame.cloneNode(true);
     newFrame.src = '';
@@ -189,7 +185,6 @@ function fecharSheetTV(fromPopState = false) {
     if(!fromPopState && history.state && history.state.view === 'sheet') { fromPopState = true; history.back(); }
 }
 
-// CORREÇÃO: fecharTodosOverlays agora fecha TUDO
 function fecharTodosOverlays() {
     fecharMenuServidores();
     fecharSheetTV();

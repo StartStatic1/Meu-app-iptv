@@ -1,4 +1,4 @@
-// ===================== SÉRIES / EPISÓDIOS =====================
+// ===================== SERIES / EPISODIOS =====================
 function reproduzirEpisodioTMDB(tmdbId, season, episode) {
     currentSeason = season;
     currentEpisode = episode;

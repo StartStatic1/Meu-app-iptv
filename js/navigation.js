@@ -1,4 +1,4 @@
-// ===================== NAVEGAÇÃO E MENU =====================
+// ===================== NAVEGACAO E MENU =====================
 function abrirMenuPrincipal() {
     document.getElementById('menuOverlay').classList.add('active');
     document.getElementById('menuPrincipal').classList.add('active');
@@ -11,6 +11,20 @@ function fecharMenuPrincipal(fromPopState = false) {
     document.getElementById('menuPrincipal').classList.remove('active');
     removeNoScroll();
     if(!fromPopState && history.state && history.state.view === 'menu') { fromPopState = true; history.back(); }
+}
+
+// NOVO: funcoes helper do menu que nao usam history.back conflitante
+function menuIrPara(idView) {
+    fecharMenuPrincipal(true); // fecha sem history.back
+    setTimeout(() => mudarAba(idView, null), 50);
+}
+function menuIrParaIPTV() {
+    fecharMenuPrincipal(true);
+    setTimeout(() => entrarModoIPTV(), 50);
+}
+function menuAbrirVip() {
+    fecharMenuPrincipal(true);
+    setTimeout(() => abrirModalVip(), 50);
 }
 
 function mudarAba(idView, btn, originHistory = false) {
@@ -31,7 +45,7 @@ function mudarAba(idView, btn, originHistory = false) {
     if(idView === 'view-buscar') { setTimeout(() => document.getElementById('inputBuscaGlobal').focus(), 300); }
 }
 
-// ===================== HISTÓRICO =====================
+// ===================== HISTORICO =====================
 function carregarHistorico() {
     const listVistos = getWatchedList();
     const listFavs = getFavList();
@@ -50,7 +64,7 @@ function carregarHistorico() {
             html += `<div class="card-history" onclick="abrirDetalhesTMDB(${item.id}, '${item.type}')"><div class="ep-watched-btn active" style="top:5px; left:5px; position:absolute;" onclick="event.stopPropagation(); removerDoHistorico(event, '${item.id}')"><i class="fas fa-times"></i></div><img src="${item.img}" style="width:100%; height:75%; object-fit:cover; margin:0;"><div class="titulo-tv" style="padding:5px; height:25%; display:flex; align-items:center; justify-content:center;">${item.title}</div></div>`;
         });
     }
-    if(html === "") html = `<p class="loading-text" style="grid-column: span 3; margin-top:30px;">Ainda não marcou nada.</p>`;
+    if(html === "") html = `<p class="loading-text" style="grid-column: span 3; margin-top:30px;">Ainda nao marcou nada.</p>`;
     const container = document.getElementById('conteudo-historico');
     if(container) container.innerHTML = html;
 }
@@ -67,7 +81,7 @@ function removerDoHistorico(event, id) {
 function handleTouchStart(e) {
     touchStartY = e.changedTouches[0].screenY;
     touchStartX = e.changedTouches[0].screenX;
-    touchStartTarget = e.target; // GUARDA o elemento tocado
+    touchStartTarget = e.target;
 }
 
 function handleTouchEnd(e) {
@@ -76,11 +90,8 @@ function handleTouchEnd(e) {
     const deltaY = touchEndY - touchStartY;
     const deltaX = touchEndX - touchStartX;
 
-    // CORREÇÃO: Não fecha modal se o touch começou em elemento scrollável
     if(touchStartTarget) {
         const scrollableParent = touchStartTarget.closest('.carousel, .ep-carousel, .cast-carousel, .bottom-sheet, .server-modal, .details-page, .actor-modal');
-        if(scrollableParent && deltaY < 0) return; // Scrollando pra cima = normal
-        // Se está scrollando pra baixo mas ainda tem conteúdo acima, não fecha
         if(scrollableParent && scrollableParent.scrollTop > 10 && deltaY > 0) return;
     }
 
@@ -98,21 +109,19 @@ function handleTouchEnd(e) {
     }
 }
 
-// CORREÇÃO: Ordem do popstate do MAIOR z-index pro MENOR
+// CORRIGIDO: Ordem do popstate do MAIOR z-index pro MENOR
 window.addEventListener('popstate', function(event) {
     if(fromPopState) { fromPopState = false; return; }
 
-    // ORDEM CORRIGIDA por z-index (maior primeiro):
     const modais = [
-        { id: 'bottomSheet', check: (el) => el.classList.contains('active'), close: () => fecharSheetTV(true) },           // z-index: 5000
-        { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: () => fecharMenuPrincipal(true) },     // z-index: 4999
-        { id: 'embedModal', check: (el) => el.style.display === 'flex', close: () => fecharEmbedWeb(true) },                // z-index: 3800
-        { id: 'serverModal', check: (el) => el.classList.contains('active'), close: () => fecharMenuServidores(true) },   // z-index: 3700
-        { id: 'trailerModal', check: (el) => el.style.display === 'flex', close: () => fecharTrailer(true) },              // z-index: 3600
-        { id: 'actorModal', check: (el) => el.classList.contains('active'), close: () => fecharAtor(true) },              // z-index: 3500
-        { id: 'detailsPage', check: (el) => el.classList.contains('active'), close: () => fecharDetalhes(true) },         // z-index: 3000
-        { id: 'vipModal', check: (el) => el.style.display === 'flex', close: () => fecharModalVip(true) },               // z-index: 3900 (ajustar se necessário)
-        { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: () => fecharAdBlock() }
+        { id: 'bottomSheet', check: (el) => el.classList.contains('active'), close: () => fecharSheetTV(true) },
+        { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: () => fecharMenuPrincipal(true) },
+        { id: 'embedModal', check: (el) => el.style.display === 'flex', close: () => fecharEmbedWeb(true) },
+        { id: 'serverModal', check: (el) => el.classList.contains('active'), close: () => fecharMenuServidores(true) },
+        { id: 'trailerModal', check: (el) => el.style.display === 'flex', close: () => fecharTrailer(true) },
+        { id: 'actorModal', check: (el) => el.classList.contains('active'), close: () => fecharAtor(true) },
+        { id: 'detailsPage', check: (el) => el.classList.contains('active'), close: () => fecharDetalhes(true) },
+        { id: 'vipModal', check: (el) => el.style.display === 'flex', close: () => fecharModalVip(true) }
     ];
 
     for(let modal of modais) {
@@ -149,6 +158,6 @@ window.onload = () => {
 };
 
 function fecharAdBlock() {
-    document.getElementById('adBlockModal').style.display = 'none';
-    removeNoScroll();
+    const el = document.getElementById('adBlockModal');
+    if(el) { el.style.display = 'none'; removeNoScroll(); }
 }

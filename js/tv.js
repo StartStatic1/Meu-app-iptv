@@ -108,7 +108,7 @@ async function abrirDetalhesIPTV(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
     document.getElementById('dpPoster').style.backgroundImage = `url('${capa}')`;
     document.getElementById('dpTmdbMeta').innerHTML = '';
     document.getElementById('dpDirector').innerText = '';
-    document.getElementById('dpSynopsis').innerText = 'Conteúdo do catálogo IPTV direto.';
+    document.getElementById('dpSynopsis').innerText = 'Conteudo do catalogo IPTV direto.';
     document.getElementById('dpCastContainer').style.display = 'none';
     document.getElementById('dpSimilarContainer').style.display = 'none';
     document.getElementById('btnTrailer').style.display = 'none';

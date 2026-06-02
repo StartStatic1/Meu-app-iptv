@@ -12,12 +12,12 @@ function atualizarHero() {
     const tags = [];
     if(f.vote_average) tags.push(`<i class="fas fa-star" style="color:gold;"></i> ${f.vote_average.toFixed(1)}`);
     if(f.release_date) tags.push(f.release_date.substring(0,4)); else if(f.first_air_date) tags.push(f.first_air_date.substring(0,4));
-    if(f.media_type === 'tv' || f.first_air_date) tags.push('SÉRIE'); else tags.push('FILME');
+    if(f.media_type === 'tv' || f.first_air_date) tags.push('SERIE'); else tags.push('FILME');
     document.getElementById('heroBanner').style.backgroundImage = `url('${backdrop}')`;
     document.getElementById('heroTitle').innerText = title;
     document.getElementById('heroTags').innerHTML = tags.join(' <span style="color:#555;">|</span> ');
     const synopsisEl = document.getElementById('heroSynopsis');
-    if(synopsisEl) synopsisEl.innerText = f.overview ? f.overview : "Sinopse não disponível.";
+    if(synopsisEl) synopsisEl.innerText = f.overview ? f.overview : "Sinopse nao disponivel.";
 }
 
 function abrirHeroDetalhes() {
@@ -33,8 +33,8 @@ async function abrirHeroTrailer() {
         if(f.videos && f.videos.results) {
             const trailer = f.videos.results.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
             if(trailer) { trailerKeyAtivo = trailer.key; abrirTrailer(); }
-            else { mostrarToast("Trailer não encontrado."); }
-        } else { mostrarToast("Trailer não encontrado."); }
+            else { mostrarToast("Trailer nao encontrado."); }
+        } else { mostrarToast("Trailer nao encontrado."); }
     } catch(e) { mostrarToast("Erro ao buscar trailer."); }
     finally { btn.innerHTML = txtOriginal; }
 }

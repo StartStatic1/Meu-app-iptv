@@ -12,9 +12,8 @@ function setSearchType(type) {
     document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
     const typeBtn = document.getElementById('type-' + type);
     if(typeBtn) typeBtn.classList.add('active');
-
     selectedGenre = null;
-    lastSuperFlixData = []; // LIMPA cache ao mudar tipo
+    lastSuperFlixData = [];
 
     if (type === 'animes' || type === 'dorama') {
         carregarSuperFlixGenerosParaBusca(type);
@@ -24,7 +23,7 @@ function setSearchType(type) {
         if(query.length >= 3 || selectedGenre) pesquisarGlobal();
         else {
             const container = document.getElementById('resultados-global');
-            if(container) container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um gênero.</p>`;
+            if(container) container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um genero.</p>`;
         }
     }
 }
@@ -81,7 +80,7 @@ async function pesquisarGlobal() {
     }
 
     if(query.length < 3 && !selectedGenre) {
-        if(container) container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um gênero.</p>`;
+        if(container) container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um genero.</p>`;
         return;
     }
     if(container) container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Buscando...</div>`;
@@ -98,7 +97,10 @@ async function pesquisarGlobal() {
                 const d = await searchTMDB(query, type, 1); items = d.results || [];
             }
             if(container) container.innerHTML = renderGrid(items, searchType === 'all' ? 'movie' : searchType);
-        } catch(e) { if(container) container.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Erro na busca.</p>`; }
+        } catch(e) { 
+            console.error('Busca erro:', e);
+            if(container) container.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Erro na busca.</p>`; 
+        }
     }, 600);
 }
 
@@ -149,7 +151,7 @@ async function carregarSuperFlixParaBusca(tipo, genero, busca) {
         });
         container.innerHTML = html;
     } catch(e) {
-        console.error(e);
-        container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Erro ao carregar os títulos.</p>';
+        console.error('SuperFlix erro:', e);
+        container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Erro ao carregar os titulos.</p>';
     }
 }
