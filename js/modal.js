@@ -1,6 +1,7 @@
 // ===================== DETALHES TMDB =====================
 async function abrirDetalhesTMDB(tmdbId, type) {
     currentTmdbId = tmdbId; currentItemType = type; currentSeason = 1; currentEpisode = 1;
+    currentSuperFlixItem = null; // LIMPA SuperFlix
     const btnPlayFilme = document.getElementById('btnPlayFilme');
     if(btnPlayFilme) {
         btnPlayFilme.disabled = false;
@@ -59,7 +60,8 @@ async function abrirDetalhesTMDB(tmdbId, type) {
         }
         if(type === 'tv' && details.seasons) {
             document.getElementById('dpEpisodes').style.display = 'block';
-            if(document.getElementById('btnPlayFilme')) document.getElementById('btnPlayFilme').style.display = 'none';
+            // CORREÇÃO: botão Assistir FICA visível para séries também
+            // Ele abre o menu de servidores com S01E01
             let htmlEps = '';
             const watchedList = getWatchedList();
             details.seasons.forEach(season => {
@@ -84,6 +86,48 @@ async function abrirDetalhesTMDB(tmdbId, type) {
         }
         currentStreamData = { id: tmdbId, title: title, img: poster, type: type };
     } catch(err) { document.getElementById('dpSynopsis').innerText = "Erro ao carregar detalhes."; }
+}
+
+// ===================== DETALHES SUPERFLIX (NOVO) =====================
+function abrirDetalhesSuperFlix(titulo, capa, tipo, itemJson) {
+    currentTmdbId = null;
+    currentItemType = tipo === 'animes' ? 'tv' : 'movie';
+    currentSeason = 1;
+    currentEpisode = 1;
+    currentSuperFlixItem = JSON.parse(itemJson.replace(/\\'/g, "'"));
+
+    const btnPlayFilme = document.getElementById('btnPlayFilme');
+    if(btnPlayFilme) {
+        btnPlayFilme.disabled = false;
+        btnPlayFilme.innerHTML = '<i class="fas fa-play"></i> <span>Assistir no SuperFlix</span>';
+        btnPlayFilme.style.pointerEvents = 'auto';
+        btnPlayFilme.style.display = 'flex';
+        btnPlayFilme.onclick = () => {
+            const id = currentSuperFlixItem.tmdb_id || currentSuperFlixItem.id;
+            if(id) {
+                window.open(`https://superflixapi.fit/${tipo === 'animes' ? 'serie' : 'filme'}/${id}`, '_blank');
+            } else {
+                mostrarToast("ID não encontrado.");
+            }
+        };
+    }
+
+    document.getElementById('dpTitle').innerText = titulo;
+    document.getElementById('dpPoster').style.backgroundImage = `url('${capa}')`;
+    document.getElementById('dpTmdbMeta').innerHTML = `<span style="color:var(--accent);"><i class="fas fa-tv"></i> ${tipo === 'animes' ? 'Anime' : 'Dorama'}</span>`;
+    document.getElementById('dpDirector').innerText = '';
+    document.getElementById('dpSynopsis').innerText = currentSuperFlixItem.overview || currentSuperFlixItem.sinopse || currentSuperFlixItem.description || "Sinopse não disponível.";
+    document.getElementById('dpCastContainer').style.display = 'none';
+    document.getElementById('dpEpisodes').style.display = 'none';
+    document.getElementById('dpSimilarContainer').style.display = 'none';
+    document.getElementById('btnTrailer').style.display = 'none';
+    trailerKeyAtivo = null;
+
+    currentStreamData = { id: currentSuperFlixItem.id || Date.now(), title: titulo, img: capa, type: currentItemType };
+
+    document.getElementById('detailsPage').classList.add('active');
+    addNoScroll();
+    history.pushState({ view: 'details', modal: true }, null, "");
 }
 
 // ===================== ATOR =====================

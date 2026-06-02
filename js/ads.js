@@ -1,5 +1,6 @@
 // ===================== ADS =====================
 function desativarTodosAds() {
+    // Remove scripts de anúncio
     const scripts = document.querySelectorAll('script');
     scripts.forEach(s => {
         const src = s.src || '';
@@ -7,6 +8,14 @@ function desativarTodosAds() {
             s.remove();
         }
     });
+    // Remove iframes de anúncio
+    document.querySelectorAll('iframe').forEach(f => {
+        if(f.src && (f.src.includes('5gvci') || f.src.includes('al5sm') || f.src.includes('omg10'))) {
+            f.remove();
+        }
+    });
+    // CORREÇÃO: Reseta adsInjetados para permitir reinjeção no futuro
+    adsInjetados = false;
     localStorage.setItem('streamflix_vip', 'true');
     localStorage.setItem('push_accepted', 'false');
     const pushPrompt = document.getElementById('pushPromptModal');

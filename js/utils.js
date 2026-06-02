@@ -19,12 +19,14 @@ let bancoTV = null;
 let iptvCarregado = { filmes: false, series: false, tv: false };
 let adsInjetados = false;
 let lastSuperFlixData = [];
+let currentSuperFlixItem = null; // NOVO: guarda item SuperFlix ativo
 
 // Touch gesture vars
 let touchStartY = 0;
 let touchStartX = 0;
 let noScrollCount = 0;
 let fromPopState = false;
+let touchStartTarget = null; // NOVO: para detectar scrollável
 
 function addNoScroll() {
     noScrollCount++;
@@ -64,9 +66,9 @@ function processarTitulo(nomeBruto, nomePasta) {
 function processarTV(nomeBruto) {
     let nomeLimpo = nomeBruto || "Canal"; const tags = [];
     if(/FHDR/i.test(nomeLimpo)) tags.push('FHDR'); else if(/FHD/i.test(nomeLimpo)) tags.push('FHD'); else if(/HD/i.test(nomeLimpo)) tags.push('HD'); else if(/4K/i.test(nomeLimpo)) tags.push('4K'); else if(/SD/i.test(nomeLimpo)) tags.push('SD');
-    const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/i);
+    const estado = nomeLimpo.match(/(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)/i);
     if(estado && !tags.includes(estado[0].toUpperCase())) tags.push(estado[0].toUpperCase());
-    nomeLimpo = nomeLimpo.replace(/\[(FHDR|FHD|HD|4K|SD)\]/ig, '').replace(/\((FHDR|FHD|HD|4K|SD)\)/ig, '').replace(/\b(FHDR|FHD|HD|4K|SD)\b/ig, '').replace(/^[\s\|\-]+|[\s\|\-]+$/g, '').replace(/\s+/g, ' ').trim();
+    nomeLimpo = nomeLimpo.replace(/\[(FHDR|FHD|HD|4K|SD)\]/ig, '').replace(/\((FHDR|FHD|HD|4K|SD)\)/ig, '').replace(/(FHDR|FHD|HD|4K|SD)/ig, '').replace(/^[\s\|\-]+|[\s\|\-]+$/g, '').replace(/\s+/g, ' ').trim();
     if (!nomeLimpo || nomeLimpo.length < 2) nomeLimpo = nomeBruto.replace(/\[.*?\]|\(.*?\)/g, '').replace(/[>-\|*•]/g, '').trim();
     return { limpo: nomeLimpo, tagsStr: tags.join(',') };
 }
@@ -132,4 +134,16 @@ function renderCarousel(title, items, type) {
 function renderGrid(items, type) {
     if(!items || items.length === 0) return '<p class="loading-text" style="grid-column:span 3;">Nenhum resultado.</p>';
     return items.map(i => renderCard(i, type)).join('');
+}
+
+// ===================== RENDER SUPERFLIX CARD (NOVO) =====================
+function renderSuperFlixCard(item, tipo) {
+    const titulo = item.title || item.nome || item.name || 'Sem Título';
+    const id = item.tmdb_id || item.id;
+    const capa = item.cover || item.poster || item.poster_path || 'https://via.placeholder.com/220x330/111/fff';
+    // Guarda o item completo para uso posterior
+    return `<div class="card-movie" onclick="abrirDetalhesSuperFlix('${esc(titulo)}', '${esc(capa)}', '${tipo}', '${esc(JSON.stringify(item).replace(/'/g, "\'"))}')">
+        <img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">
+        <div class="titulo-fallback" style="display:none">${esc(titulo)}</div>
+    </div>`;
 }

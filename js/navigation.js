@@ -67,6 +67,7 @@ function removerDoHistorico(event, id) {
 function handleTouchStart(e) {
     touchStartY = e.changedTouches[0].screenY;
     touchStartX = e.changedTouches[0].screenX;
+    touchStartTarget = e.target; // GUARDA o elemento tocado
 }
 
 function handleTouchEnd(e) {
@@ -74,6 +75,15 @@ function handleTouchEnd(e) {
     const touchEndX = e.changedTouches[0].screenX;
     const deltaY = touchEndY - touchStartY;
     const deltaX = touchEndX - touchStartX;
+
+    // CORREÇÃO: Não fecha modal se o touch começou em elemento scrollável
+    if(touchStartTarget) {
+        const scrollableParent = touchStartTarget.closest('.carousel, .ep-carousel, .cast-carousel, .bottom-sheet, .server-modal, .details-page, .actor-modal');
+        if(scrollableParent && deltaY < 0) return; // Scrollando pra cima = normal
+        // Se está scrollando pra baixo mas ainda tem conteúdo acima, não fecha
+        if(scrollableParent && scrollableParent.scrollTop > 10 && deltaY > 0) return;
+    }
+
     if(deltaY > 80 && Math.abs(deltaX) < 100) {
         const trailer = document.getElementById('trailerModal');
         const embed = document.getElementById('embedModal');
@@ -88,23 +98,28 @@ function handleTouchEnd(e) {
     }
 }
 
+// CORREÇÃO: Ordem do popstate do MAIOR z-index pro MENOR
 window.addEventListener('popstate', function(event) {
     if(fromPopState) { fromPopState = false; return; }
+
+    // ORDEM CORRIGIDA por z-index (maior primeiro):
     const modais = [
-        { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: () => fecharAdBlock() },
-        { id: 'embedModal', check: (el) => el.style.display === 'flex', close: () => fecharEmbedWeb(true) },
-        { id: 'trailerModal', check: (el) => el.style.display === 'flex', close: () => fecharTrailer(true) },
-        { id: 'serverModal', check: (el) => el.classList.contains('active'), close: () => fecharMenuServidores(true) },
-        { id: 'actorModal', check: (el) => el.classList.contains('active'), close: () => fecharAtor(true) },
-        { id: 'detailsPage', check: (el) => el.classList.contains('active'), close: () => fecharDetalhes(true) },
-        { id: 'bottomSheet', check: (el) => el.classList.contains('active'), close: () => fecharSheetTV(true) },
-        { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: () => fecharMenuPrincipal(true) },
-        { id: 'vipModal', check: (el) => el.style.display === 'flex', close: () => fecharModalVip(true) }
+        { id: 'bottomSheet', check: (el) => el.classList.contains('active'), close: () => fecharSheetTV(true) },           // z-index: 5000
+        { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: () => fecharMenuPrincipal(true) },     // z-index: 4999
+        { id: 'embedModal', check: (el) => el.style.display === 'flex', close: () => fecharEmbedWeb(true) },                // z-index: 3800
+        { id: 'serverModal', check: (el) => el.classList.contains('active'), close: () => fecharMenuServidores(true) },   // z-index: 3700
+        { id: 'trailerModal', check: (el) => el.style.display === 'flex', close: () => fecharTrailer(true) },              // z-index: 3600
+        { id: 'actorModal', check: (el) => el.classList.contains('active'), close: () => fecharAtor(true) },              // z-index: 3500
+        { id: 'detailsPage', check: (el) => el.classList.contains('active'), close: () => fecharDetalhes(true) },         // z-index: 3000
+        { id: 'vipModal', check: (el) => el.style.display === 'flex', close: () => fecharModalVip(true) },               // z-index: 3900 (ajustar se necessário)
+        { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: () => fecharAdBlock() }
     ];
+
     for(let modal of modais) {
         const el = document.getElementById(modal.id);
         if(el && modal.check(el)) { modal.close(); return; }
     }
+
     if(document.getElementById('view-iptv').classList.contains('active')) {
         document.getElementById('view-iptv').classList.remove('active');
         const mainHeader = document.getElementById('mainHeader');

@@ -136,8 +136,19 @@ function fecharMenuServidores(fromPopState = false) {
 
 function fecharEmbedWeb(fromPopState = false) {
     const frame = document.getElementById('embedFrame');
+    // CORREÇÃO: Limpa iframe de forma mais agressiva
     frame.src = 'about:blank';
-    setTimeout(() => { frame.src = ''; }, 200);
+    try {
+        frame.contentWindow.location.href = 'about:blank';
+    } catch(e) {}
+    // Remove e recria o iframe para garantir que o vídeo pare
+    const parent = frame.parentNode;
+    const newFrame = frame.cloneNode(true);
+    newFrame.src = '';
+    parent.replaceChild(newFrame, frame);
+    newFrame.id = 'embedFrame';
+    newFrame.className = 'embed-frame';
+
     document.getElementById('embedModal').style.display = 'none';
     removeNoScroll();
     try { if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e) {}
@@ -178,8 +189,14 @@ function fecharSheetTV(fromPopState = false) {
     if(!fromPopState && history.state && history.state.view === 'sheet') { fromPopState = true; history.back(); }
 }
 
+// CORREÇÃO: fecharTodosOverlays agora fecha TUDO
 function fecharTodosOverlays() {
     fecharMenuServidores();
     fecharSheetTV();
     fecharMenuPrincipal();
+    fecharTrailer();
+    fecharEmbedWeb();
+    fecharDetalhes();
+    fecharAtor();
+    fecharModalVip();
 }
