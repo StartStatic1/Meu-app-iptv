@@ -1,4 +1,4 @@
-const CACHE_NAME = 'streamflix-cache-v3';
+const CACHE_NAME = 'streamflix-cache-v2.6';
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
@@ -28,9 +28,16 @@ self.addEventListener('activate', (event) => {
     self.clients.claim();
 });
 
+// NETWORK FIRST: Pega da internet primeiro. Se falhar (offline), puxa do cache.
 self.addEventListener('fetch', (event) => {
     event.respondWith(
-        fetch(event.request).catch(() => {
+        fetch(event.request).then((response) => {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, responseClone);
+            });
+            return response;
+        }).catch(() => {
             return caches.match(event.request);
         })
     );
