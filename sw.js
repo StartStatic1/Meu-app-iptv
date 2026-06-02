@@ -1,4 +1,4 @@
-const CACHE_NAME = 'streamflix-cache-v1';
+const CACHE_NAME = 'streamflix-cache-v2';
 
 self.addEventListener('install', (event) => {
     event.waitUntil(
