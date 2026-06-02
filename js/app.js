@@ -21,6 +21,11 @@ let adsInjetados = false;
 let currentSuperFlixType = 'animes'; 
 let lastSuperFlixData = [];
 
+// Novas features
+let currentEpisodeData = {};
+let nextEpTimer = null;
+let watchProgressTimer = null;
+
 // Touch gesture vars
 let touchStartY = 0;
 let touchStartX = 0;
@@ -284,14 +289,21 @@ async function initApp() {
     injetarAnuncios(); 
     renderGenreChips();
 
+    // Mostra "Continuar Assistindo" imediatamente (dados locais)
+    const continueHtml = renderContinueWatching();
+    const continueSection = document.getElementById('section-continuar');
+    if(continueSection && continueHtml) continueSection.innerHTML = continueHtml;
+    else if(continueSection && !continueHtml) continueSection.style.display = 'none';
+
     try {
-        const [trendingM, trendingS, upcoming] = await Promise.all([
-            getTrending('movie', 1), getTrending('tv', 1), getUpcoming(1)
+        const [trendingM, trendingS, upcoming, top10BR] = await Promise.all([
+            getTrending('movie', 1), getTrending('tv', 1), getUpcoming(1), getTrendingBR('movie')
         ]);
 
         const filmes = trendingM.results ? trendingM.results.slice(0, 10) : [];
         const series = trendingS.results ? trendingS.results.slice(0, 10) : [];
         const lancamentos = upcoming.results ? upcoming.results.slice(0, 10) : [];
+        const top10 = top10BR.results ? top10BR.results.slice(0, 10) : [];
 
         heroItems = await Promise.all(filmes.slice(0, 5).map(f => getDetails(f.id, 'movie')));
 
@@ -303,7 +315,16 @@ async function initApp() {
 
         if(heroItems.length > 0) iniciarHeroSlider();
 
+        // Atualiza "Continuar Assistindo" após mostrar o conteúdo real
+        const continueHtmlFinal = renderContinueWatching();
+        const contSec = document.getElementById('section-continuar');
+        if(contSec) {
+            if(continueHtmlFinal) { contSec.innerHTML = continueHtmlFinal; contSec.style.display = 'block'; }
+            else contSec.style.display = 'none';
+        }
+
         let html = '';
+        if(top10.length > 0) html += renderTop10Carousel('Top 10 Hoje', top10, 'movie');
         if(filmes.length > 5) html += renderCarousel('Filmes em Alta', filmes.slice(5), 'movie');
         if(series.length > 0) html += renderCarousel('Séries em Alta', series, 'tv');
         if(lancamentos.length > 0) html += renderCarousel('Lançamentos', lancamentos, 'movie');
@@ -512,24 +533,8 @@ async function abrirDetalhesTMDB(tmdbId, type) {
         if(type === 'tv' && details.seasons) {
             document.getElementById('dpEpisodes').style.display = 'block';
             if(document.getElementById('btnPlayFilme')) document.getElementById('btnPlayFilme').style.display = 'none';
-            let htmlEps = '';
-            const watchedList = getWatchedList();
-            details.seasons.forEach(season => {
-                if(season.season_number === 0) return;
-                htmlEps += `<h3 class="season-title">${esc(season.name)}</h3><div class="ep-carousel">`;
-                for(let ep = 1; ep <= (season.episode_count || 1); ep++) {
-                    const epId = `${tmdbId}_s${season.season_number}_e${ep}`;
-                    const isWatched = watchedList[epId] ? 'active' : '';
-                    htmlEps += `
-                    <div class="ep-card" onclick="reproduzirEpisodioTMDB(${tmdbId}, ${season.season_number}, ${ep})">
-                        <div class="ep-watched-btn ${isWatched}" onclick="event.stopPropagation(); toggleEpWatchedTMDB(event, '${epId}', '${esc(title)} S${season.season_number}E${ep}', '${poster}')"><i class="fas fa-check"></i></div>
-                        <div class="ep-thumb" style="background-image:url('${season.poster_path ? TMDB_IMG+'/w300'+season.poster_path : poster}');"><i class="fas fa-play-circle"></i></div>
-                        <div class="ep-info-text"><div class="ep-number">S${String(season.season_number).padStart(2,'0')}E${String(ep).padStart(2,'0')}</div><div class="ep-name">Episódio ${ep}</div></div>
-                    </div>`;
-                }
-                htmlEps += `</div>`;
-            });
-            document.getElementById('dpEpisodes').innerHTML = htmlEps;
+            // Carrega episódios com nomes reais (assíncrono)
+            renderEpisodesComNomes(tmdbId, details, title, poster);
         }
 
         const btnWatched = document.getElementById('btnWatched');
@@ -617,29 +622,29 @@ function abrirPlayerWeb(servidor) {
         setTimeout(() => overlay.style.zIndex = "", 300);
     }
 
+    // Lembra o servidor escolhido para próximo episódio automático
+    localStorage.setItem('streamflix_last_server', servidor);
+
     const modal = document.getElementById('embedModal');
     const frame = document.getElementById('embedFrame');
-    let finalUrl = "";
     
-    if(servidor === 'betterflix') {
-        if(currentItemType === 'movie') finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=movie`;
-        else finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=tv&season=${currentSeason}&episode=${currentEpisode}`;
-    } else if(servidor === 'embedmovies') {
-        if(currentItemType === 'movie') finalUrl = `https://myembed.biz/filme/${currentTmdbId}`;
-        else finalUrl = `https://myembed.biz/serie/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
-    } else if(servidor === 'embedplayapi') {
-        if(currentItemType === 'movie') finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}`;
-        else finalUrl = `https://embedplayapi.top/embed/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
-    } else if(servidor === 'superflix') {
-        if(currentItemType === 'movie') finalUrl = `https://superflixapi.fit/filme/${currentTmdbId}`;
-        else finalUrl = `https://superflixapi.fit/serie/${currentTmdbId}/${currentSeason}/${currentEpisode}`;
-    }
+    let finalUrl = getEmbedUrl(servidor, currentTmdbId, currentItemType, currentSeason, currentEpisode);
+    if(!finalUrl) return;
+
+    // Salva progresso ao abrir
+    salvarProgresso(currentTmdbId, currentItemType, currentStreamData.title || '', currentStreamData.img || '', currentSeason, currentEpisode);
 
     dispararDirectLink();
+
+    // Cancela timer anterior de próximo ep
+    if(nextEpTimer) clearTimeout(nextEpTimer);
+    const overlayExist = document.getElementById('nextEpOverlay');
+    if(overlayExist) overlayExist.remove();
 
     setTimeout(() => {
         frame.src = finalUrl;
         modal.style.display = 'flex';
+        addNoScroll();
         
         if(history.state && history.state.view === 'servers') {
             history.replaceState({ view: 'embed', modal: true }, null, "");
@@ -647,10 +652,25 @@ function abrirPlayerWeb(servidor) {
             history.pushState({ view: 'embed', modal: true }, null, "");
         }
         
+        // Para séries: mostra overlay de próximo episódio após 20 minutos
+        if(currentItemType === 'tv') {
+            const nextSeason = currentSeason;
+            const nextEp = currentEpisode + 1;
+            const tmdbId = currentTmdbId;
+            const seriesTitle = currentStreamData.title || '';
+            const poster = currentStreamData.img || '';
+            nextEpTimer = setTimeout(() => {
+                mostrarOverlayProximoEp(tmdbId, nextSeason, nextEp, seriesTitle, poster);
+            }, 20 * 60 * 1000); // 20 minutos
+        }
+
         try { 
             if(screen.orientation && screen.orientation.lock) {
-                screen.orientation.lock('landscape').catch(e => console.log(e));
-            } 
+                screen.orientation.lock('landscape').catch(e => {});
+            }
+            if(document.documentElement.requestFullscreen) {
+                document.documentElement.requestFullscreen().catch(e => {});
+            }
         } catch(e) {}
     }, 300);
 }
@@ -785,6 +805,10 @@ function fecharEmbedWeb(fromPopState = false) {
     setTimeout(() => { frame.src = ''; }, 200);
     document.getElementById('embedModal').style.display = 'none';
     removeNoScroll();
+    // Limpa overlay e timer de próximo episódio
+    if(nextEpTimer) { clearTimeout(nextEpTimer); nextEpTimer = null; }
+    const nextOverlay = document.getElementById('nextEpOverlay');
+    if(nextOverlay) nextOverlay.remove();
     try { if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e) {}
     if(!fromPopState && history.state && history.state.view === 'embed') { fromPopState = true; history.back(); }
 }
@@ -1168,4 +1192,202 @@ window.onload = () => {
 function fecharAdBlock() {
     document.getElementById('adBlockModal').style.display = 'none';
     removeNoScroll();
+}
+
+// ===================== CONTINUAR ASSISTINDO =====================
+function getContinueList() { try { return JSON.parse(localStorage.getItem('streamflix_continue_v1')) || {}; } catch(e) { return {}; } }
+function saveContinueList(list) { localStorage.setItem('streamflix_continue_v1', JSON.stringify(list)); }
+
+function salvarProgresso(tmdbId, type, title, img, season, episode) {
+    if(!tmdbId) return;
+    const list = getContinueList();
+    const key = type === 'tv' ? String(tmdbId) + '_s' + season + '_e' + episode : String(tmdbId);
+    list[key] = { id: tmdbId, type, title, img, season: season || null, episode: episode || null, savedAt: Date.now() };
+    const sorted = Object.entries(list).sort(function(a,b){ return b[1].savedAt - a[1].savedAt; }).slice(0, 20);
+    saveContinueList(Object.fromEntries(sorted));
+}
+
+function removerContinue(key) {
+    const list = getContinueList();
+    delete list[key];
+    saveContinueList(list);
+    const el = document.getElementById('section-continuar');
+    if(el) { const novo = renderContinueWatching(); if(novo) el.innerHTML = novo; else el.remove(); }
+}
+
+function renderContinueWatching() {
+    const list = getContinueList();
+    const items = Object.values(list).sort(function(a,b){ return b.savedAt - a.savedAt; });
+    if(items.length === 0) return '';
+    let cards = items.map(function(item) {
+        const label = (item.type === 'tv' && item.season)
+            ? 'S' + String(item.season).padStart(2,'0') + 'E' + String(item.episode).padStart(2,'0')
+            : 'Filme';
+        const removeKey = (item.type === 'tv' && item.season)
+            ? item.id + '_s' + item.season + '_e' + item.episode
+            : String(item.id);
+        return '<div class="card-movie continue-card" onclick="abrirDetalhesTMDB(' + item.id + ',\'' + item.type + '\')">'
+            + '<img src="' + item.img + '" loading="lazy" onerror="this.style.display=\'none\';">'
+            + '<div class="continue-badge">' + label + '</div>'
+            + '<div class="continue-remove" onclick="event.stopPropagation();removerContinue(\'' + removeKey + '\')"><i class="fas fa-times"></i></div>'
+            + '</div>';
+    }).join('');
+    return '<div class="section-header"><div class="section-title"><i class="fas fa-play-circle" style="color:#ff0055;"></i> Continuar Assistindo</div></div>'
+        + '<div class="carousel">' + cards + '</div>';
+}
+
+// ===================== PRÓXIMO EPISÓDIO =====================
+function mostrarOverlayProximoEp(tmdbId, season, episode, seriesTitle, poster) {
+    var existing = document.getElementById('nextEpOverlay');
+    if(existing) existing.remove();
+    if(nextEpTimer) clearTimeout(nextEpTimer);
+    var overlay = document.createElement('div');
+    overlay.id = 'nextEpOverlay';
+    overlay.style.cssText = 'position:absolute;bottom:20px;right:15px;z-index:4600;background:rgba(0,0,0,0.9);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:14px 18px;max-width:220px;backdrop-filter:blur(8px);';
+    overlay.innerHTML = '<div style="font-size:10px;color:#aaa;margin-bottom:4px;text-transform:uppercase;font-weight:700;">A seguir</div>'
+        + '<div style="font-size:13px;color:#fff;font-weight:800;margin-bottom:10px;">'
+        + 'S' + String(season).padStart(2,'0') + 'E' + String(episode).padStart(2,'0')
+        + '</div>'
+        + '<div style="display:flex;gap:8px;">'
+        + '<button onclick="reproduzirProximoEpBtn(' + tmdbId + ',' + season + ',' + episode + ')" style="flex:1;background:var(--accent);color:#000;border:none;border-radius:8px;padding:9px;font-weight:800;font-size:12px;cursor:pointer;"><i class="fas fa-forward"></i> Próximo</button>'
+        + '<button onclick="document.getElementById(\'nextEpOverlay\').remove()" style="background:rgba(255,255,255,0.1);color:#fff;border:1px solid rgba(255,255,255,0.2);border-radius:8px;padding:9px 12px;font-size:12px;cursor:pointer;">✕</button>'
+        + '</div>';
+    var embedModal = document.getElementById('embedModal');
+    if(embedModal) embedModal.appendChild(overlay);
+}
+
+function reproduzirProximoEpBtn(tmdbId, season, episode) {
+    var overlay = document.getElementById('nextEpOverlay');
+    if(overlay) overlay.remove();
+    currentSeason = season;
+    currentEpisode = episode;
+    // Troca a src do iframe diretamente sem fechar o modal
+    var frame = document.getElementById('embedFrame');
+    var servidor = localStorage.getItem('streamflix_last_server') || 'embedmovies';
+    var url = getEmbedUrl(servidor, tmdbId, 'tv', season, episode);
+    if(url && frame) {
+        frame.src = url;
+        salvarProgresso(tmdbId, 'tv', currentStreamData.title || '', currentStreamData.img || '', season, episode);
+    }
+}
+
+// ===================== NOMES REAIS DE EPISÓDIOS =====================
+async function getSeasonDetails(tmdbId, seasonNumber) {
+    var cacheKey = tmdbId + '_s' + seasonNumber;
+    if(currentEpisodeData[cacheKey]) return currentEpisodeData[cacheKey];
+    try {
+        var data = await tmdbFetch('/tv/' + tmdbId + '/season/' + seasonNumber);
+        if(data.episodes) currentEpisodeData[cacheKey] = data.episodes;
+        return data.episodes || [];
+    } catch(e) { return []; }
+}
+
+async function renderEpisodesComNomes(tmdbId, details, title, poster) {
+    var watchedList = getWatchedList();
+    var continueList = getContinueList();
+    var container = document.getElementById('dpEpisodes');
+    if(!container) return;
+
+    // Primeiro render rápido com skeletons
+    var skelHtml = '';
+    details.seasons.forEach(function(season) {
+        if(season.season_number === 0) return;
+        skelHtml += '<h3 class="season-title">' + esc(season.name) + '</h3>';
+        skelHtml += '<div class="ep-carousel" id="ep-season-' + season.season_number + '">';
+        for(var i = 0; i < Math.min(season.episode_count || 1, 4); i++) {
+            skelHtml += '<div class="ep-card"><div class="ep-thumb" style="background:#1e2130;"></div><div class="ep-info-text"><div style="height:9px;background:#2a2d3e;border-radius:3px;margin-bottom:5px;width:60%;"></div><div style="height:8px;background:#242736;border-radius:3px;width:80%;"></div></div></div>';
+        }
+        skelHtml += '</div>';
+    });
+    container.innerHTML = skelHtml;
+
+    // Carrega detalhes reais temporada por temporada
+    for(var s = 0; s < details.seasons.length; s++) {
+        var season = details.seasons[s];
+        if(season.season_number === 0) continue;
+        var episodesData = await getSeasonDetails(tmdbId, season.season_number);
+        var epContainer = document.getElementById('ep-season-' + season.season_number);
+        if(!epContainer) continue;
+
+        var html = '';
+        var count = season.episode_count || 1;
+        for(var ep = 1; ep <= count; ep++) {
+            var epId = tmdbId + '_s' + season.season_number + '_e' + ep;
+            var isWatched = watchedList[epId] ? 'active' : '';
+            var isContinue = continueList[epId] ? 'ep-continue' : '';
+            var epData = episodesData.find(function(e){ return e.episode_number === ep; });
+            var epName = epData ? esc(epData.name) : ('Episódio ' + ep);
+            var epThumb = (epData && epData.still_path)
+                ? TMDB_IMG + '/w300' + epData.still_path
+                : (season.poster_path ? TMDB_IMG + '/w300' + season.poster_path : poster);
+
+            html += '<div class="ep-card ' + isContinue + '" onclick="reproduzirEpisodioTMDB(' + tmdbId + ',' + season.season_number + ',' + ep + ')">'
+                + '<div class="ep-watched-btn ' + isWatched + '" onclick="event.stopPropagation();toggleEpWatchedTMDB(event,\'' + epId + '\',\'' + esc(title) + ' S' + season.season_number + 'E' + ep + '\',\'' + esc(poster) + '\')"><i class="fas fa-check"></i></div>'
+                + '<div class="ep-thumb" style="background-image:url(\'' + epThumb + '\');"><i class="fas fa-play-circle"></i></div>'
+                + '<div class="ep-info-text">'
+                + '<div class="ep-number">S' + String(season.season_number).padStart(2,'0') + 'E' + String(ep).padStart(2,'0') + '</div>'
+                + '<div class="ep-name">' + epName + '</div>'
+                + '</div></div>';
+        }
+        epContainer.innerHTML = html;
+    }
+}
+
+// ===================== TOP 10 BRASIL =====================
+function getTrendingBR(type) {
+    return tmdbFetch('/trending/' + type + '/day');
+}
+
+function renderTop10Carousel(title, items, type) {
+    if(!items || items.length === 0) return '';
+    var cards = items.slice(0, 10).map(function(item, idx) {
+        var tmdbType = item.media_type || type;
+        var realType = tmdbType === 'tv' ? 'tv' : 'movie';
+        var img = item.poster_path ? TMDB_IMG + '/w300' + item.poster_path : 'https://via.placeholder.com/220x330/111/fff';
+        return '<div class="card-movie top10-card" onclick="abrirDetalhesTMDB(' + item.id + ',\'' + realType + '\')">'
+            + '<span class="top10-number">' + (idx + 1) + '</span>'
+            + '<img src="' + img + '" loading="lazy" onerror="this.style.display=\'none\';">'
+            + '</div>';
+    }).join('');
+    return '<div class="section-header"><div class="section-title"><i class="fas fa-fire" style="color:#ff4500;"></i> ' + esc(title) + '</div></div>'
+        + '<div class="carousel top10-carousel">' + cards + '</div>';
+}
+
+// ===================== COMPARTILHAR =====================
+function compartilharConteudo(title, overview, tmdbId, type) {
+    var url = 'https://www.themoviedb.org/' + type + '/' + tmdbId;
+    var text = title + (overview ? ' — ' + overview.substring(0, 100) + '...' : '');
+    if(navigator.share) {
+        navigator.share({ title: title, text: text, url: url }).catch(function(){});
+    } else {
+        navigator.clipboard.writeText(url)
+            .then(function(){ mostrarToast('Link copiado!'); })
+            .catch(function(){ mostrarToast('Não foi possível compartilhar.'); });
+    }
+}
+
+// ===================== FALLBACK AUTOMÁTICO DE SERVIDOR =====================
+function getEmbedUrl(servidor, tmdbId, type, season, episode) {
+    if(servidor === 'betterflix') {
+        return type === 'movie'
+            ? 'https://betterflix.click/api/player?id=' + tmdbId + '&type=movie'
+            : 'https://betterflix.click/api/player?id=' + tmdbId + '&type=tv&season=' + season + '&episode=' + episode;
+    } else if(servidor === 'embedmovies') {
+        return type === 'movie'
+            ? 'https://myembed.biz/filme/' + tmdbId
+            : 'https://myembed.biz/serie/' + tmdbId + '/' + season + '/' + episode;
+    } else if(servidor === 'embedplayapi') {
+        return type === 'movie'
+            ? 'https://embedplayapi.top/embed/' + tmdbId
+            : 'https://embedplayapi.top/embed/' + tmdbId + '/' + season + '/' + episode;
+    } else if(servidor === 'superflix') {
+        return type === 'movie'
+            ? 'https://superflixapi.fit/filme/' + tmdbId
+            : 'https://superflixapi.fit/serie/' + tmdbId + '/' + season + '/' + episode;
+    } else if(servidor === 'megaembed') {
+        return type === 'movie'
+            ? 'https://megaembedapi.site/embed/' + tmdbId
+            : 'https://megaembedapi.site/embed/' + tmdbId + '/' + season + '/' + episode;
+    }
+    return '';
 }
