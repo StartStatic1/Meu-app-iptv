@@ -63,6 +63,7 @@
                     </div>
                 </div>
             </div>
+            <div id="section-continuar"></div>
             <div id="conteudo-dinamico"></div>
         </div>
     </div>
@@ -161,18 +162,12 @@
 
         <div class="menu-section">
             <div class="menu-section-title"><i class="fas fa-compass"></i> Explorar</div>
-            <div class="menu-grid">
+            <div class="menu-grid" style="grid-template-columns: 1fr;">
                 <div class="menu-grid-item" onclick="acionarMenu('iptv')">
                     <div class="menu-icon-box" style="background: linear-gradient(135deg, #00e5ff, #0091ea);">
                         <i class="fas fa-satellite-dish"></i>
                     </div>
                     <span>Modo IPTV</span>
-                </div>
-                <div class="menu-grid-item" onclick="acionarMenu('buscar')">
-                    <div class="menu-icon-box" style="background: linear-gradient(135deg, #ff9100, #ff6d00);">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <span>Buscar</span>
                 </div>
             </div>
         </div>
@@ -218,6 +213,7 @@
         <div class="server-btn em" onclick="abrirPlayerWeb('embedmovies')"><div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; Servidor Web 1 (Legendado/Dub)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-btn ep" onclick="abrirPlayerWeb('embedplayapi')"><div><i class="fas fa-play-circle" style="color:#00e676;"></i> &nbsp; Servidor Web 2 (Dublado)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-btn bf" onclick="abrirPlayerWeb('betterflix')"><div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; Servidor Web 3 (Rápido)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-btn" onclick="abrirPlayerWeb('megaembed')"><div><i class="fas fa-play-circle" style="color:#ffd600;"></i> &nbsp; Servidor Mega (Backup)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
     </div>
 
     <div class="bottom-sheet" id="bottomSheet">
@@ -245,6 +241,7 @@
                     <div class="sec-btn watched" id="btnWatched" onclick="toggleWatchedGlobal()"><i class="fas fa-check"></i> Visto</div>
                     <div class="sec-btn fav" id="btnFav" onclick="toggleFavGlobal()"><i class="fas fa-heart"></i> Favorito</div>
                     <div class="sec-btn trailer" id="btnTrailer" onclick="abrirTrailer()" style="display:none;"><i class="fas fa-film"></i> Trailer</div>
+                    <div class="sec-btn" id="btnShare" onclick="compartilharConteudo(document.getElementById('dpTitle').innerText, document.getElementById('dpSynopsis').innerText, currentTmdbId, currentItemType)"><i class="fas fa-share-alt"></i></div>
                 </div>
             </div>
 
