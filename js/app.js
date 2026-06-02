@@ -18,7 +18,6 @@ let bancoSeries = null;
 let bancoTV = null;
 let iptvCarregado = { filmes: false, series: false, tv: false };
 let adsInjetados = false;
-let currentSuperFlixType = 'animes'; 
 let lastSuperFlixData = [];
 
 // Touch gesture vars
@@ -73,7 +72,6 @@ async function fazerLoginVip() {
         if(error) throw error;
         if(data && data.length > 0) {
             if(data[0].status === 'VIP') {
-                // SALVA CREDENCIAIS PARA CHECAGEM EM TEMPO REAL
                 localStorage.setItem('streamflix_vip_email', email);
                 localStorage.setItem('streamflix_vip_senha', senha);
                 desativarTodosAds();
@@ -83,7 +81,6 @@ async function fazerLoginVip() {
     finally { btn.innerText = "Entrar na Conta VIP"; btn.disabled = false; }
 }
 
-// SISTEMA BLINDADO: CHECA NO SUPABASE TODA VEZ QUE ABRE O APP
 async function verificarStatusVip() {
     const btnVip = document.getElementById('btnOpenVip');
     const menuVipStatus = document.getElementById('menuVipStatus');
@@ -100,11 +97,9 @@ async function verificarStatusVip() {
                 isVipReal = true;
                 localStorage.setItem('streamflix_vip', 'true');
             } else {
-                // Se a pessoa foi removida do banco, perde o VIP
                 localStorage.removeItem('streamflix_vip');
             }
         } catch(e) { 
-            // Em caso de falta de internet, usa o cache temporário
             isVipReal = isVip(); 
         }
     } else {
@@ -142,7 +137,6 @@ function injetarAnuncios() {
     if(isVip()) return; 
     if(adsInjetados) return;
 
-    // ATIVA DIRETO PARA QUEM NÃO É VIP
     ativarTodosAds();
 
     if(localStorage.getItem('push_accepted') !== 'true') {
@@ -354,7 +348,7 @@ async function abrirHeroTrailer() {
     } catch(e) { mostrarToast("Erro ao buscar trailer."); } finally { btn.innerHTML = txtOriginal; }
 }
 
-// ===================== BUSCA =====================
+// ===================== LÓGICA DE BUSCA UNIFICADA =====================
 function renderGenreChips() {
     const container = document.getElementById('genreChips'); if(!container) return;
     const genres = searchType === 'tv' ? TMDB_GENRES.tv : TMDB_GENRES.movie;
@@ -362,22 +356,87 @@ function renderGenreChips() {
     genres.forEach(g => { html += `<div class="genre-chip ${selectedGenre == g.id ? 'active' : ''}" onclick="filtrarGenero(${g.id})">${esc(g.name)}</div>`; });
     container.innerHTML = html;
 }
+
 function setSearchType(type) {
     searchType = type;
     document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
     const typeBtn = document.getElementById('type-' + type);
     if(typeBtn) typeBtn.classList.add('active');
-    selectedGenre = null; renderGenreChips();
-    const query = document.getElementById('inputBuscaGlobal').value.trim();
-    if(query.length >= 3 || selectedGenre) pesquisarGlobal();
+    
+    selectedGenre = null;
+
+    if (type === 'animes' || type === 'dorama') {
+        carregarSuperFlixGenerosParaBusca(type);
+    } else {
+        renderGenreChips();
+        const query = document.getElementById('inputBuscaGlobal').value.trim();
+        if(query.length >= 3 || selectedGenre) pesquisarGlobal();
+        else {
+            const container = document.getElementById('resultados-global');
+            if(container) container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um gênero.</p>`;
+        }
+    }
 }
+
 function filtrarGenero(genreId) { selectedGenre = genreId; renderGenreChips(); pesquisarGlobal(); }
+
+async function carregarSuperFlixGenerosParaBusca(tipo) {
+    const container = document.getElementById('genreChips');
+    if(!container) return;
+    container.innerHTML = '<div class="genre-chip active">Carregando...</div>';
+    let catUrl = tipo === 'animes' ? 'anime' : 'dorama';
+    try {
+        const res = await fetch(`https://superflixapi.fit/lista?category=${catUrl}&type=generos&format=json`);
+        const generos = await res.json();
+        let html = `<div class="genre-chip ${!selectedGenre ? 'active' : ''}" onclick="filtrarGeneroSuperFlix(null)">Todos</div>`;
+        if(generos && generos.length > 0) {
+            generos.forEach(g => {
+                const nomeCat = g.name || g;
+                html += `<div class="genre-chip ${selectedGenre === nomeCat ? 'active' : ''}" onclick="filtrarGeneroSuperFlix('${nomeCat}')">${esc(nomeCat)}</div>`;
+            });
+        }
+        container.innerHTML = html;
+        pesquisarGlobal();
+    } catch(e) { container.innerHTML = ''; }
+}
+
+function filtrarGeneroSuperFlix(genero) {
+    selectedGenre = genero;
+    const container = document.getElementById('genreChips');
+    if(container) {
+        container.querySelectorAll('.genre-chip').forEach(c => c.classList.remove('active'));
+        if(!genero) container.firstElementChild.classList.add('active');
+        else {
+            Array.from(container.children).forEach(c => {
+                if(c.innerText === genero) c.classList.add('active');
+            });
+        }
+    }
+    pesquisarGlobal();
+}
+
 async function pesquisarGlobal() {
     clearTimeout(timeoutBusca);
-    const queryEl = document.getElementById('inputBuscaGlobal'); const query = queryEl ? queryEl.value.trim() : '';
+    const queryEl = document.getElementById('inputBuscaGlobal'); 
+    const query = queryEl ? queryEl.value.trim() : '';
     const container = document.getElementById('resultados-global');
-    if(query.length < 3 && !selectedGenre) { if(container) container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um gênero.</p>`; return; }
+
+    // MODO ANIMES OU DORAMAS NA MESMA ABA DA BUSCA
+    if (searchType === 'animes' || searchType === 'dorama') {
+        if(container) container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Buscando...</div>`;
+        timeoutBusca = setTimeout(() => {
+            carregarSuperFlixParaBusca(searchType, selectedGenre, query.length >= 3 ? query : null);
+        }, 800);
+        return;
+    }
+
+    // MODO TMDB PADRÃO (Filmes/Séries/Todos)
+    if(query.length < 3 && !selectedGenre) { 
+        if(container) container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um gênero.</p>`; 
+        return; 
+    }
     if(container) container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Buscando...</div>`;
+    
     timeoutBusca = setTimeout(async () => {
         try {
             let items = [];
@@ -393,6 +452,40 @@ async function pesquisarGlobal() {
         } catch(e) { if(container) container.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Erro na busca.</p>`; }
     }, 600);
 }
+
+async function carregarSuperFlixParaBusca(tipo, genero, busca) {
+    const container = document.getElementById('resultados-global');
+    try {
+        let url = ''; 
+        if (genero) { 
+            let catG = tipo === 'animes' ? 'anime' : 'dorama'; 
+            url = `https://superflixapi.fit/lista?category=${catG}&type=tmdb&genero=${encodeURIComponent(genero.toLowerCase())}&format=json`; 
+        } else if (busca) { 
+            let catB = tipo === 'animes' ? 'animes' : 'dorama'; 
+            url = `https://superflixapi.fit/lista?category=${catB}&format=json`; 
+        } else { 
+            let catB = tipo === 'animes' ? 'animes' : 'dorama'; 
+            url = `https://superflixapi.fit/lista?category=${catB}&type=tmdb&order=desc&format=json`; 
+        }
+        
+        const res = await fetch(url); const text = await res.text(); let dadosBrutos;
+        try { dadosBrutos = JSON.parse(text); } catch(err) { if(tipo === 'dorama') { const fRes = await fetch(`https://superflixapi.fit/lista?category=dorama&type=imdb&format=json`); dadosBrutos = await fRes.json(); } else { throw err; } }
+        
+        let resultados = []; 
+        if (!Array.isArray(dadosBrutos)) { if (dadosBrutos.data) resultados = dadosBrutos.data; else if (dadosBrutos.series) resultados = dadosBrutos.series; else if (dadosBrutos.animes) resultados = dadosBrutos.animes; else resultados = Object.values(dadosBrutos); } else { resultados = dadosBrutos; }
+        
+        lastSuperFlixData = resultados; 
+        if (busca && lastSuperFlixData.length > 0) { resultados = lastSuperFlixData.filter(item => (item.title || item.nome || item.name || '').toLowerCase().includes(busca.toLowerCase())); }
+        
+        if(!resultados || resultados.length === 0) { container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Nenhum resultado encontrado.</p>'; return; }
+        let html = '';
+        resultados.slice(0, 50).forEach(item => {
+            const titulo = item.title || item.nome || item.name || 'Sem Título'; const id = item.tmdb_id || item.id; const capa = item.cover || item.poster || item.poster_path || 'https://via.placeholder.com/220x330/111/fff'; const typeToOpen = 'tv';
+            if(id && id !== 0) { html += `<div class="card-movie" onclick="abrirDetalhesTMDB(${id}, '${typeToOpen}')"><img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';"><div class="titulo-fallback" style="display:none">${esc(titulo)}</div></div>`; }
+        }); container.innerHTML = html;
+    } catch(e) { console.error(e); container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Erro ao carregar os títulos.</p>'; }
+}
+
 
 // ===================== DETALHES TMDB =====================
 async function abrirDetalhesTMDB(tmdbId, type) {
@@ -610,7 +703,6 @@ window.addEventListener('popstate', function(event) {
     if(fromPopState) { fromPopState = false; return; }
     const modais = [ { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: () => fecharAdBlock() }, { id: 'embedModal', check: (el) => el.style.display === 'flex', close: () => fecharEmbedWeb(true) }, { id: 'trailerModal', check: (el) => el.style.display === 'flex', close: () => fecharTrailer(true) }, { id: 'serverModal', check: (el) => el.classList.contains('active'), close: () => fecharMenuServidores(true) }, { id: 'actorModal', check: (el) => el.classList.contains('active'), close: () => fecharAtor(true) }, { id: 'detailsPage', check: (el) => el.classList.contains('active'), close: () => fecharDetalhes(true) }, { id: 'bottomSheet', check: (el) => el.classList.contains('active'), close: () => fecharSheetTV(true) }, { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: () => fecharMenuPrincipal(true) }, { id: 'vipModal', check: (el) => el.style.display === 'flex', close: () => fecharModalVip(true) } ];
     for(let modal of modais) { const el = document.getElementById(modal.id); if(el && modal.check(el)) { modal.close(); return; } }
-    if(document.getElementById('view-superflix') && document.getElementById('view-superflix').classList.contains('active')) { document.getElementById('view-superflix').classList.remove('active'); const mainHeader = document.getElementById('mainHeader'); if(mainHeader) mainHeader.style.display = 'flex'; mudarAba('view-home', document.getElementById('nav-home'), true); return; }
     if(document.getElementById('view-iptv').classList.contains('active')) { document.getElementById('view-iptv').classList.remove('active'); const mainHeader = document.getElementById('mainHeader'); if(mainHeader) mainHeader.style.display = 'flex'; mudarAba('view-home', document.getElementById('nav-home'), true); return; }
     if(document.getElementById('view-grade').classList.contains('active')) { document.getElementById('view-grade').classList.remove('active'); document.getElementById('view-iptv').classList.add('active'); return; }
     if(document.getElementById('view-historico').classList.contains('active') || document.getElementById('view-buscar').classList.contains('active')) { mudarAba('view-home', document.getElementById('nav-home'), true); return; }
@@ -619,38 +711,3 @@ window.addEventListener('popstate', function(event) {
 document.addEventListener('backbutton', function(e) { e.preventDefault(); history.back(); }, false);
 window.onload = () => { history.replaceState({ view: 'view-home' }, null, ""); initApp(); document.addEventListener('contextmenu', event => event.preventDefault()); };
 function fecharAdBlock() { document.getElementById('adBlockModal').style.display = 'none'; removeNoScroll(); }
-
-// ===================== INTEGRAÇÃO SUPER FLIX =====================
-async function abrirSuperFlix(tipo) {
-    if(heroInterval) { clearInterval(heroInterval); heroInterval = null; }
-    currentSuperFlixType = tipo; document.getElementById('titulo-superflix').innerText = tipo === 'animes' ? 'Animes' : 'Doramas'; document.getElementById('inputBuscaSuperFlix').value = '';
-    document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); document.getElementById('view-superflix').classList.add('active'); document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-    const mainHeader = document.getElementById('mainHeader'); if(mainHeader) mainHeader.style.display = 'none';
-    carregarSuperFlixGeneros(tipo); carregarSuperFlixLista(tipo, null); history.pushState({ view: 'view-superflix' }, null, "");
-}
-async function carregarSuperFlixGeneros(tipo) {
-    let catUrl = tipo === 'animes' ? 'anime' : 'dorama';
-    try { const res = await fetch(`https://superflixapi.fit/lista?category=${catUrl}&type=generos&format=json`); const generos = await res.json(); let html = `<div class="genre-chip active" onclick="filtrarSuperFlix(null, this)">Todos</div>`; if(generos && generos.length > 0) { generos.forEach(g => { const nomeCat = g.name || g; html += `<div class="genre-chip" onclick="filtrarSuperFlix('${nomeCat}', this)">${nomeCat}</div>`; }); } document.getElementById('genreChipsSuperFlix').innerHTML = html; } catch(e) { console.error("Erro gêneros", e); }
-}
-function filtrarSuperFlix(genero, el) { document.querySelectorAll('#genreChipsSuperFlix .genre-chip').forEach(c => c.classList.remove('active')); if(el) el.classList.add('active'); carregarSuperFlixLista(currentSuperFlixType, genero); }
-let timeoutSfBusca = null;
-function pesquisarSuperFlix() {
-    clearTimeout(timeoutSfBusca); const query = document.getElementById('inputBuscaSuperFlix').value.trim();
-    timeoutSfBusca = setTimeout(() => { if(query.length >= 3) { carregarSuperFlixLista(currentSuperFlixType, null, query); } else if (query.length === 0) { carregarSuperFlixLista(currentSuperFlixType, null); } }, 800);
-}
-async function carregarSuperFlixLista(tipo, genero, busca = null) {
-    const container = document.getElementById('conteudo-superflix'); container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>`;
-    try {
-        let url = ''; if (genero) { let catG = tipo === 'animes' ? 'anime' : 'dorama'; url = `https://superflixapi.fit/lista?category=${catG}&type=tmdb&genero=${encodeURIComponent(genero.toLowerCase())}&format=json`; } else if (busca) { let catB = tipo === 'animes' ? 'animes' : 'dorama'; url = `https://superflixapi.fit/lista?category=${catB}&format=json`; } else { let catB = tipo === 'animes' ? 'animes' : 'dorama'; url = `https://superflixapi.fit/lista?category=${catB}&type=tmdb&order=desc&format=json`; }
-        const res = await fetch(url); const text = await res.text(); let dadosBrutos;
-        try { dadosBrutos = JSON.parse(text); } catch(err) { if(tipo === 'doramas') { const fRes = await fetch(`https://superflixapi.fit/lista?category=dorama&type=imdb&format=json`); dadosBrutos = await fRes.json(); } else { throw err; } }
-        let resultados = []; if (!Array.isArray(dadosBrutos)) { if (dadosBrutos.data) resultados = dadosBrutos.data; else if (dadosBrutos.series) resultados = dadosBrutos.series; else if (dadosBrutos.animes) resultados = dadosBrutos.animes; else resultados = Object.values(dadosBrutos); } else { resultados = dadosBrutos; }
-        lastSuperFlixData = resultados; if (busca && lastSuperFlixData.length > 0) { resultados = lastSuperFlixData.filter(item => (item.title || item.nome || item.name || '').toLowerCase().includes(busca.toLowerCase())); }
-        if(!resultados || resultados.length === 0) { container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Nenhum resultado encontrado.</p>'; return; }
-        let html = '';
-        resultados.slice(0, 50).forEach(item => {
-            const titulo = item.title || item.nome || item.name || 'Sem Título'; const id = item.tmdb_id || item.id; const capa = item.cover || item.poster || item.poster_path || 'https://via.placeholder.com/220x330/111/fff'; const typeToOpen = 'tv';
-            if(id && id !== 0) { html += `<div class="card-movie" onclick="abrirDetalhesTMDB(${id}, '${typeToOpen}')"><img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';"><div class="titulo-fallback" style="display:none">${esc(titulo)}</div></div>`; }
-        }); container.innerHTML = html;
-    } catch(e) { console.error(e); container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Erro ao carregar os títulos.</p>'; }
-}
