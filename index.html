@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1a1d29">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -13,7 +17,8 @@
     <title>StreamFlix</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
-    <link rel="stylesheet" href="/css/style.css">
+    
+    <link rel="stylesheet" href="/css/style.css?v=2.6">
 </head>
 <body>
 
@@ -88,12 +93,12 @@
             <i class="fas fa-search search-icon"></i>
             <input type="text" class="search-bar" id="inputBuscaGlobal" placeholder="Qual filme ou série você procura?" oninput="pesquisarGlobal()">
         </div>
-        <div class="type-toggle">
+        <div class="type-toggle" style="flex-wrap: wrap; gap: 5px;">
             <div class="type-btn active" id="type-all" onclick="setSearchType('all')">Todos</div>
             <div class="type-btn" id="type-movie" onclick="setSearchType('movie')">Filmes</div>
             <div class="type-btn" id="type-tv" onclick="setSearchType('tv')">Séries</div>
-            <div class="type-btn" style="background: linear-gradient(135deg, #f50057, #ff4081); color: #fff; border: none;" onclick="abrirSuperFlix('animes')"><i class="fas fa-dragon"></i> Animes</div>
-            <div class="type-btn" style="background: linear-gradient(135deg, #00b0ff, #00e5ff); color: #fff; border: none;" onclick="abrirSuperFlix('dorama')"><i class="fas fa-heart"></i> Doramas</div>
+            <div class="type-btn" id="type-animes" onclick="setSearchType('animes')">Animes</div>
+            <div class="type-btn" id="type-dorama" onclick="setSearchType('dorama')">Doramas</div>
         </div>
         <div class="genre-chips" id="genreChips"></div>
         <div id="resultados-busca-container">
@@ -123,19 +128,6 @@
             <div id="conteudo-iptv-tv"><p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A carregar canais...</p></div>
             <div class="grid-container" id="resultados-iptv-tv" style="display: none;"></div>
         </div>
-    </div>
-
-    <div id="view-superflix" class="view" style="padding-top: 60px;">
-        <div class="page-header" style="padding-top: 20px;">
-            <i class="fas fa-arrow-left" onclick="history.back()"></i>
-            <h2 class="page-title" style="color: var(--accent);" id="titulo-superflix">Animes</h2>
-        </div>
-        <div class="search-container" style="margin: 15px auto;">
-            <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-bar" id="inputBuscaSuperFlix" placeholder="Buscar..." oninput="pesquisarSuperFlix()">
-        </div>
-        <div class="genre-chips" id="genreChipsSuperFlix"></div>
-        <div class="grid-container" id="conteudo-superflix"></div>
     </div>
 
     <div class="bottom-nav" id="bottomNav">
@@ -177,17 +169,11 @@
         <div class="menu-section">
             <div class="menu-section-title"><i class="fas fa-compass"></i> Explorar</div>
             <div class="menu-grid">
-                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); entrarModoIPTV();">
+                <div class="menu-grid-item" style="grid-column: span 2;" onclick="fecharMenuPrincipal(); entrarModoIPTV();">
                     <div class="menu-icon-box" style="background: linear-gradient(135deg, #00e5ff, #0091ea);">
                         <i class="fas fa-satellite-dish"></i>
                     </div>
-                    <span>Modo IPTV</span>
-                </div>
-                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); mudarAba('view-buscar', null);">
-                    <div class="menu-icon-box" style="background: linear-gradient(135deg, #ff9100, #ff6d00);">
-                        <i class="fas fa-search"></i>
-                    </div>
-                    <span>Buscar</span>
+                    <span>Modo IPTV (Canais e Mais)</span>
                 </div>
             </div>
         </div>
@@ -207,7 +193,7 @@
 
         <div class="menu-section">
             <div class="menu-list">
-                <a href="https://t.me/streamflixofc" target="_blank" rel="noopener noreferrer" class="menu-list-item" style="text-decoration:none;">
+                <a href="https://t.me/ApkBugado" target="_blank" rel="noopener noreferrer" class="menu-list-item" style="text-decoration:none;">
                     <div class="menu-list-icon" style="color:#0088cc;"><i class="fab fa-telegram"></i></div>
                     <div class="menu-list-text">
                         <div class="menu-list-title">Canal Telegram</div>
@@ -224,7 +210,7 @@
             </div>
         </div>
 
-        <div class="menu-footer">StreamFlix v2.5</div>
+        <div class="menu-footer">StreamFlix v2.6</div>
     </div>
 
     <div class="server-modal" id="serverModal">
@@ -323,6 +309,6 @@
         }
     </script>
     <script src="/js/config.js"></script>
-    <script src="/js/app.js"></script>
+    <script src="/js/app.js?v=2.6"></script>
 </body>
 </html>
