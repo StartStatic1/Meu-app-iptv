@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
 
-    <link rel="stylesheet" href="/css/style.css?v=2.7">
+    <link rel="stylesheet" href="/css/style.css?v=2.9">
 </head>
 <body>
 
@@ -210,7 +210,7 @@
             </div>
         </div>
 
-        <div class="menu-footer">StreamFlix v2.7</div>
+        <div class="menu-footer">StreamFlix v2.8</div>
     </div>
 
     <div class="server-modal" id="serverModal">
@@ -289,16 +289,14 @@
         </div>
     </div>
 
-    <div class="trailer-modal" id="trailerModal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)">
-        <i class="fas fa-times trailer-close" onclick="fecharTrailer()"></i>
-        <div class="swipe-indicator" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; z-index:4503;"></div>
+    <div class="trailer-modal" id="trailerModal">
+        <i class="fas fa-times trailer-close" onclick="fecharTrailer(false)"></i>
         <iframe id="trailerFrame" scrolling="no" class="trailer-frame" allowfullscreen="true"></iframe>
     </div>
 
-    <div class="embed-modal" id="embedModal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)">
-        <i class="fas fa-times trailer-close" onclick="fecharEmbedWeb()"></i>
-        <div class="swipe-indicator" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; z-index:4503;"></div>
-        <iframe id="embedFrame" scrolling="no" class="embed-frame" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+    <div class="embed-modal" id="embedModal">
+        <i class="fas fa-times trailer-close" onclick="fecharEmbedWeb(false)"></i>
+        <iframe id="embedFrame" scrolling="no" class="embed-frame" allow="autoplay; fullscreen; encrypted-media; picture-in-picture;" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
     </div>
 
     <script>
@@ -308,18 +306,8 @@
             });
         }
     </script>
-    <!-- ORDEM DOS MÓDULOS: Config -> Utils -> VIP -> Ads -> Hero -> Filmes -> Busca -> Séries -> TV -> Modal -> Player -> Navegação -->
-    <script src="/js/config.js?v=2.7"></script>
-    <script src="/js/utils.js?v=2.7"></script>
-    <script src="/js/vip.js?v=2.7"></script>
-    <script src="/js/ads.js?v=2.7"></script>
-    <script src="/js/hero.js?v=2.7"></script>
-    <script src="/js/filmes.js?v=2.7"></script>
-    <script src="/js/busca.js?v=2.7"></script>
-    <script src="/js/series.js?v=2.7"></script>
-    <script src="/js/tv.js?v=2.7"></script>
-    <script src="/js/modal.js?v=2.7"></script>
-    <script src="/js/player.js?v=2.7"></script>
-    <script src="/js/navigation.js?v=2.7"></script>
+    
+    <script src="/js/app.js?v=2.9"></script>
+
 </body>
 </html>
