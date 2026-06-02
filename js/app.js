@@ -1,6 +1,3 @@
-
-# Gerando o app.js completo revisado
-app_js = '''// ===================== ESTADO GLOBAL =====================
 let heroItems = [];
 let heroIndex = 0;
 let heroInterval = null;
@@ -1378,9 +1375,3 @@ function pesquisarSuperFlix() {
         }
     }, 800);
 }
-'''
-
-with open('/mnt/agents/output/app.js', 'w', encoding='utf-8') as f:
-    f.write(app_js)
-
-print("app.js gerado com sucesso")
