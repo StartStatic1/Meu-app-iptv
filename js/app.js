@@ -36,7 +36,7 @@ function removeNoScroll() {
     if(noScrollCount === 0) document.body.classList.remove('no-scroll');
 }
 
-// ===================== SUPABASE / VIP / WHATSAPP =====================
+// ===================== SUPABASE / VIP =====================
 function getSupabase() {
     if(!meuSupabase) {
         meuSupabase = window.supabase.createClient('https://gkujbjpvphuvrejpvvtz.supabase.co', 'sb_publishable_C9FMCjUyZnlzhINK2KZXWQ_ahpGu0yy');
@@ -54,9 +54,14 @@ function fecharModalVip() {
     removeNoScroll();
     if(history.state && history.state.view === 'vip') { fromPopState = true; history.back(); }
 }
-function abrirWhatsAppVip() {
-    // URL Web segura que evita o erro ERR_UNKNOWN_URL_SCHEME no Android
-    window.open('https://chat.whatsapp.com/L4Ub67znpC4KEL3uOVYB87', '_blank');
+function abrirTelegramVip() {
+    let a = document.createElement('a');
+    a.href = 'https://t.me/streamflixofc';
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
 }
 async function fazerLoginVip() {
     const email = document.getElementById('vipEmail').value.trim();
@@ -111,6 +116,7 @@ function desativarTodosAds() {
     setTimeout(() => location.reload(), 1500);
 }
 
+// ===================== ANÚNCIOS (COMPLETO + VIP BLOCK) =====================
 function injetarAnuncios() {
     if(isVip()) return; 
     if(adsInjetados) return;
@@ -175,7 +181,12 @@ function mostrarToast(msg) {
 }
 function esc(str) {
     if(!str) return '';
-    return str.toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    return str.toString()
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 function getWatchedList() { try { return JSON.parse(localStorage.getItem('streamflix_watched_v2')) || {}; } catch(e) { return {}; } }
 function saveWatchedList(list) { localStorage.setItem('streamflix_watched_v2', JSON.stringify(list)); }
@@ -243,8 +254,7 @@ async function tmdbFetch(endpoint) {
         } catch(e){}
     }
     try {
-        const connector = endpoint.includes('?') ? '&' : '?';
-        const res = await fetch(`https://api.themoviedb.org/3${endpoint}${connector}api_key=${TMDB_API_KEY}&language=pt-BR`);
+        const res = await fetch(`https://api.themoviedb.org/3${endpoint}&api_key=${TMDB_API_KEY}&language=pt-BR`);
         const data = await res.json();
         localStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
         return data;
@@ -441,15 +451,9 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     currentSeason = 1;
     currentEpisode = 1;
 
-    // Reset explícito para garantir que o botão "Assistir" nunca fique cinzento ou preso em outra função
-    const btnPlayFilme = document.getElementById('btnPlayFilme');
-    if(btnPlayFilme) {
-        btnPlayFilme.disabled = false;
-        btnPlayFilme.innerHTML = '<i class="fas fa-play"></i> <span>Assistir</span>';
-        btnPlayFilme.style.pointerEvents = 'auto';
-        btnPlayFilme.style.display = 'flex';
-        btnPlayFilme.onclick = () => abrirMenuServidoresDetalhes();
-    }
+    // RESETAR BOTÃO PLAY para evitar conflito com IPTV
+    const btnPlay = document.getElementById('btnPlayFilme');
+    if(btnPlay) { btnPlay.onclick = () => abrirMenuServidoresDetalhes(); }
 
     document.getElementById('dpTitle').innerText = 'Carregando...';
     document.getElementById('dpTmdbMeta').innerHTML = '';
@@ -459,6 +463,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     document.getElementById('dpEpisodes').style.display = 'none';
     document.getElementById('dpSimilarContainer').style.display = 'none';
     document.getElementById('btnTrailer').style.display = 'none';
+    if(document.getElementById('btnPlayFilme')) document.getElementById('btnPlayFilme').style.display = 'flex';
     trailerKeyAtivo = null;
 
     document.getElementById('detailsPage').classList.add('active');
@@ -554,7 +559,6 @@ async function abrirDetalhesTMDB(tmdbId, type) {
 
 // ===================== MENUS E REPRODUÇÃO =====================
 function abrirMenuServidoresDetalhes() {
-    if(document.activeElement) document.activeElement.blur();
     const btnNativo = document.getElementById('btnServerNativo');
     if (btnNativo) {
         btnNativo.onclick = () => {
@@ -563,14 +567,7 @@ function abrirMenuServidoresDetalhes() {
         };
     }
     document.getElementById('serverModal').classList.add('active');
-    
-    // Altera z-index temporário para cobrir os detalhes na cor preta
-    const overlay = document.getElementById('sheetOverlay');
-    if(overlay) {
-        overlay.style.zIndex = "3600";
-        overlay.classList.add('active');
-    }
-    
+    document.getElementById('sheetOverlay').classList.add('active');
     addNoScroll();
     history.pushState({ view: 'servers', modal: true }, null, "");
 }
@@ -585,6 +582,7 @@ async function buscarEReproduzirNativo(title, type) {
 
         const matches = data.filter(item => (item.name || '').toLowerCase().includes(termo));
         if(matches.length > 0) {
+            // FILTRO INTELIGENTE ANTI-4K PARA NÃO BUGAR OU TRAVAR NO MOBILE
             let match = matches.find(m => !/(4k|uhd|2160p)/i.test((m.name || '').toLowerCase()));
             if(!match) match = matches[0]; 
 
@@ -606,8 +604,7 @@ async function buscarEReproduzirNativo(title, type) {
             mostrarToast("Não disponível no CDN. Tente Web."); 
             setTimeout(() => {
                 document.getElementById('serverModal').classList.add('active');
-                const overlay = document.getElementById('sheetOverlay');
-                if(overlay) { overlay.style.zIndex = "3600"; overlay.classList.add('active'); }
+                document.getElementById('sheetOverlay').classList.add('active');
             }, 1500);
         }
     } catch(e) { mostrarToast("Erro CDN: " + e.message); }
@@ -616,18 +613,11 @@ async function buscarEReproduzirNativo(title, type) {
 function abrirPlayerWeb(servidor) {
     if(!currentTmdbId) return;
 
-    // FECHA VISUALMENTE SEM MEXER NO HISTÓRICO PARA EVITAR BUG AO VOLTAR
-    document.getElementById('serverModal').classList.remove('active');
-    const overlay = document.getElementById('sheetOverlay');
-    if(overlay) {
-        overlay.classList.remove('active');
-        setTimeout(() => overlay.style.zIndex = "", 300);
-    }
+    fecharMenuServidores();
 
     const modal = document.getElementById('embedModal');
     const frame = document.getElementById('embedFrame');
     let finalUrl = "";
-    
     if(servidor === 'betterflix') {
         if(currentItemType === 'movie') finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=movie`;
         else finalUrl = `https://betterflix.click/api/player?id=${currentTmdbId}&type=tv&season=${currentSeason}&episode=${currentEpisode}`;
@@ -647,20 +637,16 @@ function abrirPlayerWeb(servidor) {
     setTimeout(() => {
         frame.src = finalUrl;
         modal.style.display = 'flex';
+        addNoScroll();
+        history.pushState({ view: 'embed', modal: true }, null, "");
         
-        // SUBSTITUI PARA NÃO CRIAR LOOP FANTASMA NA VOLTA
-        if(history.state && history.state.view === 'servers') {
-            history.replaceState({ view: 'embed', modal: true }, null, "");
-        } else {
-            history.pushState({ view: 'embed', modal: true }, null, "");
-        }
-        
+        // FORÇAR ROTAÇÃO PAISAGEM NO EMBED
         try { 
             if(screen.orientation && screen.orientation.lock) {
                 screen.orientation.lock('landscape').catch(e => console.log(e));
             } 
         } catch(e) {}
-    }, 300);
+    }, 800);
 }
 
 function reproduzirEpisodioTMDB(tmdbId, season, episode) {
@@ -769,63 +755,59 @@ function abrirTrailer() {
     addNoScroll();
     history.pushState({ view: 'trailer', modal: true }, null, "");
 }
-function fecharTrailer(fromPopState = false) {
+function fecharTrailer() {
     const frame = document.getElementById('trailerFrame');
     frame.src = 'about:blank';
     setTimeout(() => { frame.src = ''; }, 200);
     document.getElementById('trailerModal').style.display = 'none';
     removeNoScroll();
-    if(!fromPopState && history.state && history.state.view === 'trailer') { fromPopState = true; history.back(); }
+    if(history.state && history.state.view === 'trailer') { fromPopState = true; history.back(); }
 }
-function fecharMenuServidores(fromPopState = false) {
+function fecharMenuServidores() {
     document.getElementById('serverModal').classList.remove('active');
     const overlay = document.getElementById('sheetOverlay');
-    if(overlay) {
-        overlay.classList.remove('active');
-        setTimeout(() => overlay.style.zIndex = "", 300);
-    }
+    if(overlay) overlay.classList.remove('active');
     removeNoScroll();
-    if(!fromPopState && history.state && history.state.view === 'servers') { fromPopState = true; history.back(); }
+    if(history.state && history.state.view === 'servers') { fromPopState = true; history.back(); }
 }
-function fecharEmbedWeb(fromPopState = false) {
+function fecharEmbedWeb() {
     const frame = document.getElementById('embedFrame');
     frame.src = 'about:blank';
     setTimeout(() => { frame.src = ''; }, 200);
     document.getElementById('embedModal').style.display = 'none';
     removeNoScroll();
+    
+    // LIBERAR ORIENTAÇÃO DA TELA AO FECHAR O EMBED
     try { if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e) {}
-    if(!fromPopState && history.state && history.state.view === 'embed') { fromPopState = true; history.back(); }
+    
+    if(history.state && history.state.view === 'embed') history.back();
 }
-function fecharDetalhes(fromPopState = false) { 
+function fecharDetalhes() { 
     document.getElementById('detailsPage').classList.remove('active'); 
     removeNoScroll();
-    if(!fromPopState && history.state && history.state.view === 'details') { fromPopState = true; history.back(); }
+    if(history.state && history.state.view === 'details') { fromPopState = true; history.back(); }
 }
-function fecharAtor(fromPopState = false) { 
+function fecharAtor() { 
     document.getElementById('actorModal').classList.remove('active'); 
     removeNoScroll();
-    if(!fromPopState && history.state && history.state.view === 'actor') { fromPopState = true; history.back(); }
+    if(history.state && history.state.view === 'actor') { fromPopState = true; history.back(); }
 }
 
 function abrirSheetTV(titulo, streamId, tagsStr) {
-    const btnPlayTV = document.getElementById('btnPlayTV');
-    if(btnPlayTV) {
-        btnPlayTV.disabled = false;
-        btnPlayTV.innerHTML = '<i class="fas fa-play"></i> Assistir Agora';
-        btnPlayTV.onclick = () => dispararPlayer(streamId, 'live', '', titulo);
-    }
     document.getElementById('tvTitle').innerText = titulo;
     document.getElementById('tvBadges').innerHTML = gerarHTMLBadges(tagsStr);
+    const btn = document.getElementById('btnPlayTV');
+    if(btn) btn.onclick = () => dispararPlayer(streamId, 'live', '', titulo);
     document.getElementById('sheetOverlay').classList.add('active');
     document.getElementById('bottomSheet').classList.add('active');
     addNoScroll();
     history.pushState({ view: 'sheet', modal: true }, null, "");
 }
-function fecharSheetTV(fromPopState = false) { 
+function fecharSheetTV() { 
     document.getElementById('sheetOverlay').classList.remove('active'); 
     document.getElementById('bottomSheet').classList.remove('active'); 
     removeNoScroll();
-    if(!fromPopState && history.state && history.state.view === 'sheet') { fromPopState = true; history.back(); }
+    if(history.state && history.state.view === 'sheet') { fromPopState = true; history.back(); }
 }
 
 function fecharTodosOverlays() {
@@ -835,7 +817,7 @@ function fecharTodosOverlays() {
 }
 
 async function dispararPlayer(id, tipo, ext, titulo) {
-    const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
+    const btn = (tipo === 'live') ? document.getElementById('btnPlayTV') : null;
     if(btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`; btn.disabled = true; }
     try {
         let urlFinal = "";
@@ -851,20 +833,18 @@ async function dispararPlayer(id, tipo, ext, titulo) {
         }
         if(!urlFinal) throw new Error("Link não retornado.");
 
-        if (window.AndroidApp && window.AndroidApp.abrirVideoNativo) {
-            window.AndroidApp.abrirVideoNativo(urlFinal);
-        } else {
-            const urlLimpa = urlFinal.replace(/^https?:\/\//, '');
-            window.location.href = `intent://${urlLimpa}#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end;`;
-        }
-    } catch(e) { 
-        mostrarToast("Erro: " + e.message); 
-    } finally { 
-        // Restaurar o botão sempre após 1 segundo para evitar que congele se o intent não disparar o Player
-        setTimeout(() => {
-            if(btn) { btn.innerHTML = `<i class="fas fa-play"></i> Assistir`; btn.disabled = false; } 
-        }, 1000);
-    }
+        const urlLimpa = urlFinal.replace(/^https?:\/\//, '');
+        const intentUrl = `intent://${urlLimpa}#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end;`;
+
+        const a = document.createElement('a');
+        a.href = intentUrl;
+        a.style.display = 'none';
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+
+    } catch(e) { mostrarToast("Erro: " + e.message); }
+    finally { if(btn) { btn.innerHTML = `<i class="fas fa-play"></i> Assistir Agora`; btn.disabled = false; } }
 }
 
 // ===================== NAVEGAÇÃO E MENU =====================
@@ -874,11 +854,11 @@ function abrirMenuPrincipal() {
     addNoScroll();
     history.pushState({ view: 'menu', modal: true }, null, "");
 }
-function fecharMenuPrincipal(fromPopState = false) {
+function fecharMenuPrincipal() {
     document.getElementById('menuOverlay').classList.remove('active');
     document.getElementById('menuPrincipal').classList.remove('active');
     removeNoScroll();
-    if(!fromPopState && history.state && history.state.view === 'menu') { fromPopState = true; history.back(); }
+    if(history.state && history.state.view === 'menu') { fromPopState = true; history.back(); }
 }
 
 function mudarAba(idView, btn, originHistory = false) {
@@ -1008,16 +988,6 @@ async function abrirGradeIPTV(tipo, catId, nomePasta) {
 }
 
 async function abrirDetalhesIPTV(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
-    const btnPlayFilme = document.getElementById('btnPlayFilme');
-    if(btnPlayFilme) {
-        btnPlayFilme.disabled = false;
-        btnPlayFilme.innerHTML = '<i class="fas fa-play"></i> <span>Assistir</span>';
-        btnPlayFilme.style.pointerEvents = 'auto';
-        btnPlayFilme.style.display = 'flex';
-        // Redefine para abrir direto se for conteúdo do modo IPTV
-        btnPlayFilme.onclick = () => dispararPlayer(id, tipo, ext, titulo);
-    }
-
     document.getElementById('dpTitle').innerText = titulo;
     document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr) + `<span style="color:var(--text-muted); margin-left:5px;">${cat}</span>`;
     const capa = urlCapa || 'https://via.placeholder.com/800x600/111/fff';
@@ -1030,7 +1000,9 @@ async function abrirDetalhesIPTV(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
     currentTmdbId = null; currentItemType = tipo === 'series' ? 'tv' : 'movie';
     currentStreamData = { id: id, title: titulo, img: capa, type: tipo, ext: ext };
 
-    if(tipo === 'series') btnPlayFilme.style.display = 'none';
+    const btnPlay = document.getElementById('btnPlayFilme');
+    btnPlay.style.display = 'flex';
+    btnPlay.onclick = () => dispararPlayer(id, tipo, ext, titulo);
 
     document.getElementById('detailsPage').classList.add('active');
     addNoScroll();
@@ -1077,18 +1049,11 @@ function handleTouchEnd(e) {
     const deltaY = touchEndY - touchStartY;
     const deltaX = touchEndX - touchStartX;
 
-    if(deltaY > 80 && Math.abs(deltaX) < 100) {
+    if(deltaY > 120 && Math.abs(deltaX) < 80) {
         const trailer = document.getElementById('trailerModal');
         const embed = document.getElementById('embedModal');
-        const menu = document.getElementById('menuPrincipal');
-        const sheetTv = document.getElementById('bottomSheet');
-        const serverModal = document.getElementById('serverModal');
-
-        if(trailer && trailer.style.display === 'flex') fecharTrailer();
-        if(embed && embed.style.display === 'flex') fecharEmbedWeb();
-        if(menu && menu.classList.contains('active')) fecharMenuPrincipal();
-        if(sheetTv && sheetTv.classList.contains('active')) fecharSheetTV();
-        if(serverModal && serverModal.classList.contains('active')) fecharMenuServidores();
+        if(trailer.style.display === 'flex') fecharTrailer();
+        if(embed.style.display === 'flex') fecharEmbedWeb();
     }
 }
 
@@ -1096,15 +1061,15 @@ window.addEventListener('popstate', function(event) {
     if(fromPopState) { fromPopState = false; return; }
 
     const modais = [
-        { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: () => fecharAdBlock() },
-        { id: 'embedModal', check: (el) => el.style.display === 'flex', close: () => fecharEmbedWeb(true) },
-        { id: 'trailerModal', check: (el) => el.style.display === 'flex', close: () => fecharTrailer(true) },
-        { id: 'serverModal', check: (el) => el.classList.contains('active'), close: () => fecharMenuServidores(true) },
-        { id: 'actorModal', check: (el) => el.classList.contains('active'), close: () => fecharAtor(true) },
-        { id: 'detailsPage', check: (el) => el.classList.contains('active'), close: () => fecharDetalhes(true) },
-        { id: 'bottomSheet', check: (el) => el.classList.contains('active'), close: () => fecharSheetTV(true) },
-        { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: () => fecharMenuPrincipal(true) },
-        { id: 'vipModal', check: (el) => el.style.display === 'flex', close: () => fecharModalVip(true) }
+        { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: fecharAdBlock },
+        { id: 'embedModal', check: (el) => el.style.display === 'flex', close: fecharEmbedWeb },
+        { id: 'trailerModal', check: (el) => el.style.display === 'flex', close: fecharTrailer },
+        { id: 'serverModal', check: (el) => el.classList.contains('active'), close: fecharMenuServidores },
+        { id: 'actorModal', check: (el) => el.classList.contains('active'), close: fecharAtor },
+        { id: 'detailsPage', check: (el) => el.classList.contains('active'), close: fecharDetalhes },
+        { id: 'bottomSheet', check: (el) => el.classList.contains('active'), close: fecharSheetTV },
+        { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: fecharMenuPrincipal },
+        { id: 'vipModal', check: (el) => el.style.display === 'flex', close: fecharModalVip }
     ];
 
     for(let modal of modais) {
@@ -1113,6 +1078,11 @@ window.addEventListener('popstate', function(event) {
             modal.close();
             return; 
         }
+    }
+
+    if(document.getElementById('menuPrincipal').classList.contains('active')) {
+        fecharMenuPrincipal();
+        return;
     }
 
     if(document.getElementById('view-superflix') && document.getElementById('view-superflix').classList.contains('active')) {
@@ -1166,7 +1136,7 @@ function fecharAdBlock() {
     removeNoScroll();
 }
 
-// ===================== INTEGRAÇÃO SUPER FLIX (API BLINDADA) =====================
+// ===================== INTEGRAÇÃO SUPER FLIX =====================
 async function abrirSuperFlix(tipo) {
     if(heroInterval) { clearInterval(heroInterval); heroInterval = null; }
     currentSuperFlixType = tipo;
@@ -1225,49 +1195,20 @@ async function carregarSuperFlixLista(tipo, genero, busca = null) {
     container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Carregando...</div>`;
     
     try {
-        let url = '';
-        if (genero) {
-            let catG = tipo === 'animes' ? 'anime' : 'dorama';
-            url = `https://superflixapi.fit/lista?category=${catG}&type=tmdb&genero=${encodeURIComponent(genero.toLowerCase())}&format=json`;
-        } else if (busca) {
-            let catB = tipo === 'animes' ? 'animes' : 'dorama';
-            url = `https://superflixapi.fit/lista?category=${catB}&format=json`;
-        } else {
-            // Prevenção contra bug da API retornar arquivo HTML na listagem crua
-            let catB = tipo === 'animes' ? 'animes' : 'dorama';
-            url = `https://superflixapi.fit/lista?category=${catB}&type=tmdb&order=desc&format=json`;
-        }
-
-        const res = await fetch(url);
-        const text = await res.text();
-        
-        let dadosBrutos;
-        try {
-            dadosBrutos = JSON.parse(text);
-        } catch(err) {
-            // Se a API teimar em jogar HTML, tenta um fallback usando TMDB IDs diretos
-            if(tipo === 'doramas') {
-                const fRes = await fetch(`https://superflixapi.fit/lista?category=dorama&type=imdb&format=json`);
-                dadosBrutos = await fRes.json();
-            } else {
-                throw err;
-            }
-        }
-
+        let catUrlBase = tipo === 'animes' ? 'animes' : 'dorama';
         let resultados = [];
-        if (!Array.isArray(dadosBrutos)) {
-            if (dadosBrutos.data) resultados = dadosBrutos.data;
-            else if (dadosBrutos.series) resultados = dadosBrutos.series;
-            else if (dadosBrutos.animes) resultados = dadosBrutos.animes;
-            else resultados = Object.values(dadosBrutos);
+
+        if (genero) {
+            let catUrlG = tipo === 'animes' ? 'anime' : 'dorama';
+            const res = await fetch(`https://superflixapi.fit/lista?category=${catUrlG}&type=tmdb&genero=${genero.toLowerCase()}&format=json`);
+            resultados = await res.json();
+            lastSuperFlixData = resultados;
+        } else if (!busca) {
+            const res = await fetch(`https://superflixapi.fit/lista?category=${catUrlBase}&format=json`);
+            resultados = await res.json();
+            lastSuperFlixData = resultados;
         } else {
-            resultados = dadosBrutos;
-        }
-
-        lastSuperFlixData = resultados;
-
-        if (busca && lastSuperFlixData.length > 0) {
-            resultados = lastSuperFlixData.filter(item => (item.title || item.nome || item.name || '').toLowerCase().includes(busca.toLowerCase()));
+            resultados = lastSuperFlixData.filter(item => (item.title || item.nome || '').toLowerCase().includes(busca.toLowerCase()));
         }
 
         if(!resultados || resultados.length === 0) {
@@ -1277,22 +1218,19 @@ async function carregarSuperFlixLista(tipo, genero, busca = null) {
 
         let html = '';
         resultados.slice(0, 50).forEach(item => {
-            const titulo = item.title || item.nome || item.name || 'Sem Título';
-            const id = item.tmdb_id || item.id;
-            const capa = item.cover || item.poster || item.poster_path || 'https://via.placeholder.com/220x330/111/fff';
-            // Usa TV por padrão pois Anime/Dorama é classificado como Série no banco do TMDB
-            const typeToOpen = 'tv';
+            const titulo = item.title || item.nome || 'Sem Título';
+            const id = item.id || item.tmdb_id;
+            const capa = item.cover || item.poster || 'https://via.placeholder.com/220x330/111/fff';
+            const isMovie = item.type === 'filme';
+            const typeToOpen = isMovie ? 'movie' : 'tv';
 
-            if(id && id !== 0) {
-                html += `<div class="card-movie" onclick="abrirDetalhesTMDB(${id}, '${typeToOpen}')">
-                    <img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">
-                    <div class="titulo-fallback" style="display:none">${esc(titulo)}</div>
-                </div>`;
-            }
+            html += `<div class="card-movie" onclick="abrirDetalhesTMDB(${id}, '${typeToOpen}')">
+                <img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">
+                <div class="titulo-fallback" style="display:none">${esc(titulo)}</div>
+            </div>`;
         });
         container.innerHTML = html;
     } catch(e) {
-        console.error(e);
-        container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Erro ao carregar os títulos do servidor.</p>';
+        container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Erro ao carregar do servidor.</p>';
     }
 }
