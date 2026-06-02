@@ -1,4 +1,4 @@
-// api/iptv.js - MOTOR 7.1
+// api/iptv.js - MOTOR 7.0 (SISTEMA DE FALLBACK)
 export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
@@ -14,44 +14,17 @@ export default async function handler(req, res) {
 
     if (action === "get_movie_url" && stream_id) {
         const ext = extension || "mp4";
-        for (let svr of servidores) {
-            const url = `${svr.url}/movie/${svr.user}/${svr.pass}/${stream_id}.${ext}`;
-            try {
-                const check = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(3000) });
-                if (check.ok || check.status === 405) {
-                    return res.status(200).json({ url: url });
-                }
-            } catch(e) {}
-        }
         const svr = servidores[0];
         return res.status(200).json({ url: `${svr.url}/movie/${svr.user}/${svr.pass}/${stream_id}.${ext}` });
     }
 
     if (action === "get_live_url" && stream_id) {
-        for (let svr of servidores) {
-            const url = `${svr.url}/${svr.user}/${svr.pass}/${stream_id}.ts`;
-            try {
-                const check = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(3000) });
-                if (check.ok || check.status === 405) {
-                    return res.status(200).json({ url: url });
-                }
-            } catch(e) {}
-        }
         const svr = servidores[0];
         return res.status(200).json({ url: `${svr.url}/${svr.user}/${svr.pass}/${stream_id}.ts` });
     }
 
     if (action === "get_series_url" && stream_id) {
         const ext = extension || "mp4";
-        for (let svr of servidores) {
-            const url = `${svr.url}/series/${svr.user}/${svr.pass}/${stream_id}.${ext}`;
-            try {
-                const check = await fetch(url, { method: 'HEAD', signal: AbortSignal.timeout(3000) });
-                if (check.ok || check.status === 405) {
-                    return res.status(200).json({ url: url });
-                }
-            } catch(e) {}
-        }
         const svr = servidores[0];
         return res.status(200).json({ url: `${svr.url}/series/${svr.user}/${svr.pass}/${stream_id}.${ext}` });
     }
