@@ -24,6 +24,16 @@ let lastSuperFlixData = [];
 // Touch gesture vars
 let touchStartY = 0;
 let touchStartX = 0;
+let noScrollCount = 0;
+
+function addNoScroll() {
+    noScrollCount++;
+    addNoScroll();
+}
+function removeNoScroll() {
+    noScrollCount = Math.max(0, noScrollCount - 1);
+    if(noScrollCount === 0) removeNoScroll();
+}
 
 // ===================== SUPABASE / VIP =====================
 function getSupabase() {
@@ -35,12 +45,12 @@ function getSupabase() {
 function isVip() { return localStorage.getItem('streamflix_vip') === 'true'; }
 function abrirModalVip() { 
     document.getElementById('vipModal').style.display = 'flex'; 
-    document.body.classList.add('no-scroll');
+    addNoScroll();
     history.pushState({ view: 'vip', modal: true }, null, "");
 }
 function fecharModalVip() { 
     document.getElementById('vipModal').style.display = 'none'; 
-    document.body.classList.remove('no-scroll');
+    removeNoScroll();
     if(history.state && history.state.view === 'vip') history.back();
 }
 function abrirTelegramVip() {
@@ -127,7 +137,7 @@ function aceitarPush() {
     mostrarToast("Notificações ativadas!");
 }
 
-function activarTodosAds() {
+function ativarTodosAds() {
     if(isVip() || adsInjetados) return;
     adsInjetados = true;
 
@@ -444,7 +454,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     trailerKeyAtivo = null;
 
     document.getElementById('detailsPage').classList.add('active');
-    document.body.classList.add('no-scroll');
+    addNoScroll();
     history.pushState({ view: 'details', modal: true }, null, "");
 
     try {
@@ -545,6 +555,7 @@ function abrirMenuServidoresDetalhes() {
     }
     document.getElementById('serverModal').classList.add('active');
     document.getElementById('sheetOverlay').classList.add('active');
+    addNoScroll();
     history.pushState({ view: 'servers', modal: true }, null, "");
 }
 
@@ -613,7 +624,7 @@ function abrirPlayerWeb(servidor) {
     setTimeout(() => {
         frame.src = finalUrl;
         modal.style.display = 'flex';
-        document.body.classList.add('no-scroll');
+        addNoScroll();
         history.pushState({ view: 'embed', modal: true }, null, "");
         
         // FORÇAR ROTAÇÃO PAISAGEM NO EMBED
@@ -666,7 +677,7 @@ function carregarHistorico() {
 
     let html = "";
     if(itemsFavs.length > 0) {
-        html += `<h3 style="color:#fff; padding-left:15px; margin-top:0;"><i class="fas fa-heart" style="color:#e91e63;"></i> Favoritos</h3>`;
+        html += `<h3 style="color:#fff; padding-left:15px; margin-top:0; grid-column:span 3;"><i class="fas fa-heart" style="color:#e91e63;"></i> Favoritos</h3>`;
         itemsFavs.forEach(item => {
             html += `<div class="card-history" onclick="abrirDetalhesTMDB(${item.id}, '${item.type}')">
                 <img src="${item.img}" style="width:100%; height:75%; object-fit:cover; margin:0;">
@@ -701,7 +712,7 @@ async function abrirAtor(atorId) {
     document.getElementById('actorBio').innerText = "";
     document.getElementById('actorCredits').innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
     modal.classList.add('active');
-    document.body.classList.add('no-scroll');
+    addNoScroll();
     history.pushState({ view: 'actor', modal: true }, null, "");
     try {
         const pRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}?api_key=${TMDB_API_KEY}&language=pt-BR`);
@@ -728,7 +739,7 @@ function abrirTrailer() {
     const frame = document.getElementById('trailerFrame');
     frame.src = `https://www.youtube.com/embed/${trailerKeyAtivo}?autoplay=1&rel=0`;
     document.getElementById('trailerModal').style.display = 'flex';
-    document.body.classList.add('no-scroll');
+    addNoScroll();
     history.pushState({ view: 'trailer', modal: true }, null, "");
 }
 function fecharTrailer() {
@@ -736,20 +747,22 @@ function fecharTrailer() {
     frame.src = 'about:blank';
     setTimeout(() => { frame.src = ''; }, 200);
     document.getElementById('trailerModal').style.display = 'none';
-    document.body.classList.remove('no-scroll');
+    removeNoScroll();
     if(history.state && history.state.view === 'trailer') history.back();
 }
 function fecharMenuServidores() {
     document.getElementById('serverModal').classList.remove('active');
     const overlay = document.getElementById('sheetOverlay');
     if(overlay) overlay.classList.remove('active');
+    removeNoScroll();
+    if(history.state && history.state.view === 'servers') history.back();
 }
 function fecharEmbedWeb() {
     const frame = document.getElementById('embedFrame');
     frame.src = 'about:blank';
     setTimeout(() => { frame.src = ''; }, 200);
     document.getElementById('embedModal').style.display = 'none';
-    document.body.classList.remove('no-scroll');
+    removeNoScroll();
     
     // LIBERAR ORIENTAÇÃO DA TELA AO FECHAR O EMBED
     try { if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e) {}
@@ -758,12 +771,12 @@ function fecharEmbedWeb() {
 }
 function fecharDetalhes() { 
     document.getElementById('detailsPage').classList.remove('active'); 
-    document.body.classList.remove('no-scroll');
+    removeNoScroll();
     if(history.state && history.state.view === 'details') history.back();
 }
 function fecharAtor() { 
     document.getElementById('actorModal').classList.remove('active'); 
-    document.body.classList.remove('no-scroll');
+    removeNoScroll();
     if(history.state && history.state.view === 'actor') history.back();
 }
 
@@ -774,11 +787,13 @@ function abrirSheetTV(titulo, streamId, tagsStr) {
     if(btn) btn.onclick = () => dispararPlayer(streamId, 'live', '', titulo);
     document.getElementById('sheetOverlay').classList.add('active');
     document.getElementById('bottomSheet').classList.add('active');
+    addNoScroll();
     history.pushState({ view: 'sheet', modal: true }, null, "");
 }
 function fecharSheetTV() { 
     document.getElementById('sheetOverlay').classList.remove('active'); 
     document.getElementById('bottomSheet').classList.remove('active'); 
+    removeNoScroll();
     if(history.state && history.state.view === 'sheet') history.back();
 }
 
@@ -823,10 +838,14 @@ async function dispararPlayer(id, tipo, ext, titulo) {
 function abrirMenuPrincipal() {
     document.getElementById('menuOverlay').classList.add('active');
     document.getElementById('menuPrincipal').classList.add('active');
+    addNoScroll();
+    history.pushState({ view: 'menu', modal: true }, null, "");
 }
 function fecharMenuPrincipal() {
     document.getElementById('menuOverlay').classList.remove('active');
     document.getElementById('menuPrincipal').classList.remove('active');
+    removeNoScroll();
+    if(history.state && history.state.view === 'menu') history.back();
 }
 
 function mudarAba(idView, btn, originHistory = false) {
@@ -852,6 +871,7 @@ function mudarAba(idView, btn, originHistory = false) {
 }
 
 function entrarModoIPTV() {
+    if(heroInterval) { clearInterval(heroInterval); heroInterval = null; }
     document.getElementById('view-iptv').classList.add('active');
     document.querySelectorAll('.view').forEach(v => { if(v.id !== 'view-iptv') v.classList.remove('active'); });
     document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -972,7 +992,7 @@ async function abrirDetalhesIPTV(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
     btnPlay.onclick = () => dispararPlayer(id, tipo, ext, titulo);
 
     document.getElementById('detailsPage').classList.add('active');
-    document.body.classList.add('no-scroll');
+    addNoScroll();
     history.pushState({ view: 'details', modal: true }, null, "");
 }
 
@@ -1045,6 +1065,11 @@ window.addEventListener('popstate', function(event) {
         }
     }
 
+    if(document.getElementById('menuPrincipal').classList.contains('active')) {
+        fecharMenuPrincipal();
+        return;
+    }
+
     if(document.getElementById('view-superflix') && document.getElementById('view-superflix').classList.contains('active')) {
         document.getElementById('view-superflix').classList.remove('active');
         const mainHeader = document.getElementById('mainHeader');
@@ -1093,11 +1118,12 @@ window.onload = () => {
 
 function fecharAdBlock() {
     document.getElementById('adBlockModal').style.display = 'none';
-    document.body.classList.remove('no-scroll');
+    removeNoScroll();
 }
 
 // ===================== INTEGRAÇÃO SUPER FLIX =====================
 async function abrirSuperFlix(tipo) {
+    if(heroInterval) { clearInterval(heroInterval); heroInterval = null; }
     currentSuperFlixType = tipo;
     document.getElementById('titulo-superflix').innerText = tipo === 'animes' ? 'Animes' : 'Doramas';
     document.getElementById('inputBuscaSuperFlix').value = '';
