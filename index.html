@@ -17,8 +17,8 @@
     <title>StreamFlix</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://unpkg.com/@supabase/supabase-js@2" defer></script>
-    
-    <link rel="stylesheet" href="/css/style.css?v=2.6">
+
+    <link rel="stylesheet" href="/css/style.css?v=2.7">
 </head>
 <body>
 
@@ -210,7 +210,7 @@
             </div>
         </div>
 
-        <div class="menu-footer">StreamFlix v2.6</div>
+        <div class="menu-footer">StreamFlix v2.7</div>
     </div>
 
     <div class="server-modal" id="serverModal">
@@ -301,14 +301,25 @@
         <iframe id="embedFrame" scrolling="no" class="embed-frame" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
     </div>
 
-<script>
+    <script>
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').catch((err) => console.log('PWA Erro', err));
             });
         }
     </script>
+    <!-- ORDEM DOS MÓDULOS: Config -> Utils -> VIP -> Ads -> Hero -> Filmes -> Busca -> Séries -> TV -> Modal -> Player -> Navegação -->
     <script src="/js/config.js?v=2.7"></script>
-    <script src="/js/app.js?v=2.7"></script>
+    <script src="/js/utils.js?v=2.7"></script>
+    <script src="/js/vip.js?v=2.7"></script>
+    <script src="/js/ads.js?v=2.7"></script>
+    <script src="/js/hero.js?v=2.7"></script>
+    <script src="/js/filmes.js?v=2.7"></script>
+    <script src="/js/busca.js?v=2.7"></script>
+    <script src="/js/series.js?v=2.7"></script>
+    <script src="/js/tv.js?v=2.7"></script>
+    <script src="/js/modal.js?v=2.7"></script>
+    <script src="/js/player.js?v=2.7"></script>
+    <script src="/js/navigation.js?v=2.7"></script>
 </body>
 </html>
