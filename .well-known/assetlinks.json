@@ -1,8 +1,8 @@
 [{
-  "relation": ["delegate_permission/common.handle_all_urls"],
-  "target": {
-    "namespace": "android_app",
-    "package_name": "com.itvplay.streamflix",
-    "sha256_cert_fingerprints": ["70:A2:C0:35:09:38:C1:B1:73:7B:62:B7:F3:8E:25:A5:09:98:26:6E:F6:C3:E8:1D:35:BB:03:A5:2B:C4:BC:1A"]
-  }
-}]
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "app.itvplay.streamflix",
+        "sha256_cert_fingerprints": ["AE:72:96:5C:B8:82:99:1B:21:AC:C5:D5:30:94:DC:66:CD:8F:92:46:9A:32:1F:10:33:BE:41:C6:65:56:0B:03"]
+      }
+    }]
