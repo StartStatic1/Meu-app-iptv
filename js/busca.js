@@ -12,8 +12,8 @@ function setSearchType(type) {
     document.querySelectorAll('.type-btn').forEach(b => b.classList.remove('active'));
     const typeBtn = document.getElementById('type-' + type);
     if(typeBtn) typeBtn.classList.add('active');
+
     selectedGenre = null;
-    lastSuperFlixData = [];
 
     if (type === 'animes' || type === 'dorama') {
         carregarSuperFlixGenerosParaBusca(type);
@@ -23,7 +23,7 @@ function setSearchType(type) {
         if(query.length >= 3 || selectedGenre) pesquisarGlobal();
         else {
             const container = document.getElementById('resultados-global');
-            if(container) container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um genero.</p>`;
+            if(container) container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um gênero.</p>`;
         }
     }
 }
@@ -42,7 +42,7 @@ async function carregarSuperFlixGenerosParaBusca(tipo) {
         if(generos && generos.length > 0) {
             generos.forEach(g => {
                 const nomeCat = g.name || g;
-                html += `<div class="genre-chip ${selectedGenre === nomeCat ? 'active' : ''}" onclick="filtrarGeneroSuperFlix('${esc(nomeCat)}')">${esc(nomeCat)}</div>`;
+                html += `<div class="genre-chip ${selectedGenre === nomeCat ? 'active' : ''}" onclick="filtrarGeneroSuperFlix('${nomeCat}')">${esc(nomeCat)}</div>`;
             });
         }
         container.innerHTML = html;
@@ -80,7 +80,7 @@ async function pesquisarGlobal() {
     }
 
     if(query.length < 3 && !selectedGenre) {
-        if(container) container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um genero.</p>`;
+        if(container) container.innerHTML = `<p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um gênero.</p>`;
         return;
     }
     if(container) container.innerHTML = `<div class="loading-text" style="grid-column: span 3;"><i class="fas fa-spinner fa-spin"></i> Buscando...</div>`;
@@ -97,10 +97,7 @@ async function pesquisarGlobal() {
                 const d = await searchTMDB(query, type, 1); items = d.results || [];
             }
             if(container) container.innerHTML = renderGrid(items, searchType === 'all' ? 'movie' : searchType);
-        } catch(e) { 
-            console.error('Busca erro:', e);
-            if(container) container.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Erro na busca.</p>`; 
-        }
+        } catch(e) { if(container) container.innerHTML = `<p class="loading-text" style="grid-column:span 3;">Erro na busca.</p>`; }
     }, 600);
 }
 
@@ -119,12 +116,8 @@ async function carregarSuperFlixParaBusca(tipo, genero, busca) {
             url = `https://superflixapi.fit/lista?category=${catB}&type=tmdb&order=desc&format=json`;
         }
 
-        const res = await fetch(url);
-        const text = await res.text();
-        let dadosBrutos;
-        try {
-            dadosBrutos = JSON.parse(text);
-        } catch(err) {
+        const res = await fetch(url); const text = await res.text(); let dadosBrutos;
+        try { dadosBrutos = JSON.parse(text); } catch(err) {
             if(tipo === 'dorama') {
                 const fRes = await fetch(`https://superflixapi.fit/lista?category=dorama&type=imdb&format=json`);
                 dadosBrutos = await fRes.json();
@@ -147,11 +140,14 @@ async function carregarSuperFlixParaBusca(tipo, genero, busca) {
         if(!resultados || resultados.length === 0) { container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Nenhum resultado encontrado.</p>'; return; }
         let html = '';
         resultados.slice(0, 50).forEach(item => {
-            html += renderSuperFlixCard(item, tipo);
+            const titulo = item.title || item.nome || item.name || 'Sem Título';
+            const id = item.tmdb_id || item.id;
+            const capa = item.cover || item.poster || item.poster_path || 'https://via.placeholder.com/220x330/111/fff';
+            const typeToOpen = 'tv';
+            if(id && id !== 0) {
+                html += `<div class="card-movie" onclick="abrirDetalhesTMDB(${id}, '${typeToOpen}')"><img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';"><div class="titulo-fallback" style="display:none">${esc(titulo)}</div></div>`;
+            }
         });
         container.innerHTML = html;
-    } catch(e) {
-        console.error('SuperFlix erro:', e);
-        container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Erro ao carregar os titulos.</p>';
-    }
+    } catch(e) { console.error(e); container.innerHTML = '<p class="loading-text" style="grid-column:span 3;">Erro ao carregar os títulos.</p>'; }
 }

@@ -1,7 +1,6 @@
 // ===================== DETALHES TMDB =====================
 async function abrirDetalhesTMDB(tmdbId, type) {
     currentTmdbId = tmdbId; currentItemType = type; currentSeason = 1; currentEpisode = 1;
-    currentSuperFlixItem = null;
     const btnPlayFilme = document.getElementById('btnPlayFilme');
     if(btnPlayFilme) {
         btnPlayFilme.disabled = false;
@@ -24,7 +23,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     history.pushState({ view: 'details', modal: true }, null, "");
     try {
         const details = await getDetails(tmdbId, type);
-        const title = details.title || details.name || 'Sem Titulo';
+        const title = details.title || details.name || 'Sem Título';
         const backdrop = details.backdrop_path ? `${TMDB_IMG}/original${details.backdrop_path}` : (details.poster_path ? `${TMDB_IMG}/w780${details.poster_path}` : 'https://via.placeholder.com/800x600/111/fff');
         const poster = details.poster_path ? `${TMDB_IMG}/w300${details.poster_path}` : 'https://via.placeholder.com/300x450/111/fff';
         document.getElementById('dpTitle').innerText = title;
@@ -38,7 +37,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
             const dir = details.credits.crew.find(c => c.job === 'Director' || c.job === 'Creator');
             if(dir) document.getElementById('dpDirector').innerText = `Dirigido/Criado por ${dir.name}`;
         }
-        document.getElementById('dpSynopsis').innerText = details.overview || "Sinopse indisponivel.";
+        document.getElementById('dpSynopsis').innerText = details.overview || "Sinopse indisponível.";
         if(details.videos && details.videos.results) {
             const trailer = details.videos.results.find(v => v.site === 'YouTube' && (v.type === 'Trailer' || v.type === 'Teaser'));
             if(trailer) { trailerKeyAtivo = trailer.key; document.getElementById('btnTrailer').style.display = 'flex'; }
@@ -60,6 +59,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
         }
         if(type === 'tv' && details.seasons) {
             document.getElementById('dpEpisodes').style.display = 'block';
+            if(document.getElementById('btnPlayFilme')) document.getElementById('btnPlayFilme').style.display = 'none';
             let htmlEps = '';
             const watchedList = getWatchedList();
             details.seasons.forEach(season => {
@@ -68,7 +68,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
                 for(let ep = 1; ep <= (season.episode_count || 1); ep++) {
                     const epId = `${tmdbId}_s${season.season_number}_e${ep}`;
                     const isWatched = watchedList[epId] ? 'active' : '';
-                    htmlEps += `<div class="ep-card" onclick="reproduzirEpisodioTMDB(${tmdbId}, ${season.season_number}, ${ep})"><div class="ep-watched-btn ${isWatched}" onclick="event.stopPropagation(); toggleEpWatchedTMDB(event, '${epId}', '${esc(title)} S${season.season_number}E${ep}', '${poster}')"><i class="fas fa-check"></i></div><div class="ep-thumb" style="background-image:url('${season.poster_path ? TMDB_IMG+'/w300'+season.poster_path : poster}');"><i class="fas fa-play-circle"></i></div><div class="ep-info-text"><div class="ep-number">S${String(season.season_number).padStart(2,'0')}E${String(ep).padStart(2,'0')}</div><div class="ep-name">Episodio ${ep}</div></div></div>`;
+                    htmlEps += `<div class="ep-card" onclick="reproduzirEpisodioTMDB(${tmdbId}, ${season.season_number}, ${ep})"><div class="ep-watched-btn ${isWatched}" onclick="event.stopPropagation(); toggleEpWatchedTMDB(event, '${epId}', '${esc(title)} S${season.season_number}E${ep}', '${poster}')"><i class="fas fa-check"></i></div><div class="ep-thumb" style="background-image:url('${season.poster_path ? TMDB_IMG+'/w300'+season.poster_path : poster}');"><i class="fas fa-play-circle"></i></div><div class="ep-info-text"><div class="ep-number">S${String(season.season_number).padStart(2,'0')}E${String(ep).padStart(2,'0')}</div><div class="ep-name">Episódio ${ep}</div></div></div>`;
                 }
                 htmlEps += `</div>`;
             });
@@ -83,59 +83,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
             if(listFav[tmdbId]) btnFav.classList.add('active'); else btnFav.classList.remove('active');
         }
         currentStreamData = { id: tmdbId, title: title, img: poster, type: type };
-    } catch(err) { 
-        console.error('Detalhes erro:', err);
-        document.getElementById('dpSynopsis').innerText = "Erro ao carregar detalhes."; 
-    }
-}
-
-// ===================== DETALHES SUPERFLIX POR ID (NOVO - usa Map) =====================
-function abrirDetalhesSuperFlixPorId(mapId) {
-    const dados = superFlixItemMap.get(mapId);
-    if(!dados) { mostrarToast("Erro: item nao encontrado."); return; }
-    const item = dados.item;
-    const tipo = dados.tipo;
-    const titulo = item.title || item.nome || item.name || 'Sem Titulo';
-    const capa = item.cover || item.poster || item.poster_path || 'https://via.placeholder.com/220x330/111/fff';
-
-    currentTmdbId = null;
-    currentItemType = tipo === 'animes' ? 'tv' : 'movie';
-    currentSeason = 1;
-    currentEpisode = 1;
-    currentSuperFlixItem = item;
-
-    const btnPlayFilme = document.getElementById('btnPlayFilme');
-    if(btnPlayFilme) {
-        btnPlayFilme.disabled = false;
-        btnPlayFilme.innerHTML = '<i class="fas fa-play"></i> <span>Assistir no SuperFlix</span>';
-        btnPlayFilme.style.pointerEvents = 'auto';
-        btnPlayFilme.style.display = 'flex';
-        btnPlayFilme.onclick = () => {
-            const id = currentSuperFlixItem.tmdb_id || currentSuperFlixItem.id;
-            if(id) {
-                window.open(`https://superflixapi.fit/${tipo === 'animes' ? 'serie' : 'filme'}/${id}`, '_blank');
-            } else {
-                mostrarToast("ID nao encontrado.");
-            }
-        };
-    }
-
-    document.getElementById('dpTitle').innerText = titulo;
-    document.getElementById('dpPoster').style.backgroundImage = `url('${capa}')`;
-    document.getElementById('dpTmdbMeta').innerHTML = `<span style="color:var(--accent);"><i class="fas fa-tv"></i> ${tipo === 'animes' ? 'Anime' : 'Dorama'}</span>`;
-    document.getElementById('dpDirector').innerText = '';
-    document.getElementById('dpSynopsis').innerText = item.overview || item.sinopse || item.description || "Sinopse nao disponivel.";
-    document.getElementById('dpCastContainer').style.display = 'none';
-    document.getElementById('dpEpisodes').style.display = 'none';
-    document.getElementById('dpSimilarContainer').style.display = 'none';
-    document.getElementById('btnTrailer').style.display = 'none';
-    trailerKeyAtivo = null;
-
-    currentStreamData = { id: currentSuperFlixItem.id || Date.now(), title: titulo, img: capa, type: currentItemType };
-
-    document.getElementById('detailsPage').classList.add('active');
-    addNoScroll();
-    history.pushState({ view: 'details', modal: true }, null, "");
+    } catch(err) { document.getElementById('dpSynopsis').innerText = "Erro ao carregar detalhes."; }
 }
 
 // ===================== ATOR =====================
@@ -161,7 +109,7 @@ async function abrirAtor(atorId) {
         }
         document.getElementById('actorMeta').innerText = pData.birthday ? `${pData.birthday}${idade}` : "";
         document.getElementById('actorPlace').innerText = pData.place_of_birth || "";
-        document.getElementById('actorBio').innerText = pData.biography || "Biografia indisponivel.";
+        document.getElementById('actorBio').innerText = pData.biography || "Biografia indisponível.";
         const cRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}/combined_credits?api_key=${TMDB_API_KEY}&language=pt-BR`);
         const cData = await cRes.json();
         if(cData.cast && cData.cast.length > 0) {
@@ -171,7 +119,7 @@ async function abrirAtor(atorId) {
     } catch(e) { document.getElementById('actorBio').innerText = "Erro ao carregar dados."; }
 }
 
-// ===================== ACOES (WATCHED / FAV) =====================
+// ===================== AÇÕES (WATCHED / FAV) =====================
 function toggleWatchedGlobal() {
     if(!currentStreamData.id) return;
     const list = getWatchedList();

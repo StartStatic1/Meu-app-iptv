@@ -38,7 +38,7 @@ async function fazerLoginVip() {
                 localStorage.setItem('streamflix_vip_email', email);
                 localStorage.setItem('streamflix_vip_senha', senha);
                 desativarTodosAds();
-            } else { msg.innerText = "Sua conta nao tem status VIP."; msg.style.display = 'block'; }
+            } else { msg.innerText = "Sua conta não tem status VIP."; msg.style.display = 'block'; }
         } else { msg.innerText = "E-mail ou senha incorretos."; msg.style.display = 'block'; }
     } catch(e) { msg.innerText = e.message; msg.style.display = 'block'; }
     finally { btn.innerText = "Entrar na Conta VIP"; btn.disabled = false; }

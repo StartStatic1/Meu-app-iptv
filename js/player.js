@@ -33,10 +33,10 @@ async function buscarEReproduzirNativo(title, type) {
                 if(d.episodes && d.episodes['1'] && d.episodes['1'][0]) {
                     const ep = d.episodes['1'][0];
                     dispararPlayer(ep.id, 'episode', ep.container_extension||'mp4', title);
-                } else { mostrarToast("Episodios nao encontrados."); }
+                } else { mostrarToast("Episódios não encontrados."); }
             }
         } else {
-            mostrarToast("Nao disponivel no CDN. Tente Web.");
+            mostrarToast("Não disponível no CDN. Tente Web.");
             setTimeout(() => {
                 document.getElementById('serverModal').classList.add('active');
                 const overlay = document.getElementById('sheetOverlay');
@@ -96,7 +96,7 @@ async function dispararPlayer(id, tipo, ext, titulo) {
             const res = await fetch(`/api/iptv?action=get_series_url&stream_id=${id}&extension=${ext||'mp4'}`);
             const data = await res.json(); urlFinal = data.url;
         }
-        if(!urlFinal) throw new Error("Link nao retornado.");
+        if(!urlFinal) throw new Error("Link não retornado.");
         if (window.AndroidApp && window.AndroidApp.abrirVideoNativo) {
             window.AndroidApp.abrirVideoNativo(urlFinal);
         } else {
@@ -137,14 +137,7 @@ function fecharMenuServidores(fromPopState = false) {
 function fecharEmbedWeb(fromPopState = false) {
     const frame = document.getElementById('embedFrame');
     frame.src = 'about:blank';
-    try { frame.contentWindow.location.href = 'about:blank'; } catch(e) {}
-    const parent = frame.parentNode;
-    const newFrame = frame.cloneNode(true);
-    newFrame.src = '';
-    parent.replaceChild(newFrame, frame);
-    newFrame.id = 'embedFrame';
-    newFrame.className = 'embed-frame';
-
+    setTimeout(() => { frame.src = ''; }, 200);
     document.getElementById('embedModal').style.display = 'none';
     removeNoScroll();
     try { if(screen.orientation && screen.orientation.unlock) screen.orientation.unlock(); } catch(e) {}
@@ -189,9 +182,4 @@ function fecharTodosOverlays() {
     fecharMenuServidores();
     fecharSheetTV();
     fecharMenuPrincipal();
-    fecharTrailer();
-    fecharEmbedWeb();
-    fecharDetalhes();
-    fecharAtor();
-    fecharModalVip();
 }

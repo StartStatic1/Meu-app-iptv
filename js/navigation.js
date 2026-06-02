@@ -1,4 +1,4 @@
-// ===================== NAVEGACAO E MENU =====================
+// ===================== NAVEGAÇÃO E MENU =====================
 function abrirMenuPrincipal() {
     document.getElementById('menuOverlay').classList.add('active');
     document.getElementById('menuPrincipal').classList.add('active');
@@ -11,20 +11,6 @@ function fecharMenuPrincipal(fromPopState = false) {
     document.getElementById('menuPrincipal').classList.remove('active');
     removeNoScroll();
     if(!fromPopState && history.state && history.state.view === 'menu') { fromPopState = true; history.back(); }
-}
-
-// NOVO: funcoes helper do menu que nao usam history.back conflitante
-function menuIrPara(idView) {
-    fecharMenuPrincipal(true); // fecha sem history.back
-    setTimeout(() => mudarAba(idView, null), 50);
-}
-function menuIrParaIPTV() {
-    fecharMenuPrincipal(true);
-    setTimeout(() => entrarModoIPTV(), 50);
-}
-function menuAbrirVip() {
-    fecharMenuPrincipal(true);
-    setTimeout(() => abrirModalVip(), 50);
 }
 
 function mudarAba(idView, btn, originHistory = false) {
@@ -45,7 +31,7 @@ function mudarAba(idView, btn, originHistory = false) {
     if(idView === 'view-buscar') { setTimeout(() => document.getElementById('inputBuscaGlobal').focus(), 300); }
 }
 
-// ===================== HISTORICO =====================
+// ===================== HISTÓRICO =====================
 function carregarHistorico() {
     const listVistos = getWatchedList();
     const listFavs = getFavList();
@@ -64,7 +50,7 @@ function carregarHistorico() {
             html += `<div class="card-history" onclick="abrirDetalhesTMDB(${item.id}, '${item.type}')"><div class="ep-watched-btn active" style="top:5px; left:5px; position:absolute;" onclick="event.stopPropagation(); removerDoHistorico(event, '${item.id}')"><i class="fas fa-times"></i></div><img src="${item.img}" style="width:100%; height:75%; object-fit:cover; margin:0;"><div class="titulo-tv" style="padding:5px; height:25%; display:flex; align-items:center; justify-content:center;">${item.title}</div></div>`;
         });
     }
-    if(html === "") html = `<p class="loading-text" style="grid-column: span 3; margin-top:30px;">Ainda nao marcou nada.</p>`;
+    if(html === "") html = `<p class="loading-text" style="grid-column: span 3; margin-top:30px;">Ainda não marcou nada.</p>`;
     const container = document.getElementById('conteudo-historico');
     if(container) container.innerHTML = html;
 }
@@ -81,7 +67,6 @@ function removerDoHistorico(event, id) {
 function handleTouchStart(e) {
     touchStartY = e.changedTouches[0].screenY;
     touchStartX = e.changedTouches[0].screenX;
-    touchStartTarget = e.target;
 }
 
 function handleTouchEnd(e) {
@@ -89,12 +74,6 @@ function handleTouchEnd(e) {
     const touchEndX = e.changedTouches[0].screenX;
     const deltaY = touchEndY - touchStartY;
     const deltaX = touchEndX - touchStartX;
-
-    if(touchStartTarget) {
-        const scrollableParent = touchStartTarget.closest('.carousel, .ep-carousel, .cast-carousel, .bottom-sheet, .server-modal, .details-page, .actor-modal');
-        if(scrollableParent && scrollableParent.scrollTop > 10 && deltaY > 0) return;
-    }
-
     if(deltaY > 80 && Math.abs(deltaX) < 100) {
         const trailer = document.getElementById('trailerModal');
         const embed = document.getElementById('embedModal');
@@ -109,26 +88,23 @@ function handleTouchEnd(e) {
     }
 }
 
-// CORRIGIDO: Ordem do popstate do MAIOR z-index pro MENOR
 window.addEventListener('popstate', function(event) {
     if(fromPopState) { fromPopState = false; return; }
-
     const modais = [
-        { id: 'bottomSheet', check: (el) => el.classList.contains('active'), close: () => fecharSheetTV(true) },
-        { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: () => fecharMenuPrincipal(true) },
+        { id: 'adBlockModal', check: (el) => el.style.display === 'flex', close: () => fecharAdBlock() },
         { id: 'embedModal', check: (el) => el.style.display === 'flex', close: () => fecharEmbedWeb(true) },
-        { id: 'serverModal', check: (el) => el.classList.contains('active'), close: () => fecharMenuServidores(true) },
         { id: 'trailerModal', check: (el) => el.style.display === 'flex', close: () => fecharTrailer(true) },
+        { id: 'serverModal', check: (el) => el.classList.contains('active'), close: () => fecharMenuServidores(true) },
         { id: 'actorModal', check: (el) => el.classList.contains('active'), close: () => fecharAtor(true) },
         { id: 'detailsPage', check: (el) => el.classList.contains('active'), close: () => fecharDetalhes(true) },
+        { id: 'bottomSheet', check: (el) => el.classList.contains('active'), close: () => fecharSheetTV(true) },
+        { id: 'menuPrincipal', check: (el) => el.classList.contains('active'), close: () => fecharMenuPrincipal(true) },
         { id: 'vipModal', check: (el) => el.style.display === 'flex', close: () => fecharModalVip(true) }
     ];
-
     for(let modal of modais) {
         const el = document.getElementById(modal.id);
         if(el && modal.check(el)) { modal.close(); return; }
     }
-
     if(document.getElementById('view-iptv').classList.contains('active')) {
         document.getElementById('view-iptv').classList.remove('active');
         const mainHeader = document.getElementById('mainHeader');
@@ -158,6 +134,6 @@ window.onload = () => {
 };
 
 function fecharAdBlock() {
-    const el = document.getElementById('adBlockModal');
-    if(el) { el.style.display = 'none'; removeNoScroll(); }
+    document.getElementById('adBlockModal').style.display = 'none';
+    removeNoScroll();
 }

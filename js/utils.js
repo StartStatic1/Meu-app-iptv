@@ -19,15 +19,12 @@ let bancoTV = null;
 let iptvCarregado = { filmes: false, series: false, tv: false };
 let adsInjetados = false;
 let lastSuperFlixData = [];
-let currentSuperFlixItem = null;
-let superFlixItemMap = new Map();
-let superFlixIdCounter = 0;
 
+// Touch gesture vars
 let touchStartY = 0;
 let touchStartX = 0;
 let noScrollCount = 0;
 let fromPopState = false;
-let touchStartTarget = null;
 
 function addNoScroll() {
     noScrollCount++;
@@ -50,12 +47,12 @@ function getWatchedList() { try { return JSON.parse(localStorage.getItem('stream
 function saveWatchedList(list) { localStorage.setItem('streamflix_watched_v2', JSON.stringify(list)); }
 function getFavList() { try { return JSON.parse(localStorage.getItem('streamflix_favs')) || {}; } catch(e) { return {}; } }
 function saveFavList(list) { localStorage.setItem('streamflix_favs', JSON.stringify(list)); }
-function limparNomePasta(nome) { return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Series\s*\|\s*/i, '').trim(); }
-function pastaValida(nome) { const proibidos = ['JOGOS','REALITY','XXX','RELIGIOSO','ADULTO','+18','24H','CAMERA','RADIO','OSCAR','TESTE']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
-function pastaTVValida(nome) { const proibidos = ['JOGOS','REALITY','XXX','RELIGIOSO','ADULTO','+18','24H','RADIO','CAMERA']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
+function limparNomePasta(nome) { return nome.replace(/Filmes\s*\|\s*/i, '').replace(/Séries\s*\|\s*/i, '').trim(); }
+function pastaValida(nome) { const proibidos = ['JOGOS','REALITY','XXX','RELIGIOSO','ADULTO','+18','24H','CÂMERA','RADIO','OSCAR','TESTE']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
+function pastaTVValida(nome) { const proibidos = ['JOGOS','REALITY','XXX','RELIGIOSO','ADULTO','+18','24H','RADIO','CÂMERA']; return !proibidos.some(p => (nome||'').toUpperCase().includes(p)); }
 
 function processarTitulo(nomeBruto, nomePasta) {
-    let nomeLimpo = nomeBruto || "Sem Titulo"; const tags = []; const pU = nomePasta ? nomePasta.toUpperCase() : '';
+    let nomeLimpo = nomeBruto || "Sem Título"; const tags = []; const pU = nomePasta ? nomePasta.toUpperCase() : '';
     if(pU.includes('4K') || /4K|UHD|2160p/i.test(nomeLimpo)) tags.push('4K');
     if(/FHD|1080p/i.test(nomeLimpo)) tags.push('FHD'); if(/HD|720p/i.test(nomeLimpo)) tags.push('HD');
     if(pU.includes('LEGENDADO') || /\[LEG\]|\(LEG\)/i.test(nomeLimpo)) tags.push('LEG');
@@ -70,7 +67,7 @@ function processarTV(nomeBruto) {
     const estado = nomeLimpo.match(/\b(SP|RJ|MG|RS|PR|SC|BA|PE|CE|DF|GO|MT|MS|AM|AC|PA|RR|RO|AP|TO|PI|MA|PB|AL|SE|RN)\b/i);
     if(estado && !tags.includes(estado[0].toUpperCase())) tags.push(estado[0].toUpperCase());
     nomeLimpo = nomeLimpo.replace(/\[(FHDR|FHD|HD|4K|SD)\]/ig, '').replace(/\((FHDR|FHD|HD|4K|SD)\)/ig, '').replace(/\b(FHDR|FHD|HD|4K|SD)\b/ig, '').replace(/^[\s\|\-]+|[\s\|\-]+$/g, '').replace(/\s+/g, ' ').trim();
-    if (!nomeLimpo || nomeLimpo.length < 2) nomeLimpo = nomeBruto.replace(/\[.*?\]|\(.*?\)/g, '').replace(/[>\-\|*•]/g, '').trim();
+    if (!nomeLimpo || nomeLimpo.length < 2) nomeLimpo = nomeBruto.replace(/\[.*?\]|\(.*?\)/g, '').replace(/[>-\|*•]/g, '').trim();
     return { limpo: nomeLimpo, tagsStr: tags.join(',') };
 }
 
@@ -99,14 +96,10 @@ async function tmdbFetch(endpoint) {
     try {
         const connector = endpoint.includes('?') ? '&' : '?';
         const res = await fetch(`https://api.themoviedb.org/3${endpoint}${connector}api_key=${TMDB_API_KEY}&language=pt-BR`);
-        if(!res.ok) throw new Error('TMDB ' + res.status);
         const data = await res.json();
         localStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
         return data;
-    } catch(e) {
-        console.error('TMDB Error:', e);
-        return { results: [] };
-    }
+    } catch(e) { return { results: [] }; }
 }
 function getTrending(type='movie', page=1) { return tmdbFetch(`/trending/${type}/week?page=${page}`); }
 function getDetails(id, type='movie') { return tmdbFetch(`/${type}/${id}?append_to_response=credits,videos,recommendations`); }
@@ -121,7 +114,7 @@ function getUpcoming(page=1) { return tmdbFetch(`/movie/upcoming?page=${page}`);
 function renderCard(item, type) {
     const tmdbType = item.media_type || type;
     const realType = tmdbType === 'tv' ? 'tv' : 'movie';
-    const title = item.title || item.name || 'Sem Titulo';
+    const title = item.title || item.name || 'Sem Título';
     const img = item.poster_path ? `${TMDB_IMG}/w300${item.poster_path}` : 'https://via.placeholder.com/220x330/111/fff';
     const nota = item.vote_average ? `<span style="position:absolute; top:5px; right:5px; background:rgba(0,0,0,0.7); color:gold; font-size:10px; font-weight:900; padding:3px 6px; border-radius:4px;"><i class="fas fa-star"></i> ${item.vote_average.toFixed(1)}</span>` : '';
     return `
@@ -139,25 +132,4 @@ function renderCarousel(title, items, type) {
 function renderGrid(items, type) {
     if(!items || items.length === 0) return '<p class="loading-text" style="grid-column:span 3;">Nenhum resultado.</p>';
     return items.map(i => renderCard(i, type)).join('');
-}
-
-// ===================== RENDER SUPERFLIX CARD (CORRIGIDO - sem JSON no onclick) =====================
-function renderSuperFlixCard(item, tipo) {
-    const titulo = item.title || item.nome || item.name || 'Sem Titulo';
-    const id = item.tmdb_id || item.id;
-    const capa = item.cover || item.poster || item.poster_path || 'https://via.placeholder.com/220x330/111/fff';
-
-    superFlixIdCounter++;
-    const mapId = 'sf_' + superFlixIdCounter;
-    superFlixItemMap.set(mapId, { item: item, tipo: tipo });
-
-    if(superFlixItemMap.size > 200) {
-        const firstKey = superFlixItemMap.keys().next().value;
-        superFlixItemMap.delete(firstKey);
-    }
-
-    return `<div class="card-movie" onclick="abrirDetalhesSuperFlixPorId('${mapId}')">
-        <img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">
-        <div class="titulo-fallback" style="display:none">${esc(titulo)}</div>
-    </div>`;
 }
