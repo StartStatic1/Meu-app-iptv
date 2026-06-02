@@ -127,7 +127,7 @@
         </div>
     </div>
 
-    <!-- ANIMES E DORAMAS (SUPERFLIX) -->
+    <!-- SUPERFLIX (Animes / Doramas) -->
     <div id="view-superflix" class="view" style="padding-top: 60px;">
         <div class="page-header" style="padding-top: 20px;">
             <i class="fas fa-arrow-left" onclick="history.back()"></i>
@@ -137,7 +137,6 @@
             <i class="fas fa-search search-icon"></i>
             <input type="text" class="search-bar" id="inputBuscaSuperFlix" placeholder="Buscar..." oninput="pesquisarSuperFlix()">
         </div>
-        <div class="genre-chips" id="genreChipsSuperFlix"></div>
         <div class="grid-container" id="conteudo-superflix"></div>
     </div>
 
@@ -234,7 +233,7 @@
             </div>
         </div>
 
-        <div class="menu-footer">StreamFlix v2.4</div>
+        <div class="menu-footer">StreamFlix v2.6</div>
     </div>
 
     <!-- MODAL SERVIDORES -->
@@ -251,6 +250,8 @@
         <div class="server-btn em" onclick="abrirPlayerWeb('embedmovies')"><div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; Servidor Web 1 (Legendado/Dub)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-btn ep" onclick="abrirPlayerWeb('embedplayapi')"><div><i class="fas fa-play-circle" style="color:#00e676;"></i> &nbsp; Servidor Web 2 (Dublado)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-btn bf" onclick="abrirPlayerWeb('betterflix')"><div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; Servidor Web 3 (Rápido)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        
+        <p class="server-warn">* Pode conter anúncios popups caso não seja VIP.</p>
     </div>
 
     <div class="bottom-sheet" id="bottomSheet">
@@ -315,17 +316,23 @@
         </div>
     </div>
 
-    <!-- IFRAMES LIVRES DE SANDBOX PARA NÃO DAR ERRO 404 NO SUPERFLIX -->
+    <!-- TRAILER MODAL -->
     <div class="trailer-modal" id="trailerModal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)">
         <i class="fas fa-times trailer-close" onclick="fecharTrailer()"></i>
         <div class="swipe-indicator" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; z-index:4503;"></div>
-        <iframe id="trailerFrame" class="trailer-frame" allowfullscreen="true"></iframe>
+        <iframe id="trailerFrame" class="trailer-frame" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen="true"></iframe>
     </div>
 
+    <!-- EMBED MODAL - SEM SANDBOX -->
     <div class="embed-modal" id="embedModal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)">
         <i class="fas fa-times trailer-close" onclick="fecharEmbedWeb()"></i>
         <div class="swipe-indicator" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; z-index:4503;"></div>
-        <iframe id="embedFrame" class="embed-frame" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
+        <iframe id="embedFrame" class="embed-frame" 
+            allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *" 
+            allowfullscreen="true" 
+            webkitallowfullscreen="true" 
+            mozallowfullscreen="true">
+        </iframe>
     </div>
 
 <script>
