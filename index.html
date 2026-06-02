@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#1a1d29">
@@ -28,8 +28,8 @@
 
     <!-- PUSH NOTIFICATION -->
     <div id="pushPromptModal" style="display:none; position:fixed; bottom:80px; left:5%; width:90%; background:linear-gradient(45deg, #00e5ff, #0055ff); padding:15px; border-radius:12px; z-index:4000; box-shadow:0 5px 15px rgba(0,229,255,0.4); text-align:center;">
-        <h3 style="margin:0 0 5px; color:#fff; font-size:16px;"><i class="fas fa-bell" style="color:gold;"></i> Lan&ccedil;amentos Exclusivos</h3>
-        <p style="margin:0 0 10px; color:#fff; font-size:12px;">Ative as notifica&ccedil;&otilde;es para ser avisado quando novos filmes chegarem!</p>
+        <h3 style="margin:0 0 5px; color:#fff; font-size:16px;"><i class="fas fa-bell" style="color:gold;"></i> Lançamentos Exclusivos</h3>
+        <p style="margin:0 0 10px; color:#fff; font-size:12px;">Ative as notificações para ser avisado quando novos filmes chegarem!</p>
         <button onclick="aceitarPush()" style="background:#fff; color:#000; border:none; padding:8px 20px; border-radius:5px; font-weight:bold; cursor:pointer;">Ativar Agora</button>
     </div>
 
@@ -37,8 +37,8 @@
     <div class="embed-modal" id="vipModal" style="padding:20px; align-items:center; z-index:3900; background: rgba(0,0,0,0.95); display:none;" onclick="if(event.target === this) fecharModalVip()">
         <div style="background:var(--bg-top); padding:25px; border-radius:15px; width:100%; max-width:350px; text-align:center; border: 1px solid gold; position:relative; box-shadow: 0 10px 30px rgba(0,0,0,0.8);">
             <i class="fas fa-times" onclick="event.stopPropagation(); fecharModalVip()" style="position:absolute; right:15px; top:15px; color:#fff; font-size:20px; cursor:pointer; padding:10px;"></i>
-            <h2 style="color:#fff; margin-top:5px; font-weight:900;"><i class="fas fa-crown" style="color:gold;"></i> &Aacute;rea VIP</h2>
-            <p style="color:#ccc; font-size:13px; margin-bottom:25px;">Fa&ccedil;a login para remover todos os an&uacute;ncios.</p>
+            <h2 style="color:#fff; margin-top:5px; font-weight:900;"><i class="fas fa-crown" style="color:gold;"></i> Área VIP</h2>
+            <p style="color:#ccc; font-size:13px; margin-bottom:25px;">Faça login para remover todos os anúncios.</p>
             <input type="email" id="vipEmail" placeholder="Seu E-mail VIP" style="width:100%; padding:15px; margin-bottom:12px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.5); color:#fff; outline:none;">
             <input type="password" id="vipSenha" placeholder="Sua Senha" style="width:100%; padding:15px; margin-bottom:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.5); color:#fff; outline:none;">
             <button onclick="event.stopPropagation(); fazerLoginVip()" style="width:100%; padding:15px; border-radius:8px; background:gold; color:#000; font-weight:900; font-size:15px; border:none; margin-bottom:15px; cursor:pointer; text-transform:uppercase;" id="btnLoginBtn">Entrar na Conta VIP</button>
@@ -55,7 +55,7 @@
             <div class="skel-carousel"><div class="skeleton skel-card"></div><div class="skeleton skel-card"></div><div class="skeleton skel-card"></div></div>
         </div>
         <div id="conteudo-real" style="display: none;">
-            <div class="hero" id="heroBanner" style="background-image: url(\'\');">
+            <div class="hero" id="heroBanner" style="background-image: url('');">
                 <div class="hero-gradient">
                     <div class="hero-tags" id="heroTags">Aguarde...</div>
                     <h1 class="hero-title" id="heroTitle">Carregando...</h1>
@@ -72,7 +72,7 @@
 
     <div id="view-historico" class="view" style="padding-top: 60px;">
         <div class="page-header" style="padding-top: 20px;">
-            <i class="fas fa-arrow-left" onclick="voltarHistorico()"></i>
+            <i class="fas fa-arrow-left" onclick="history.back()"></i>
             <h2 class="page-title" style="color: var(--accent);">Meus Salvos</h2>
         </div>
         <div class="grid-container" id="conteudo-historico"></div>
@@ -89,18 +89,18 @@
     <div id="view-buscar" class="view">
         <div class="search-container" style="margin-top: 80px;">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="search-bar" id="inputBuscaGlobal" placeholder="Qual filme ou s&eacute;rie voc&ecirc; procura?" oninput="pesquisarGlobal()">
+            <input type="text" class="search-bar" id="inputBuscaGlobal" placeholder="Qual filme ou série você procura?" oninput="pesquisarGlobal()">
         </div>
         <div class="type-toggle">
-            <div class="type-btn active" id="type-all" onclick="setSearchType(\'all\')">Todos</div>
-            <div class="type-btn" id="type-movie" onclick="setSearchType(\'movie\')">Filmes</div>
-            <div class="type-btn" id="type-tv" onclick="setSearchType(\'tv\')">S&eacute;ries</div>
+            <div class="type-btn active" id="type-all" onclick="setSearchType('all')">Todos</div>
+            <div class="type-btn" id="type-movie" onclick="setSearchType('movie')">Filmes</div>
+            <div class="type-btn" id="type-tv" onclick="setSearchType('tv')">Séries</div>
         </div>
         <div class="genre-chips" id="genreChips"></div>
         <div id="resultados-busca-container">
             <div class="section-title" style="margin-left: 15px; margin-top:10px;"><i class="fas fa-film"></i> Resultados</div>
             <div class="grid-container" id="resultados-global">
-                <p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um g&ecirc;nero.</p>
+                <p class="loading-text" style="grid-column: span 3; margin-top: 40px;">Digite pelo menos 3 letras ou escolha um gênero.</p>
             </div>
         </div>
     </div>
@@ -114,9 +114,9 @@
             </div>
         </div>
         <div class="iptv-tabs">
-            <div class="iptv-tab active" onclick="mudarAbaIPTV(\'iptv-filmes\', this)"><i class="fas fa-film"></i> Filmes</div>
-            <div class="iptv-tab" onclick="mudarAbaIPTV(\'iptv-series\', this)"><i class="fas fa-tv"></i> S&eacute;ries</div>
-            <div class="iptv-tab" onclick="mudarAbaIPTV(\'iptv-tv\', this)"><i class="fas fa-broadcast-tower"></i> TV Ao Vivo</div>
+            <div class="iptv-tab active" onclick="mudarAbaIPTV('iptv-filmes', this)"><i class="fas fa-film"></i> Filmes</div>
+            <div class="iptv-tab" onclick="mudarAbaIPTV('iptv-series', this)"><i class="fas fa-tv"></i> Séries</div>
+            <div class="iptv-tab" onclick="mudarAbaIPTV('iptv-tv', this)"><i class="fas fa-broadcast-tower"></i> TV Ao Vivo</div>
         </div>
         <div id="iptv-filmes" class="iptv-content active"><div id="conteudo-iptv-filmes"><p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A carregar categorias...</p></div></div>
         <div id="iptv-series" class="iptv-content"><div id="conteudo-iptv-series"><p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A carregar categorias...</p></div></div>
@@ -130,7 +130,7 @@
     <!-- ANIMES E DORAMAS (SUPERFLIX) -->
     <div id="view-superflix" class="view" style="padding-top: 60px;">
         <div class="page-header" style="padding-top: 20px;">
-            <i class="fas fa-arrow-left" onclick="voltarSuperFlix()"></i>
+            <i class="fas fa-arrow-left" onclick="history.back()"></i>
             <h2 class="page-title" style="color: var(--accent);" id="titulo-superflix">Animes</h2>
         </div>
         <div class="search-container" style="margin: 15px auto;">
@@ -143,8 +143,8 @@
 
     <!-- BOTTOM NAV -->
     <div class="bottom-nav" id="bottomNav">
-        <div class="nav-item active" id="nav-home" onclick="mudarAba(\'view-home\', this)"><i class="fas fa-home"></i><span>In&iacute;cio</span></div>
-        <div class="nav-item" id="nav-buscar" onclick="mudarAba(\'view-buscar\', this)"><i class="fas fa-search"></i><span>Buscar</span></div>
+        <div class="nav-item active" id="nav-home" onclick="mudarAba('view-home', this)"><i class="fas fa-home"></i><span>Início</span></div>
+        <div class="nav-item" id="nav-buscar" onclick="mudarAba('view-buscar', this)"><i class="fas fa-search"></i><span>Buscar</span></div>
         <div class="nav-item" id="nav-menu" onclick="abrirMenuPrincipal()"><i class="fas fa-bars"></i><span>Menu</span></div>
     </div>
 
@@ -164,13 +164,13 @@
         <div class="menu-section">
             <div class="menu-section-title"><i class="fas fa-bookmark"></i> Minha Lista</div>
             <div class="menu-grid">
-                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); abrirHistorico();">
+                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); mudarAba('view-historico', null);">
                     <div class="menu-icon-box" style="background: linear-gradient(135deg, #ff4081, #e91e63);">
                         <i class="fas fa-heart"></i>
                     </div>
                     <span>Favoritos</span>
                 </div>
-                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); abrirHistorico();">
+                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); mudarAba('view-historico', null);">
                     <div class="menu-icon-box" style="background: linear-gradient(135deg, #00e676, #00c853);">
                         <i class="fas fa-check-circle"></i>
                     </div>
@@ -188,19 +188,19 @@
                     </div>
                     <span>Modo IPTV</span>
                 </div>
-                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); mudarAba(\'view-buscar\', null);">
+                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); mudarAba('view-buscar', null);">
                     <div class="menu-icon-box" style="background: linear-gradient(135deg, #ff9100, #ff6d00);">
                         <i class="fas fa-search"></i>
                     </div>
                     <span>Buscar</span>
                 </div>
-                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); abrirSuperFlix(\'animes\');">
+                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); abrirSuperFlix('animes');">
                     <div class="menu-icon-box" style="background: linear-gradient(135deg, #f50057, #ff4081);">
                         <i class="fas fa-dragon"></i>
                     </div>
                     <span>Animes</span>
                 </div>
-                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); abrirSuperFlix(\'dorama\');">
+                <div class="menu-grid-item" onclick="fecharMenuPrincipal(); abrirSuperFlix('dorama');">
                     <div class="menu-icon-box" style="background: linear-gradient(135deg, #00b0ff, #00e5ff);">
                         <i class="fas fa-heart"></i>
                     </div>
@@ -214,8 +214,8 @@
                 <div class="menu-list-item" onclick="fecharMenuPrincipal(); abrirModalVip();">
                     <div class="menu-list-icon" style="color:gold;"><i class="fas fa-crown"></i></div>
                     <div class="menu-list-text">
-                        <div class="menu-list-title">&Aacute;rea VIP</div>
-                        <div class="menu-list-sub">Remova an&uacute;ncios</div>
+                        <div class="menu-list-title">Área VIP</div>
+                        <div class="menu-list-sub">Remova anúncios</div>
                     </div>
                     <i class="fas fa-chevron-right" style="color:#666; font-size:10px;"></i>
                 </div>
@@ -234,7 +234,7 @@
             </div>
         </div>
 
-        <div class="menu-footer">StreamFlix v2.5 (PWA)</div>
+        <div class="menu-footer">StreamFlix v2.4</div>
     </div>
 
     <!-- MODAL SERVIDORES -->
@@ -247,10 +247,10 @@
             <i class="fas fa-play" style="font-size:10px; color:#fff;"></i>
         </div>
 
-        <div class="server-btn em" onclick="abrirPlayerWeb(\'superflix\')"><div><i class="fas fa-play-circle" style="color:#b388ff;"></i> &nbsp; Servidor SuperFlix (Novo)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
-        <div class="server-btn em" onclick="abrirPlayerWeb(\'embedmovies\')"><div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; Servidor Web 1 (Legendado/Dub)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
-        <div class="server-btn ep" onclick="abrirPlayerWeb(\'embedplayapi\')"><div><i class="fas fa-play-circle" style="color:#00e676;"></i> &nbsp; Servidor Web 2 (Dublado)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
-        <div class="server-btn bf" onclick="abrirPlayerWeb(\'betterflix\')"><div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; Servidor Web 3 (R&aacute;pido)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-btn em" onclick="abrirPlayerWeb('superflix')"><div><i class="fas fa-play-circle" style="color:#b388ff;"></i> &nbsp; Servidor SuperFlix (Novo)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-btn em" onclick="abrirPlayerWeb('embedmovies')"><div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; Servidor Web 1 (Legendado/Dub)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-btn ep" onclick="abrirPlayerWeb('embedplayapi')"><div><i class="fas fa-play-circle" style="color:#00e676;"></i> &nbsp; Servidor Web 2 (Dublado)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-btn bf" onclick="abrirPlayerWeb('betterflix')"><div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; Servidor Web 3 (Rápido)</div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
     </div>
 
     <div class="bottom-sheet" id="bottomSheet">
@@ -263,9 +263,9 @@
     <!-- DETALHES TMDB -->
     <div class="details-page" id="detailsPage">
         <button class="dp-back-btn" onclick="history.back()"><i class="fas fa-arrow-left"></i></button>
-        <div class="dp-poster" id="dpPoster" style="background-image: url(\'\');"><div class="dp-gradient"></div></div>
+        <div class="dp-poster" id="dpPoster" style="background-image: url('');"><div class="dp-gradient"></div></div>
         <div class="dp-content">
-            <h1 class="dp-title" id="dpTitle">T&iacute;tulo</h1>
+            <h1 class="dp-title" id="dpTitle">Título</h1>
             <div class="dp-tmdb-meta" id="dpTmdbMeta"></div>
             <div class="dp-director" id="dpDirector"></div>
             <div class="dp-meta" id="dpMeta"></div>
@@ -315,7 +315,7 @@
         </div>
     </div>
 
-    <!-- IFRAMES LIVRES DE SANDBOX PARA N&Atilde;O DAR ERRO 404 NO SUPERFLIX -->
+    <!-- IFRAMES LIVRES DE SANDBOX PARA NÃO DAR ERRO 404 NO SUPERFLIX -->
     <div class="trailer-modal" id="trailerModal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)">
         <i class="fas fa-times trailer-close" onclick="fecharTrailer()"></i>
         <div class="swipe-indicator" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; z-index:4503;"></div>
@@ -325,19 +325,19 @@
     <div class="embed-modal" id="embedModal" ontouchstart="handleTouchStart(event)" ontouchend="handleTouchEnd(event)">
         <i class="fas fa-times trailer-close" onclick="fecharEmbedWeb()"></i>
         <div class="swipe-indicator" style="position:absolute; top:10px; left:50%; transform:translateX(-50%); width:40px; height:4px; background:rgba(255,255,255,0.3); border-radius:2px; z-index:4503;"></div>
-        <iframe id="embedFrame" class="embed-frame" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *; web-share *; accelerometer *; gyroscope *; magnetometer *" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation allow-top-navigation"></iframe>
+        <iframe id="embedFrame" class="embed-frame" allow="autoplay *; encrypted-media *; picture-in-picture *; fullscreen *; clipboard-write *" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"></iframe>
     </div>
 
     <div class="embed-modal" id="adBlockModal" style="z-index:5000; display:none; background:rgba(0,0,0,0.95); padding:20px; text-align:center; align-items:center; justify-content:center; flex-direction:column;">
         <h2 style="color:#fff; margin-bottom:10px;"><i class="fas fa-ad" style="color:gold;"></i> Apoie o StreamFlix</h2>
-        <p style="color:#ccc; font-size:14px; max-width:300px; margin-bottom:20px;">Assista ao an&uacute;ncio para liberar o player. Isso mant&eacute;m o app gratuito!</p>
-        <button onclick="fecharAdBlock()" style="background:var(--accent); color:#000; border:none; padding:12px 30px; border-radius:8px; font-weight:900; font-size:14px; cursor:pointer;">J&aacute; Assisti / Fechar</button>
+        <p style="color:#ccc; font-size:14px; max-width:300px; margin-bottom:20px;">Assista ao anúncio para liberar o player. Isso mantém o app gratuito!</p>
+        <button onclick="fecharAdBlock()" style="background:var(--accent); color:#000; border:none; padding:12px 30px; border-radius:8px; font-weight:900; font-size:14px; cursor:pointer;">Já Assisti / Fechar</button>
     </div>
 
     <script>
-        if (\'serviceWorker\' in navigator) {
-            window.addEventListener(\'load\', () => {
-                navigator.serviceWorker.register(\'/sw.js\').catch((err) => console.log(\'PWA Erro\', err));
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js').catch((err) => console.log('PWA Erro', err));
             });
         }
     </script>
