@@ -303,7 +303,121 @@
             });
         }
     </script>
+    <!-- ===================== MODAL PAGAMENTO / PLANOS ===================== -->
+    <div id="pagamentoModal" style="display:none; position:fixed; inset:0; z-index:5000; background:rgba(0,0,0,0.97); align-items:flex-end; justify-content:center; overflow-y:auto;" onclick="if(event.target===this) fecharModalPagamento()">
+        <div style="background:linear-gradient(180deg,#1a1d29 0%,#0f1118 100%);width:100%;max-width:480px;border-radius:22px 22px 0 0;padding:24px 20px 44px;border-top:1px solid rgba(255,255,255,0.08);">
+
+            <div onclick="fecharModalPagamento()" style="width:40px;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;margin:0 auto 20px;cursor:pointer;"></div>
+
+            <div style="text-align:center;margin-bottom:20px;">
+                <h2 style="color:#fff;font-size:21px;font-weight:900;margin:0 0 5px;"><i class="fas fa-crown" style="color:gold;margin-right:8px;"></i>StreamFlix Premium</h2>
+                <p style="color:#aaa;font-size:12px;margin:0;">Assista sem anúncios e sem limites</p>
+            </div>
+
+            <!-- STEP 1: PLANOS -->
+            <div id="step-planos">
+
+                <!-- Campo Email -->
+                <div style="margin-bottom:16px;">
+                    <label style="color:#ccc;font-size:12px;font-weight:700;display:block;margin-bottom:6px;"><i class="fas fa-envelope" style="color:#00e5ff;margin-right:5px;"></i>Seu e-mail (para receber acesso)</label>
+                    <input type="email" id="pag-email" placeholder="seu@email.com"
+                        style="width:100%;padding:13px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;">
+                    <div id="pag-email-erro" style="display:none;color:#ff5252;font-size:11px;margin-top:4px;">Digite um e-mail válido.</div>
+                </div>
+
+                <!-- Plano Mensal -->
+                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:14px;padding:16px;margin-bottom:10px;">
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+                        <i class="fas fa-calendar-alt" style="color:#00e5ff;font-size:20px;"></i>
+                        <div style="flex:1;">
+                            <div style="color:#fff;font-weight:900;font-size:15px;">MENSAL</div>
+                            <div style="color:#aaa;font-size:11px;">Acesso por 30 dias</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="color:#fff;font-weight:900;font-size:22px;">R$ 7,99</div>
+                            <div style="color:#aaa;font-size:10px;">/mês</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px;">
+                        <span style="background:rgba(0,229,255,0.1);color:#00e5ff;font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(0,229,255,0.25);">✓ Sem anúncios</span>
+                        <span style="background:rgba(0,229,255,0.1);color:#00e5ff;font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(0,229,255,0.25);">✓ Full HD + 4K</span>
+                        <span style="background:rgba(0,229,255,0.1);color:#00e5ff;font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(0,229,255,0.25);">✓ IPTV completo</span>
+                    </div>
+                    <button id="btnPagarMensal" onclick="selecionarPlano('mensal')" style="width:100%;padding:13px;background:linear-gradient(135deg,#e50914,#b00610);color:#fff;border:none;border-radius:10px;font-weight:900;font-size:14px;cursor:pointer;">
+                        <i class="fas fa-bolt"></i> Pagar R$ 7,99 via PIX
+                    </button>
+                </div>
+
+                <!-- Plano Vitalício -->
+                <div style="background:linear-gradient(135deg,rgba(255,165,0,0.12),rgba(255,100,0,0.08));border:2px solid rgba(255,165,0,0.4);border-radius:14px;padding:16px;margin-bottom:20px;position:relative;">
+                    <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:linear-gradient(90deg,#d97706,#f59e0b);color:#000;font-size:10px;font-weight:900;padding:3px 14px;border-radius:20px;white-space:nowrap;">🔥 MELHOR CUSTO-BENEFÍCIO</div>
+                    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;margin-top:6px;">
+                        <i class="fas fa-infinity" style="color:#f59e0b;font-size:20px;"></i>
+                        <div style="flex:1;">
+                            <div style="color:#fff;font-weight:900;font-size:15px;">VITALÍCIO</div>
+                            <div style="color:#aaa;font-size:11px;">Acesso para sempre — paga uma vez</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div style="color:#fff;font-weight:900;font-size:22px;">R$ 60</div>
+                            <div style="color:#aaa;font-size:10px;">único</div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:13px;">
+                        <span style="background:rgba(245,158,11,0.12);color:#fbbf24;font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(245,158,11,0.3);">✓ Sem anúncios</span>
+                        <span style="background:rgba(245,158,11,0.12);color:#fbbf24;font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(245,158,11,0.3);">✓ Full HD + 4K</span>
+                        <span style="background:rgba(245,158,11,0.12);color:#fbbf24;font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(245,158,11,0.3);">✓ IPTV completo</span>
+                        <span style="background:rgba(245,158,11,0.12);color:#fbbf24;font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(245,158,11,0.3);">✓ Nunca expira</span>
+                    </div>
+                    <button id="btnPagarVitalicio" onclick="selecionarPlano('vitalicio')" style="width:100%;padding:13px;background:linear-gradient(135deg,#d97706,#f59e0b);color:#000;border:none;border-radius:10px;font-weight:900;font-size:14px;cursor:pointer;">
+                        <i class="fas fa-infinity"></i> Pagar R$ 60,00 via PIX
+                    </button>
+                </div>
+
+                <div style="text-align:center;">
+                    <a onclick="fecharModalPagamento();abrirModalVip();" style="color:#555;font-size:11px;cursor:pointer;">Já tenho conta VIP → Entrar</a>
+                </div>
+            </div>
+
+            <!-- STEP 2: PIX -->
+            <div id="step-pix" style="display:none;">
+                <div style="text-align:center;margin-bottom:16px;">
+                    <i class="fas fa-qrcode" style="font-size:30px;color:#00e676;margin-bottom:8px;display:block;"></i>
+                    <h3 id="pix-titulo" style="color:#fff;font-weight:900;font-size:15px;margin:0 0 3px;"></h3>
+                    <p style="color:#aaa;font-size:11px;margin:0;">Escaneie o QR Code ou copie o código abaixo</p>
+                </div>
+
+                <div style="text-align:center;margin-bottom:14px;background:rgba(255,255,255,0.04);border-radius:12px;padding:14px;">
+                    <img id="pix-qr" src="" alt="QR PIX" style="display:none;width:175px;height:175px;border-radius:6px;background:#fff;padding:6px;">
+                </div>
+
+                <div id="pix-code-wrap" style="display:none;margin-bottom:12px;">
+                    <p style="color:#aaa;font-size:11px;margin:0 0 5px;">Código PIX Copia e Cola:</p>
+                    <div style="display:flex;gap:8px;align-items:stretch;">
+                        <textarea id="pix-code" readonly style="flex:1;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:8px;color:#fff;font-size:9px;padding:9px;resize:none;height:52px;font-family:monospace;"></textarea>
+                        <button onclick="copiarPix()" style="background:linear-gradient(135deg,#00c853,#00e676);color:#000;border:none;border-radius:8px;padding:0 14px;font-weight:900;font-size:11px;cursor:pointer;flex-shrink:0;"><i class="fas fa-copy"></i><br>Copiar</button>
+                    </div>
+                </div>
+
+                <a id="pix-ticket" href="#" target="_blank" rel="noopener" style="display:none;align-items:center;justify-content:center;gap:8px;width:100%;padding:11px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-radius:9px;color:#fff;text-decoration:none;font-size:12px;font-weight:700;margin-bottom:10px;box-sizing:border-box;">
+                    <i class="fas fa-external-link-alt"></i> Abrir no app do banco
+                </a>
+
+                <div style="text-align:center;margin-bottom:14px;">
+                    <div id="pix-status" style="color:#aaa;font-size:13px;font-weight:700;">⏳ Aguardando pagamento...</div>
+                    <div style="color:#444;font-size:10px;margin-top:3px;">Confirmação automática a cada 5s</div>
+                </div>
+
+                <button onclick="voltarPlanos()" style="width:100%;padding:11px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:9px;color:#aaa;font-weight:700;font-size:12px;cursor:pointer;">
+                    <i class="fas fa-arrow-left"></i> Voltar
+                </button>
+            </div>
+
+        </div>
+    </div>
+    <!-- ===================== FIM MODAL PAGAMENTO ===================== -->
+
     <script src="/js/config.js"></script>
+    <script src="/js/pagamento.js"></script>
     <script src="/js/app.js"></script>
 </body>
 </html>

@@ -1,12 +1,13 @@
 {
+  "functions": {
+    "api/pagamento.js": { "maxDuration": 15 },
+    "api/iptv.js":      { "maxDuration": 15 }
+  },
   "headers": [
     {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0"
-        }
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" }
       ]
     }
   ]
