@@ -387,3 +387,54 @@ a.server-btn { display: flex; width: 100%; box-sizing: border-box; }
 ========================================= */
 .sec-btn#btnShare { flex: 0 0 44px; padding: 10px; }
 .sec-btn#btnShare i { color: #00e5ff; font-size: 14px; }
+
+/* =========================================
+   BANNER DE TRIAL (v3 — adicionado)
+========================================= */
+#trial-banner {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 3000;
+    animation: slideDown 0.4s ease;
+}
+@keyframes slideDown {
+    from { transform: translateY(-100%); opacity: 0; }
+    to   { transform: translateY(0);    opacity: 1; }
+}
+
+/* Header empurrado quando banner existe */
+body:has(#trial-banner) .header {
+    top: 36px !important;
+}
+body:has(#trial-banner) #view-home {
+    padding-top: 96px !important;
+}
+
+/* =========================================
+   TELA DE SUCESSO PÓS-PAGAMENTO (v3)
+========================================= */
+#step-sucesso {
+    animation: fadeInUp 0.4s ease;
+}
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Senha highlight pulse */
+#sucesso-senha {
+    animation: senhaPulse 2s ease-in-out infinite;
+}
+@keyframes senhaPulse {
+    0%, 100% { text-shadow: 0 0 8px rgba(0,229,255,0.4); }
+    50%       { text-shadow: 0 0 20px rgba(0,229,255,0.9); }
+}
+
+/* =========================================
+   LABEL VIP NO MENU (v3)
+========================================= */
+#menuVipStatus {
+    font-size: 12px;
+    font-weight: 700;
+    transition: color 0.3s;
+}
