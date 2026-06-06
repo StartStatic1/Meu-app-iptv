@@ -1,16 +1,16 @@
-// api/pagamento.js — Mercado Pago PIX + Auto-cadastro Supabase
+// api/pagamento.js — Mercado Pago PIX + Auto-cadastro Supabase + Email
 // POST /api/pagamento?action=criar_pix   body: { email, plano }
 // GET  /api/pagamento?action=verificar&payment_id=xxx&email=xxx&plano=xxx
 
-const MP_TOKEN = process.env.MP_ACCESS_TOKEN;
-
-// Supabase — chave pública funciona pois tabela está sem RLS
-const SB_URL = 'https://gkujbjpvphuvrejpvvtz.supabase.co';
-const SB_KEY = 'sb_publishable_C9FMCjUyZnlzhINK2KZXWQ_ahpGu0yy';
+const MP_TOKEN   = process.env.MP_ACCESS_TOKEN;
+const SB_URL     = 'https://gkujbjpvphuvrejpvvtz.supabase.co';
+// ⚠️ SEGURANÇA: usar SUPABASE_SERVICE_KEY no Vercel (não a pública)
+const SB_KEY     = process.env.SUPABASE_SERVICE_KEY || 'sb_publishable_C9FMCjUyZnlzhINK2KZXWQ_ahpGu0yy';
+const RESEND_KEY = process.env.RESEND_API_KEY; // Cadastre grátis em resend.com
 
 const PLANOS = {
-  mensal:   { valor: 7.99,  titulo: 'StreamFlix Premium — 1 Mês',     dias: 30  },
-  vitalicio:{ valor: 60.00, titulo: 'StreamFlix Premium — Vitalício',  dias: null },
+  mensal:    { valor: 7.99,  titulo: 'StreamFlix Premium — 1 Mês',    dias: 30   },
+  vitalicio: { valor: 60.00, titulo: 'StreamFlix Premium — Vitalício', dias: null },
 };
 
 // ─── helpers ──────────────────────────────────────────────────────────────────
@@ -18,16 +18,92 @@ function gerarSenhaAleatoria() {
   return Math.random().toString(36).slice(2, 10).toUpperCase();
 }
 
+// ─── Envio de email via Resend (grátis até 3.000 emails/mês) ─────────────────
+async function enviarEmailBoasVindas(email, senha, plano) {
+  if (!RESEND_KEY) {
+    console.warn('[StreamFlix] RESEND_API_KEY não configurada — email não enviado.');
+    return;
+  }
+  const planoLabel = plano === 'vitalicio' ? 'Vitalício ♾️' : 'Mensal (30 dias)';
+  const htmlEmail = `
+<!DOCTYPE html>
+<html lang="pt-BR">
+<body style="margin:0;padding:0;background:#080b12;font-family:'Segoe UI',sans-serif;">
+  <div style="max-width:480px;margin:0 auto;padding:32px 24px;">
+    <h1 style="color:#fff;font-size:28px;font-weight:900;margin:0 0 4px;">
+      Stream<span style="color:#00e5ff;">Flix</span>
+    </h1>
+    <p style="color:#6b7280;font-size:12px;margin:0 0 28px;">Seu acesso VIP foi ativado</p>
+
+    <div style="background:#0f1520;border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:24px;margin-bottom:20px;">
+      <p style="color:#9ca3af;font-size:13px;margin:0 0 16px;">🎉 Parabéns! Seu plano <strong style="color:#00e5ff;">${planoLabel}</strong> está ativo.</p>
+
+      <div style="background:#141b28;border-radius:10px;padding:16px;margin-bottom:16px;">
+        <p style="color:#6b7280;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px;">Seu E-mail de Acesso</p>
+        <p style="color:#fff;font-size:15px;font-weight:700;margin:0;">${email}</p>
+      </div>
+
+      <div style="background:linear-gradient(135deg,rgba(0,229,255,0.12),rgba(0,85,255,0.08));border:1px solid rgba(0,229,255,0.25);border-radius:10px;padding:16px;">
+        <p style="color:#6b7280;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px;">Sua Senha</p>
+        <p style="color:#00e5ff;font-size:24px;font-weight:900;margin:0;letter-spacing:3px;">${senha}</p>
+      </div>
+    </div>
+
+    <a href="https://streamflixofc.vercel.app" 
+       style="display:block;text-align:center;background:linear-gradient(135deg,#e50914,#b00610);color:#fff;text-decoration:none;padding:14px;border-radius:10px;font-weight:900;font-size:14px;margin-bottom:20px;">
+      Acessar StreamFlix Agora →
+    </a>
+
+    <p style="color:#374151;font-size:11px;text-align:center;margin:0;">
+      Guarde este email. Você precisará da senha caso troque de celular.<br>
+      Dúvidas? <a href="https://t.me/streamflixofc" style="color:#00e5ff;">Fale conosco no Telegram</a>
+    </p>
+  </div>
+</body>
+</html>`;
+
+  try {
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${RESEND_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        from: 'StreamFlix <noreply@streamflixofc.com>',
+        to: [email],
+        subject: '🎉 Seu acesso VIP StreamFlix está pronto!',
+        html: htmlEmail,
+      }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      console.error('[StreamFlix] Erro Resend:', err);
+    } else {
+      console.log('[StreamFlix] Email enviado para:', email);
+    }
+  } catch (e) {
+    console.error('[StreamFlix] Falha ao enviar email:', e.message);
+  }
+}
+
+// ─── Supabase upsert VIP ───────────────────────────────────────────────────────
 async function supabaseUpsertVip(email, plano) {
   const p = PLANOS[plano];
   const expira_em = p.dias
     ? new Date(Date.now() + p.dias * 86400000).toISOString()
     : null;
 
+  const headers = {
+    apikey: SB_KEY,
+    Authorization: `Bearer ${SB_KEY}`,
+    'Content-Type': 'application/json',
+  };
+
   // Verifica se usuário já existe
   const checkRes = await fetch(
     `${SB_URL}/rest/v1/streamflix_users?email=eq.${encodeURIComponent(email)}&select=email,senha`,
-    { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
+    { headers }
   );
   const existing = await checkRes.json();
 
@@ -37,12 +113,7 @@ async function supabaseUpsertVip(email, plano) {
       `${SB_URL}/rest/v1/streamflix_users?email=eq.${encodeURIComponent(email)}`,
       {
         method: 'PATCH',
-        headers: {
-          apikey: SB_KEY,
-          Authorization: `Bearer ${SB_KEY}`,
-          'Content-Type': 'application/json',
-          Prefer: 'return=minimal',
-        },
+        headers: { ...headers, Prefer: 'return=minimal' },
         body: JSON.stringify({ status: 'VIP', plano, expira_em }),
       }
     );
@@ -52,12 +123,7 @@ async function supabaseUpsertVip(email, plano) {
     const senha = gerarSenhaAleatoria();
     await fetch(`${SB_URL}/rest/v1/streamflix_users`, {
       method: 'POST',
-      headers: {
-        apikey: SB_KEY,
-        Authorization: `Bearer ${SB_KEY}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
-      },
+      headers: { ...headers, Prefer: 'return=minimal' },
       body: JSON.stringify({ email, senha, status: 'VIP', plano, expira_em }),
     });
     return { senha, criado: true };
@@ -134,7 +200,7 @@ export default async function handler(req, res) {
     }
   }
 
-  // ── VERIFICAR + ATIVAR VIP ─────────────────────────────────────────────────
+  // ── VERIFICAR + ATIVAR VIP ──────────────────────────────────────────────────
   if (action === 'verificar') {
     const { payment_id, email, plano } = req.query;
     if (!payment_id || !email || !plano) {
@@ -148,13 +214,18 @@ export default async function handler(req, res) {
       const mpData = await mpRes.json();
 
       if (mpData.status === 'approved') {
-        // Ativa VIP no Supabase automaticamente
         const { senha, criado } = await supabaseUpsertVip(email, plano);
+
+        // Envia email de boas-vindas apenas para contas novas
+        if (criado) {
+          await enviarEmailBoasVindas(email, senha, plano);
+        }
+
         return res.status(200).json({
           aprovado: true,
           email,
-          senha,       // retorna para o app fazer login automático
-          criado,      // true = conta nova, false = renovação
+          senha,
+          criado,
         });
       }
 
