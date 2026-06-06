@@ -5,7 +5,7 @@
 //   3. Trial configurável (TRIAL_HORAS)
 //   4. Envio de email via api/pagamento (server-side)
 
-const TRIAL_HORAS = 72;          // ← mude para 1 para testar bloqueio em 1 hora
+const TRIAL_HORAS = 1;          // ← mude para 1 para testar bloqueio em 1 hora
 const TRIAL_KEY   = 'sf_trial_v2';
 const PAG_KEY     = 'sf_pag_v2';
 const VIP_CACHE   = 'sf_vip_cache';
