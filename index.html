@@ -343,9 +343,14 @@
                         <span style="background:rgba(0,229,255,0.1);color:#00e5ff;font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(0,229,255,0.25);">✓ Full HD + 4K</span>
                         <span style="background:rgba(0,229,255,0.1);color:#00e5ff;font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(0,229,255,0.25);">✓ IPTV completo</span>
                     </div>
-                    <button id="btnPagarMensal" onclick="selecionarPlano('mensal')" style="width:100%;padding:13px;background:linear-gradient(135deg,#e50914,#b00610);color:#fff;border:none;border-radius:10px;font-weight:900;font-size:14px;cursor:pointer;">
-                        <i class="fas fa-bolt"></i> Pagar R$ 7,99 via PIX
-                    </button>
+                    <div style="display:flex;gap:8px;">
+                        <button id="btnPagarMensalPix" onclick="selecionarPlano('mensal','pix')" style="flex:1;padding:12px 8px;background:linear-gradient(135deg,#e50914,#b00610);color:#fff;border:none;border-radius:10px;font-weight:900;font-size:12px;cursor:pointer;">
+                            <i class="fas fa-qrcode"></i> PIX<br><span style="font-size:10px;font-weight:600;opacity:0.85;">Instantâneo</span>
+                        </button>
+                        <button onclick="selecionarPlano('mensal','cartao')" style="flex:1;padding:12px 8px;background:linear-gradient(135deg,#1565c0,#1e88e5);color:#fff;border:none;border-radius:10px;font-weight:900;font-size:12px;cursor:pointer;">
+                            <i class="fas fa-credit-card"></i> Cartão<br><span style="font-size:10px;font-weight:600;opacity:0.85;">Crédito</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Plano Vitalício -->
@@ -368,9 +373,14 @@
                         <span style="background:rgba(245,158,11,0.12);color:#fbbf24;font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(245,158,11,0.3);">✓ IPTV completo</span>
                         <span style="background:rgba(245,158,11,0.12);color:#fbbf24;font-size:10px;padding:3px 8px;border-radius:20px;border:1px solid rgba(245,158,11,0.3);">✓ Nunca expira</span>
                     </div>
-                    <button id="btnPagarVitalicio" onclick="selecionarPlano('vitalicio')" style="width:100%;padding:13px;background:linear-gradient(135deg,#d97706,#f59e0b);color:#000;border:none;border-radius:10px;font-weight:900;font-size:14px;cursor:pointer;">
-                        <i class="fas fa-infinity"></i> Pagar R$ 60,00 via PIX
-                    </button>
+                    <div style="display:flex;gap:8px;">
+                        <button id="btnPagarVitalicioPix" onclick="selecionarPlano('vitalicio','pix')" style="flex:1;padding:12px 8px;background:linear-gradient(135deg,#d97706,#f59e0b);color:#000;border:none;border-radius:10px;font-weight:900;font-size:12px;cursor:pointer;">
+                            <i class="fas fa-qrcode"></i> PIX<br><span style="font-size:10px;font-weight:600;opacity:0.7;">Instantâneo</span>
+                        </button>
+                        <button onclick="selecionarPlano('vitalicio','cartao')" style="flex:1;padding:12px 8px;background:linear-gradient(135deg,#b8860b,#d4a017);color:#000;border:none;border-radius:10px;font-weight:900;font-size:12px;cursor:pointer;">
+                            <i class="fas fa-credit-card"></i> Cartão<br><span style="font-size:10px;font-weight:600;opacity:0.7;">Crédito</span>
+                        </button>
+                    </div>
                 </div>
 
                 <div style="text-align:center;">
@@ -410,6 +420,62 @@
                 <button onclick="concluirAtivacao()" style="width:100%;padding:15px;background:linear-gradient(135deg,#e50914,#b00610);color:#fff;border:none;border-radius:10px;font-weight:900;font-size:14px;cursor:pointer;">
                     <i class="fas fa-play"></i> Começar a Assistir
                 </button>
+            </div>
+
+
+            <!-- STEP CARTÃO DE CRÉDITO -->
+            <div id="step-cartao" style="display:none;">
+                <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+                    <button onclick="voltarPlanos()" style="background:rgba(255,255,255,0.08);border:none;border-radius:8px;width:34px;height:34px;color:#fff;font-size:14px;cursor:pointer;flex-shrink:0;"><i class="fas fa-arrow-left"></i></button>
+                    <div>
+                        <h3 style="color:#fff;font-weight:900;font-size:16px;margin:0;"><i class="fas fa-credit-card" style="color:#1e88e5;margin-right:6px;"></i>Cartão de Crédito</h3>
+                        <p id="cartao-titulo" style="color:#aaa;font-size:11px;margin:0;"></p>
+                    </div>
+                </div>
+
+                <div style="background:linear-gradient(135deg,#1a237e,#283593);border-radius:14px;padding:18px;margin-bottom:16px;">
+                    <div style="color:rgba(255,255,255,0.5);font-size:10px;letter-spacing:2px;margin-bottom:8px;">NÚMERO DO CARTÃO</div>
+                    <input id="cartao-numero" type="tel" placeholder="0000 0000 0000 0000" maxlength="19"
+                        oninput="formatarCartao(this)"
+                        style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.3);color:#fff;font-size:18px;font-weight:700;letter-spacing:2px;padding:4px 0;outline:none;box-sizing:border-box;">
+                    <div style="display:flex;justify-content:space-between;margin-top:16px;">
+                        <div style="flex:1;margin-right:16px;">
+                            <div style="color:rgba(255,255,255,0.5);font-size:10px;letter-spacing:2px;margin-bottom:6px;">VALIDADE</div>
+                            <input id="cartao-validade" type="tel" placeholder="MM/AA" maxlength="5"
+                                oninput="formatarValidade(this)"
+                                style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.3);color:#fff;font-size:16px;font-weight:700;padding:4px 0;outline:none;">
+                        </div>
+                        <div style="width:80px;">
+                            <div style="color:rgba(255,255,255,0.5);font-size:10px;letter-spacing:2px;margin-bottom:6px;">CVV</div>
+                            <input id="cartao-cvv" type="tel" placeholder="123" maxlength="4"
+                                style="width:100%;background:transparent;border:none;border-bottom:1px solid rgba(255,255,255,0.3);color:#fff;font-size:16px;font-weight:700;padding:4px 0;outline:none;">
+                        </div>
+                    </div>
+                </div>
+
+                <div style="margin-bottom:12px;">
+                    <label style="color:#ccc;font-size:12px;font-weight:700;display:block;margin-bottom:6px;"><i class="fas fa-user" style="color:#1e88e5;margin-right:5px;"></i>Nome do titular (como no cartão)</label>
+                    <input id="cartao-nome" type="text" placeholder="NOME SOBRENOME"
+                        oninput="this.value=this.value.toUpperCase()"
+                        style="width:100%;padding:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:13px;font-weight:700;letter-spacing:1px;outline:none;box-sizing:border-box;">
+                </div>
+
+                <div style="margin-bottom:18px;">
+                    <label style="color:#ccc;font-size:12px;font-weight:700;display:block;margin-bottom:6px;"><i class="fas fa-id-card" style="color:#1e88e5;margin-right:5px;"></i>CPF do titular</label>
+                    <input id="cartao-cpf" type="tel" placeholder="000.000.000-00" maxlength="14"
+                        oninput="formatarCPF(this)"
+                        style="width:100%;padding:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.15);border-radius:10px;color:#fff;font-size:14px;outline:none;box-sizing:border-box;">
+                </div>
+
+                <button id="btnPagarCartao" onclick="processarCartao()"
+                    style="width:100%;padding:15px;background:linear-gradient(135deg,#1565c0,#1e88e5);color:#fff;border:none;border-radius:10px;font-weight:900;font-size:15px;cursor:pointer;margin-bottom:12px;">
+                    <i class="fas fa-lock"></i> Pagar com segurança
+                </button>
+
+                <div style="display:flex;align-items:center;justify-content:center;gap:6px;color:#555;font-size:10px;">
+                    <i class="fas fa-shield-alt" style="color:#1e88e5;"></i>
+                    Pagamento seguro via Mercado Pago · Visa · Master · Elo · Amex
+                </div>
             </div>
 
             <!-- STEP 2: PIX -->
