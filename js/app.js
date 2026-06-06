@@ -55,7 +55,11 @@ function getSupabase() {
     }
     return meuSupabase;
 }
-function isVip() { return localStorage.getItem('streamflix_vip') === 'true'; }
+function isVip() {
+    // isVipLocal é definida em pagamento.js e verifica expiração
+    if (typeof isVipLocal === 'function') return isVipLocal();
+    return localStorage.getItem('streamflix_vip') === 'true';
+}
 function abrirModalVip() { 
     document.getElementById('vipModal').style.display = 'flex'; 
     addNoScroll();
@@ -81,8 +85,20 @@ async function fazerLoginVip() {
         const { data, error } = await supa.from('streamflix_users').select('*').eq('email', email).eq('senha', senha);
         if(error) throw error;
         if(data && data.length > 0) {
-            if(data[0].status === 'VIP') { desativarTodosAds(); }
-            else { msg.innerText = "Sua conta não tem status VIP."; msg.style.display = 'block'; }
+            const user = data[0];
+            if(user.status === 'VIP') {
+                // Verifica expiração
+                if(user.expira_em && new Date(user.expira_em) < new Date()) {
+                    msg.innerText = "Seu plano expirou. Renove para continuar.";
+                    msg.style.display = 'block';
+                    return;
+                }
+                // Salva cache com dados completos
+                if(typeof salvarVipCache === 'function') {
+                    salvarVipCache({ email, senha, plano: user.plano || 'manual', expira_em: user.expira_em || null });
+                }
+                desativarTodosAds();
+            } else { msg.innerText = "Sua conta não tem status VIP."; msg.style.display = 'block'; }
         } else { msg.innerText = "E-mail ou senha incorretos."; msg.style.display = 'block'; }
     } catch(e) { msg.innerText = e.message; msg.style.display = 'block'; }
     finally { btn.innerText = "Entrar na Conta VIP"; btn.disabled = false; }
@@ -95,6 +111,23 @@ function verificarStatusVip() {
         menuVipStatus.innerHTML = isVip()
             ? '<i class="fas fa-crown" style="color:gold"></i> VIP Ativo'
             : '<i class="fas fa-gem" style="color:var(--accent)"></i> Gratuito';
+    }
+    // Botão "Assinar" no header
+    let btnAssinar = document.getElementById('btnHeaderAssinar');
+    if (!isVip()) {
+        if (!btnAssinar) {
+            btnAssinar = document.createElement('button');
+            btnAssinar.id = 'btnHeaderAssinar';
+            btnAssinar.onclick = () => abrirModalPagamento(true);
+            btnAssinar.style.cssText = 'background:linear-gradient(90deg,#e50914,#b00610);color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:900;cursor:pointer;letter-spacing:0.5px;margin-left:8px;';
+            btnAssinar.innerHTML = '<i class="fas fa-crown" style="color:gold;margin-right:4px;"></i>Assinar';
+            const header = document.getElementById('mainHeader');
+            if (header) header.appendChild(btnAssinar);
+        }
+        btnAssinar.style.display = 'inline-flex';
+        btnAssinar.style.alignItems = 'center';
+    } else if (btnAssinar) {
+        btnAssinar.style.display = 'none';
     }
 }
 
@@ -269,6 +302,7 @@ function renderTop10Carousel(title, items, type) {
 // ===================== APP INIT =====================
 async function initApp() {
     verificarStatusVip();
+    verificarPagamentoOuTrial(); // ← SISTEMA DE TRIAL + PAGAMENTO
     injetarAnuncios(); 
     renderGenreChips();
 
@@ -1051,6 +1085,7 @@ window.addEventListener('popstate', function(event) {
     if(fromPopState) { fromPopState=false; return; }
     const modais = [
         { id:'adBlockModal', check:(el)=>el.style.display==='flex', close:()=>fecharAdBlock() },
+        { id:'pagamentoModal', check:(el)=>el.style.display==='flex', close:()=>window._fecharModalPagamento(true) },
         { id:'embedModal', check:(el)=>el.style.display==='flex', close:()=>fecharEmbedWeb(true) },
         { id:'trailerModal', check:(el)=>el.style.display==='flex', close:()=>fecharTrailer(true) },
         { id:'serverModal', check:(el)=>el.classList.contains('active'), close:()=>fecharMenuServidores(true) },

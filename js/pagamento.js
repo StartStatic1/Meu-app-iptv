@@ -1,172 +1,302 @@
-// api/pagamento.js — Mercado Pago PIX + Auto-cadastro Supabase
-// POST /api/pagamento?action=criar_pix   body: { email, plano }
-// GET  /api/pagamento?action=verificar&payment_id=xxx&email=xxx&plano=xxx
+// ===================== SISTEMA DE PAGAMENTO STREAMFLIX v2 =====================
+// Trial 3 dias → tela de planos → email → PIX → polling → VIP automático no Supabase
 
-const MP_TOKEN = process.env.MP_ACCESS_TOKEN;
+const TRIAL_DIAS = 3;
+const TRIAL_KEY  = 'sf_trial_v2';
+const PAG_KEY    = 'sf_pag_v2';
+const VIP_CACHE  = 'sf_vip_cache'; // { email, senha, expira_em, plano }
 
-// Supabase — chave pública funciona pois tabela está sem RLS
-const SB_URL = 'https://gkujbjpvphuvrejpvvtz.supabase.co';
-const SB_KEY = 'sb_publishable_C9FMCjUyZnlzhINK2KZXWQ_ahpGu0yy';
-
-const PLANOS = {
-  mensal:   { valor: 7.99,  titulo: 'StreamFlix Premium — 1 Mês',     dias: 30  },
-  vitalicio:{ valor: 60.00, titulo: 'StreamFlix Premium — Vitalício',  dias: null },
-};
-
-// ─── helpers ──────────────────────────────────────────────────────────────────
-function gerarSenhaAleatoria() {
-  return Math.random().toString(36).slice(2, 10).toUpperCase();
+// ── TRIAL ─────────────────────────────────────────────────────────────────────
+function iniciarTrial() {
+  if (isVipLocal()) return;
+  if (!localStorage.getItem(TRIAL_KEY)) {
+    localStorage.setItem(TRIAL_KEY, JSON.stringify({ inicio: Date.now() }));
+  }
 }
 
-async function supabaseUpsertVip(email, plano) {
-  const p = PLANOS[plano];
-  const expira_em = p.dias
-    ? new Date(Date.now() + p.dias * 86400000).toISOString()
-    : null;
+function trialExpirou() {
+  if (isVipLocal()) return false;
+  const t = _getJson(TRIAL_KEY);
+  if (!t?.inicio) return false;
+  return (Date.now() - t.inicio) / 86400000 >= TRIAL_DIAS;
+}
 
-  // Verifica se usuário já existe
-  const checkRes = await fetch(
-    `${SB_URL}/rest/v1/streamflix_users?email=eq.${encodeURIComponent(email)}&select=email,senha`,
-    { headers: { apikey: SB_KEY, Authorization: `Bearer ${SB_KEY}` } }
-  );
-  const existing = await checkRes.json();
+// ── VIP LOCAL (cache Supabase) ────────────────────────────────────────────────
+function isVipLocal() {
+  // Mantém compatibilidade com sistema antigo
+  if (localStorage.getItem('streamflix_vip') === 'true') return true;
+  const c = _getJson(VIP_CACHE);
+  if (!c) return false;
+  // Vitalício: expira_em null
+  if (!c.expira_em) return true;
+  // Mensal: verifica data
+  return new Date(c.expira_em) > new Date();
+}
 
-  if (existing && existing.length > 0) {
-    // Já existe → só atualiza status e expiração
-    await fetch(
-      `${SB_URL}/rest/v1/streamflix_users?email=eq.${encodeURIComponent(email)}`,
-      {
-        method: 'PATCH',
-        headers: {
-          apikey: SB_KEY,
-          Authorization: `Bearer ${SB_KEY}`,
-          'Content-Type': 'application/json',
-          Prefer: 'return=minimal',
-        },
-        body: JSON.stringify({ status: 'VIP', plano, expira_em }),
-      }
-    );
-    return { senha: existing[0].senha, criado: false };
-  } else {
-    // Novo usuário → cria com senha aleatória
-    const senha = gerarSenhaAleatoria();
-    await fetch(`${SB_URL}/rest/v1/streamflix_users`, {
+function getVipCache() { return _getJson(VIP_CACHE); }
+
+function salvarVipCache(data) {
+  localStorage.setItem(VIP_CACHE, JSON.stringify(data));
+  localStorage.setItem('streamflix_vip', 'true'); // compatibilidade
+}
+
+function limparVipCache() {
+  localStorage.removeItem(VIP_CACHE);
+  localStorage.removeItem('streamflix_vip');
+}
+
+// ── VERIFICAÇÃO NO SUPABASE (ao abrir o app) ──────────────────────────────────
+async function verificarVipOnline() {
+  const cache = getVipCache();
+  if (!cache?.email || !cache?.senha) return;
+
+  try {
+    const supa = getSupabase();
+    const { data } = await supa
+      .from('streamflix_users')
+      .select('status, expira_em, plano')
+      .eq('email', cache.email)
+      .eq('senha', cache.senha)
+      .single();
+
+    if (!data || data.status !== 'VIP') {
+      // Removido manualmente por você no Supabase
+      limparVipCache();
+      location.reload();
+      return;
+    }
+
+    // Verifica expiração
+    if (data.expira_em && new Date(data.expira_em) < new Date()) {
+      // Plano expirado → remove VIP local, mantém email/senha para renovar
+      localStorage.removeItem('streamflix_vip');
+      localStorage.setItem(VIP_CACHE, JSON.stringify({
+        ...cache,
+        expira_em: data.expira_em,
+        expirado: true,
+      }));
+      mostrarToast('Seu plano expirou. Renove para continuar!');
+      setTimeout(() => abrirModalPagamento(true), 1500);
+      return;
+    }
+
+    // Atualiza cache com dados frescos do servidor
+    salvarVipCache({ ...cache, expira_em: data.expira_em, plano: data.plano });
+
+  } catch(e) { /* falha silenciosa — usa cache local */ }
+}
+
+// ── VERIFICAÇÃO GERAL (chamada no initApp) ────────────────────────────────────
+async function verificarPagamentoOuTrial() {
+  iniciarTrial();
+
+  // Retoma polling se tinha pagamento pendente
+  const pend = _getJson(PAG_KEY);
+  if (pend?.payment_id) {
+    iniciarPolling(pend.payment_id, pend.email, pend.plano);
+  }
+
+  // Verifica VIP online em background
+  if (isVipLocal()) {
+    verificarVipOnline();
+    return;
+  }
+
+  // Trial expirou → bloqueia
+  if (trialExpirou()) {
+    setTimeout(() => abrirModalPagamento(true), 800);
+  }
+}
+
+// ── MODAL DE PAGAMENTO ────────────────────────────────────────────────────────
+function abrirModalPagamento(forcar = false) {
+  if (isVipLocal() && !_getJson(VIP_CACHE)?.expirado) return;
+
+  // Pré-preenche email se já tem conta
+  const cache = getVipCache();
+  if (cache?.email) {
+    const emailInput = document.getElementById('pag-email');
+    if (emailInput) emailInput.value = cache.email;
+  }
+
+  mostrarStep('step-planos');
+  const modal = document.getElementById('pagamentoModal');
+  if (modal) { modal.style.display = 'flex'; addNoScroll(); }
+  history.pushState({ view: 'pagamento', modal: true }, null, '');
+}
+
+function fecharModalPagamento(fromPS = false) {
+  if (trialExpirou() && !isVipLocal()) {
+    mostrarToast('Assine para continuar usando o StreamFlix!');
+    return;
+  }
+  _fecharModal(fromPS);
+}
+
+function _fecharModal(fromPS = false) {
+  const modal = document.getElementById('pagamentoModal');
+  if (modal) modal.style.display = 'none';
+  removeNoScroll();
+  if (!fromPS && history.state?.view === 'pagamento') { fromPopState = true; history.back(); }
+}
+
+function mostrarStep(stepId) {
+  ['step-planos','step-pix'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.style.display = id === stepId ? 'block' : 'none';
+  });
+}
+
+// ── SELECIONAR PLANO + VALIDAR EMAIL ─────────────────────────────────────────
+let _emailAtual = '';
+let _planoAtual = '';
+
+async function selecionarPlano(plano) {
+  const email = document.getElementById('pag-email')?.value?.trim();
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    document.getElementById('pag-email-erro').style.display = 'block';
+    document.getElementById('pag-email').focus();
+    return;
+  }
+  document.getElementById('pag-email-erro').style.display = 'none';
+
+  _emailAtual = email;
+  _planoAtual = plano;
+
+  const btnId = plano === 'mensal' ? 'btnPagarMensal' : 'btnPagarVitalicio';
+  const btn = document.getElementById(btnId);
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando PIX...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/pagamento?action=criar_pix', {
       method: 'POST',
-      headers: {
-        apikey: SB_KEY,
-        Authorization: `Bearer ${SB_KEY}`,
-        'Content-Type': 'application/json',
-        Prefer: 'return=minimal',
-      },
-      body: JSON.stringify({ email, senha, status: 'VIP', plano, expira_em }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, plano }),
     });
-    return { senha, criado: true };
+    const data = await res.json();
+    if (!res.ok || !data.payment_id) throw new Error(data.error || 'Falha ao gerar PIX');
+
+    localStorage.setItem(PAG_KEY, JSON.stringify({ payment_id: data.payment_id, email, plano }));
+    exibirPix(data);
+    iniciarPolling(data.payment_id, email, plano);
+
+  } catch(e) {
+    mostrarToast('Erro: ' + e.message);
+    btn.innerHTML = originalHtml;
+    btn.disabled = false;
   }
 }
 
-// ─── handler ──────────────────────────────────────────────────────────────────
-export default async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  if (req.method === 'OPTIONS') return res.status(200).end();
+// ── EXIBIR PIX ────────────────────────────────────────────────────────────────
+function exibirPix(data) {
+  mostrarStep('step-pix');
 
-  if (!MP_TOKEN) {
-    return res.status(500).json({ error: 'MP_ACCESS_TOKEN não configurado no Vercel.' });
+  document.getElementById('pix-titulo').innerText = data.titulo;
+
+  if (data.qr_base64) {
+    document.getElementById('pix-qr').src = 'data:image/png;base64,' + data.qr_base64;
+    document.getElementById('pix-qr').style.display = 'block';
+  }
+  if (data.qr_code) {
+    document.getElementById('pix-code').value = data.qr_code;
+    document.getElementById('pix-code-wrap').style.display = 'flex';
+  }
+  if (data.ticket_url) {
+    const a = document.getElementById('pix-ticket');
+    a.href = data.ticket_url;
+    a.style.display = 'inline-flex';
   }
 
-  const { action } = req.query;
-
-  // ── CRIAR PIX ──────────────────────────────────────────────────────────────
-  if (action === 'criar_pix') {
-    if (req.method !== 'POST') return res.status(405).json({ error: 'Use POST' });
-
-    let body;
-    try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; }
-    catch(e) { return res.status(400).json({ error: 'Body inválido' }); }
-
-    const { email, plano } = body || {};
-    if (!email || !plano || !PLANOS[plano]) {
-      return res.status(400).json({ error: 'email e plano obrigatórios (mensal | vitalicio)' });
-    }
-
-    const p = PLANOS[plano];
-
-    try {
-      const mpRes = await fetch('https://api.mercadopago.com/v1/payments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${MP_TOKEN}`,
-          'X-Idempotency-Key': `sf-${plano}-${email}-${Date.now()}`,
-        },
-        body: JSON.stringify({
-          transaction_amount: p.valor,
-          description: p.titulo,
-          payment_method_id: 'pix',
-          payer: {
-            email,
-            first_name: 'Cliente',
-            last_name: 'StreamFlix',
-            identification: { type: 'CPF', number: '00000000000' },
-          },
-        }),
-      });
-
-      const mpData = await mpRes.json();
-      if (!mpRes.ok || !mpData.id) {
-        return res.status(400).json({ error: mpData.message || 'Erro Mercado Pago', details: mpData });
-      }
-
-      const pix = mpData.point_of_interaction?.transaction_data;
-
-      return res.status(200).json({
-        payment_id: mpData.id,
-        qr_code:    pix?.qr_code        || null,
-        qr_base64:  pix?.qr_code_base64 || null,
-        ticket_url: pix?.ticket_url      || null,
-        valor:      p.valor,
-        titulo:     p.titulo,
-      });
-
-    } catch(e) {
-      return res.status(500).json({ error: e.message });
-    }
-  }
-
-  // ── VERIFICAR + ATIVAR VIP ─────────────────────────────────────────────────
-  if (action === 'verificar') {
-    const { payment_id, email, plano } = req.query;
-    if (!payment_id || !email || !plano) {
-      return res.status(400).json({ error: 'payment_id, email e plano obrigatórios' });
-    }
-
-    try {
-      const mpRes = await fetch(`https://api.mercadopago.com/v1/payments/${payment_id}`, {
-        headers: { Authorization: `Bearer ${MP_TOKEN}` },
-      });
-      const mpData = await mpRes.json();
-
-      if (mpData.status === 'approved') {
-        // Ativa VIP no Supabase automaticamente
-        const { senha, criado } = await supabaseUpsertVip(email, plano);
-        return res.status(200).json({
-          aprovado: true,
-          email,
-          senha,       // retorna para o app fazer login automático
-          criado,      // true = conta nova, false = renovação
-        });
-      }
-
-      return res.status(200).json({
-        aprovado: false,
-        status: mpData.status,
-      });
-
-    } catch(e) {
-      return res.status(500).json({ error: e.message });
-    }
-  }
-
-  return res.status(400).json({ error: 'action inválida' });
+  setPixStatus('waiting', '⏳ Aguardando pagamento...');
 }
+
+function setPixStatus(type, msg) {
+  const el = document.getElementById('pix-status');
+  if (!el) return;
+  el.innerText = msg;
+  el.style.color = type === 'ok' ? '#00e676' : type === 'err' ? '#ff5252' : '#aaa';
+}
+
+function copiarPix() {
+  const v = document.getElementById('pix-code')?.value;
+  if (!v) return;
+  navigator.clipboard.writeText(v)
+    .then(() => mostrarToast('✅ Código PIX copiado!'))
+    .catch(() => { document.getElementById('pix-code').select(); document.execCommand('copy'); mostrarToast('✅ Copiado!'); });
+}
+
+function voltarPlanos() {
+  if (_pollingId) { clearInterval(_pollingId); _pollingId = null; }
+  localStorage.removeItem(PAG_KEY);
+  mostrarStep('step-planos');
+}
+
+// ── POLLING ───────────────────────────────────────────────────────────────────
+let _pollingId   = null;
+let _tentativas  = 0;
+
+function iniciarPolling(paymentId, email, plano) {
+  if (_pollingId) clearInterval(_pollingId);
+  _tentativas = 0;
+
+  _pollingId = setInterval(async () => {
+    _tentativas++;
+    if (_tentativas > 72) { // 6 minutos
+      clearInterval(_pollingId); _pollingId = null;
+      setPixStatus('err', '⏰ Tempo esgotado. Gere um novo PIX.');
+      localStorage.removeItem(PAG_KEY);
+      return;
+    }
+
+    try {
+      const res = await fetch(`/api/pagamento?action=verificar&payment_id=${paymentId}&email=${encodeURIComponent(email)}&plano=${plano}`);
+      const data = await res.json();
+
+      if (data.aprovado) {
+        clearInterval(_pollingId); _pollingId = null;
+        localStorage.removeItem(PAG_KEY);
+        onAprovado(data);
+      } else if (data.status === 'rejected' || data.status === 'cancelled') {
+        clearInterval(_pollingId); _pollingId = null;
+        localStorage.removeItem(PAG_KEY);
+        setPixStatus('err', '❌ Pagamento recusado. Tente novamente.');
+      }
+    } catch(e) { /* continua */ }
+  }, 5000);
+}
+
+// ── APROVADO → ATIVA VIP ──────────────────────────────────────────────────────
+function onAprovado(data) {
+  setPixStatus('ok', '✅ Pagamento confirmado! Ativando acesso...');
+
+  // Salva credenciais localmente
+  salvarVipCache({
+    email:     data.email,
+    senha:     data.senha,
+    plano:     _planoAtual,
+    expira_em: _planoAtual === 'vitalicio' ? null : new Date(Date.now() + 30*86400000).toISOString(),
+    criado:    data.criado,
+  });
+
+  const msg = data.criado
+    ? `🎉 VIP ativado! Sua senha de acesso: ${data.senha}`
+    : '🎉 Plano renovado com sucesso!';
+
+  setTimeout(() => {
+    _fecharModal();
+    mostrarToast(msg);
+    // Remove ads
+    document.querySelectorAll('script').forEach(s => {
+      if (['5gvci.com','al5sm.com','tag.min.js','omg10.com'].some(d => s.src.includes(d))) s.remove();
+    });
+    setTimeout(() => location.reload(), 2000);
+  }, 1200);
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────────
+function _getJson(key) { try { return JSON.parse(localStorage.getItem(key)); } catch(e) { return null; } }
+
+// Expõe para popstate no app.js
+window._fecharModalPagamento = (fromPS) => _fecharModal(fromPS);
