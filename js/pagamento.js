@@ -199,7 +199,7 @@ function _fecharModal(fromPS = false) {
 }
 
 function mostrarStep(stepId) {
-  ['step-planos', 'step-pix', 'step-sucesso'].forEach(id => {
+  ['step-planos', 'step-pix', 'step-sucesso', 'step-cartao'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = id === stepId ? 'block' : 'none';
   });
@@ -209,7 +209,9 @@ function mostrarStep(stepId) {
 let _emailAtual = '';
 let _planoAtual = '';
 
-async function selecionarPlano(plano) {
+let _metodoAtual = 'pix'; // 'pix' ou 'cartao'
+
+async function selecionarPlano(plano, metodo = 'pix') {
   const email = document.getElementById('pag-email')?.value?.trim();
   if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     document.getElementById('pag-email-erro').style.display = 'block';
@@ -220,12 +222,21 @@ async function selecionarPlano(plano) {
 
   _emailAtual = email;
   _planoAtual = plano;
+  _metodoAtual = metodo;
 
-  const btnId = plano === 'mensal' ? 'btnPagarMensal' : 'btnPagarVitalicio';
+  if (metodo === 'cartao') {
+    // Abre step de cartão
+    mostrarStep('step-cartao');
+    document.getElementById('cartao-titulo').innerText =
+      plano === 'mensal' ? 'R$ 7,99 — Plano Mensal' : 'R$ 60,00 — Plano Vitalício';
+    return;
+  }
+
+  // PIX: fluxo original
+  const btnId = plano === 'mensal' ? 'btnPagarMensalPix' : 'btnPagarVitalicioPix';
   const btn = document.getElementById(btnId);
-  const originalHtml = btn.innerHTML;
-  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando PIX...';
-  btn.disabled = true;
+  const originalHtml = btn ? btn.innerHTML : '';
+  if (btn) { btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Gerando PIX...'; btn.disabled = true; }
 
   try {
     const res = await fetch('/api/pagamento?action=criar_pix', {
@@ -242,9 +253,88 @@ async function selecionarPlano(plano) {
 
   } catch(e) {
     mostrarToast('Erro: ' + e.message);
+    if (btn) { btn.innerHTML = originalHtml; btn.disabled = false; }
+  }
+}
+
+// ── CARTÃO DE CRÉDITO ────────────────────────────────────────────────────────
+async function processarCartao() {
+  const numero  = document.getElementById('cartao-numero')?.value?.replace(/\s/g,'');
+  const nome    = document.getElementById('cartao-nome')?.value?.trim();
+  const validade= document.getElementById('cartao-validade')?.value?.trim();
+  const cvv     = document.getElementById('cartao-cvv')?.value?.trim();
+  const cpf     = document.getElementById('cartao-cpf')?.value?.replace(/\D/g,'');
+
+  if (!numero || numero.length < 15) return mostrarToast('Número do cartão inválido');
+  if (!nome)    return mostrarToast('Nome do titular obrigatório');
+  if (!validade || !/^\d{2}\/\d{2}$/.test(validade)) return mostrarToast('Validade inválida (MM/AA)');
+  if (!cvv || cvv.length < 3) return mostrarToast('CVV inválido');
+  if (!cpf || cpf.length !== 11) return mostrarToast('CPF inválido (apenas números)');
+
+  const [mes, ano] = validade.split('/');
+  const btn = document.getElementById('btnPagarCartao');
+  const originalHtml = btn.innerHTML;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processando...';
+  btn.disabled = true;
+
+  try {
+    const res = await fetch('/api/pagamento?action=criar_cartao', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: _emailAtual,
+        plano: _planoAtual,
+        card_number: numero,
+        cardholder_name: nome,
+        expiration_month: mes,
+        expiration_year: '20' + ano,
+        security_code: cvv,
+        cpf,
+      }),
+    });
+    const data = await res.json();
+
+    if (!res.ok) throw new Error(data.error || 'Erro no pagamento');
+
+    if (data.aprovado) {
+      onAprovado(data);
+    } else if (data.status === 'in_process') {
+      mostrarToast('⏳ Pagamento em análise! Você receberá o acesso em breve por email.');
+      // Polling para verificar aprovação posterior
+      localStorage.setItem(PAG_KEY, JSON.stringify({ payment_id: data.payment_id, email: _emailAtual, plano: _planoAtual }));
+      iniciarPolling(data.payment_id, _emailAtual, _planoAtual);
+      mostrarStep('step-pix');
+      setPixStatus('waiting', '⏳ Pagamento em análise pelo banco...');
+      document.getElementById('pix-qr').style.display = 'none';
+      document.getElementById('pix-code-wrap').style.display = 'none';
+      document.getElementById('pix-ticket').style.display = 'none';
+    } else {
+      throw new Error(data.mensagem || 'Pagamento recusado pelo banco');
+    }
+  } catch(e) {
+    mostrarToast('❌ ' + e.message);
     btn.innerHTML = originalHtml;
     btn.disabled = false;
   }
+}
+
+// Formatar número do cartão com espaços
+function formatarCartao(input) {
+  let v = input.value.replace(/\D/g,'').slice(0,16);
+  input.value = v.replace(/(\d{4})(?=\d)/g,'$1 ');
+}
+
+function formatarValidade(input) {
+  let v = input.value.replace(/\D/g,'').slice(0,4);
+  if (v.length >= 2) v = v.slice(0,2) + '/' + v.slice(2);
+  input.value = v;
+}
+
+function formatarCPF(input) {
+  let v = input.value.replace(/\D/g,'').slice(0,11);
+  input.value = v.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4')
+                 .replace(/(\d{3})(\d{3})(\d{1,3})/, '$1.$2.$3')
+                 .replace(/(\d{3})(\d{1,3})/, '$1.$2');
 }
 
 // ── EXIBIR PIX ────────────────────────────────────────────────────────────────
