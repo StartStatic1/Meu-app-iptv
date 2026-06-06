@@ -70,7 +70,7 @@ async function enviarEmailBoasVindas(email, senha, plano) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'StreamFlix <noreply@streamflixofc.com>',
+        from: 'StreamFlix <noreply@cinemega.online>',
         to: [email],
         subject: '🎉 Seu acesso VIP StreamFlix está pronto!',
         html: htmlEmail,
