@@ -41,7 +41,7 @@
             <input type="password" id="vipSenha" placeholder="Sua Senha" style="width:100%; padding:15px; margin-bottom:20px; border-radius:8px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.5); color:#fff; outline:none;">
             <button onclick="event.stopPropagation(); fazerLoginVip()" style="width:100%; padding:15px; border-radius:8px; background:gold; color:#000; font-weight:900; font-size:15px; border:none; margin-bottom:15px; cursor:pointer; text-transform:uppercase;" id="btnLoginBtn">Entrar na Conta VIP</button>
             <p id="vipMsg" style="color:#ff3d00; font-size:12px; margin-bottom:15px; display:none; font-weight:bold;"></p>
-            <a href="https://t.me/streamflixofc" target="_blank" style="color:var(--accent); font-size:12px; text-decoration:none; display:block; margin-top:5px;">Comprar VIP no Telegram</a>
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;"><a href="https://t.me/streamflixofc" target="_blank" style="color:var(--accent); font-size:12px; text-decoration:none;">Comprar VIP no Telegram</a><a onclick="abrirRecuperarSenha()" style="color:#666; font-size:11px; text-decoration:none; cursor:pointer;">Esqueci minha senha</a></div>
         </div>
     </div>
 
@@ -376,6 +376,40 @@
                 <div style="text-align:center;">
                     <a onclick="fecharModalPagamento();abrirModalVip();" style="color:#555;font-size:11px;cursor:pointer;">Já tenho conta VIP → Entrar</a>
                 </div>
+            </div>
+
+            <!-- STEP 3: SUCESSO — exibido após pagamento aprovado -->
+            <div id="step-sucesso" style="display:none; text-align:center;">
+                <div style="margin-bottom:20px;">
+                    <div style="width:64px;height:64px;background:rgba(0,230,118,0.15);border:2px solid #00e676;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 14px;">
+                        <i class="fas fa-check" style="color:#00e676;font-size:26px;"></i>
+                    </div>
+                    <h3 style="color:#fff;font-weight:900;font-size:18px;margin:0 0 4px;">VIP Ativado! 🎉</h3>
+                    <p id="sucesso-plano" style="color:#aaa;font-size:12px;margin:0;"></p>
+                </div>
+
+                <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:16px;margin-bottom:16px;text-align:left;">
+                    <p style="color:#6b7280;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px;">E-mail de acesso</p>
+                    <p id="sucesso-email" style="color:#fff;font-weight:700;font-size:14px;margin:0 0 14px;word-break:break-all;"></p>
+                    <p style="color:#6b7280;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 6px;">Sua senha</p>
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <span id="sucesso-senha" style="color:#00e5ff;font-size:22px;font-weight:900;letter-spacing:4px;flex:1;"></span>
+                        <button onclick="copiarSenhaVip()" style="background:linear-gradient(135deg,#00c853,#00e676);color:#000;border:none;border-radius:8px;padding:8px 14px;font-weight:900;font-size:12px;cursor:pointer;flex-shrink:0;">
+                            <i class="fas fa-copy"></i> Copiar
+                        </button>
+                    </div>
+                </div>
+
+                <div style="background:rgba(229,9,20,0.08);border:1px solid rgba(229,9,20,0.2);border-radius:10px;padding:12px;margin-bottom:18px;">
+                    <p style="color:#ff8a80;font-size:11px;margin:0;line-height:1.5;">
+                        <i class="fas fa-exclamation-triangle" style="margin-right:5px;"></i>
+                        <strong>Guarde esta senha!</strong> Um e-mail também foi enviado para você. Se trocar de celular, precisará dela para recuperar o acesso.
+                    </p>
+                </div>
+
+                <button onclick="concluirAtivacao()" style="width:100%;padding:15px;background:linear-gradient(135deg,#e50914,#b00610);color:#fff;border:none;border-radius:10px;font-weight:900;font-size:14px;cursor:pointer;">
+                    <i class="fas fa-play"></i> Começar a Assistir
+                </button>
             </div>
 
             <!-- STEP 2: PIX -->
