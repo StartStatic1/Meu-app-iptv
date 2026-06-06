@@ -1,10 +1,14 @@
-// ===================== SISTEMA DE PAGAMENTO STREAMFLIX v2 =====================
-// Trial 3 dias → tela de planos → email → PIX → polling → VIP automático no Supabase
+// ===================== SISTEMA DE PAGAMENTO STREAMFLIX v3 =====================
+// Correções aplicadas:
+//   1. Bug polling duplo → guard por payment_id
+//   2. Modal de senha pós-pagamento (não mais toast de 3s)
+//   3. Trial configurável (TRIAL_HORAS)
+//   4. Envio de email via api/pagamento (server-side)
 
-const TRIAL_DIAS = 3;
-const TRIAL_KEY  = 'sf_trial_v2';
-const PAG_KEY    = 'sf_pag_v2';
-const VIP_CACHE  = 'sf_vip_cache'; // { email, senha, expira_em, plano }
+const TRIAL_HORAS = 72;          // ← mude para 1 para testar bloqueio em 1 hora
+const TRIAL_KEY   = 'sf_trial_v2';
+const PAG_KEY     = 'sf_pag_v2';
+const VIP_CACHE   = 'sf_vip_cache';
 
 // ── TRIAL ─────────────────────────────────────────────────────────────────────
 function iniciarTrial() {
@@ -18,18 +22,23 @@ function trialExpirou() {
   if (isVipLocal()) return false;
   const t = _getJson(TRIAL_KEY);
   if (!t?.inicio) return false;
-  return (Date.now() - t.inicio) / 86400000 >= TRIAL_DIAS;
+  const horasPassadas = (Date.now() - t.inicio) / 3600000;
+  return horasPassadas >= TRIAL_HORAS;
 }
 
-// ── VIP LOCAL (cache Supabase) ────────────────────────────────────────────────
+function horasRestantesTrial() {
+  const t = _getJson(TRIAL_KEY);
+  if (!t?.inicio) return TRIAL_HORAS;
+  const passadas = (Date.now() - t.inicio) / 3600000;
+  return Math.max(0, TRIAL_HORAS - passadas);
+}
+
+// ── VIP LOCAL ─────────────────────────────────────────────────────────────────
 function isVipLocal() {
-  // Mantém compatibilidade com sistema antigo
   if (localStorage.getItem('streamflix_vip') === 'true') return true;
   const c = _getJson(VIP_CACHE);
   if (!c) return false;
-  // Vitalício: expira_em null
-  if (!c.expira_em) return true;
-  // Mensal: verifica data
+  if (!c.expira_em) return true; // vitalício
   return new Date(c.expira_em) > new Date();
 }
 
@@ -37,7 +46,7 @@ function getVipCache() { return _getJson(VIP_CACHE); }
 
 function salvarVipCache(data) {
   localStorage.setItem(VIP_CACHE, JSON.stringify(data));
-  localStorage.setItem('streamflix_vip', 'true'); // compatibilidade
+  localStorage.setItem('streamflix_vip', 'true');
 }
 
 function limparVipCache() {
@@ -45,11 +54,10 @@ function limparVipCache() {
   localStorage.removeItem('streamflix_vip');
 }
 
-// ── VERIFICAÇÃO NO SUPABASE (ao abrir o app) ──────────────────────────────────
+// ── VERIFICAÇÃO ONLINE (ao abrir o app) ───────────────────────────────────────
 async function verificarVipOnline() {
   const cache = getVipCache();
   if (!cache?.email || !cache?.senha) return;
-
   try {
     const supa = getSupabase();
     const { data } = await supa
@@ -60,65 +68,102 @@ async function verificarVipOnline() {
       .single();
 
     if (!data || data.status !== 'VIP') {
-      // Removido manualmente por você no Supabase
-      limparVipCache();
-      location.reload();
-      return;
+      limparVipCache(); location.reload(); return;
     }
-
-    // Verifica expiração
     if (data.expira_em && new Date(data.expira_em) < new Date()) {
-      // Plano expirado → remove VIP local, mantém email/senha para renovar
       localStorage.removeItem('streamflix_vip');
-      localStorage.setItem(VIP_CACHE, JSON.stringify({
-        ...cache,
-        expira_em: data.expira_em,
-        expirado: true,
-      }));
+      localStorage.setItem(VIP_CACHE, JSON.stringify({ ...cache, expira_em: data.expira_em, expirado: true }));
       mostrarToast('Seu plano expirou. Renove para continuar!');
       setTimeout(() => abrirModalPagamento(true), 1500);
       return;
     }
-
-    // Atualiza cache com dados frescos do servidor
     salvarVipCache({ ...cache, expira_em: data.expira_em, plano: data.plano });
-
-  } catch(e) { /* falha silenciosa — usa cache local */ }
+  } catch(e) { /* falha silenciosa */ }
 }
 
-// ── VERIFICAÇÃO GERAL (chamada no initApp) ────────────────────────────────────
+// ── VERIFICAÇÃO GERAL ─────────────────────────────────────────────────────────
 async function verificarPagamentoOuTrial() {
   iniciarTrial();
 
-  // Retoma polling se tinha pagamento pendente
+  // Retoma polling pendente — mas apenas se não tiver polling já ativo
   const pend = _getJson(PAG_KEY);
-  if (pend?.payment_id) {
+  if (pend?.payment_id && !_pollingId) {
     iniciarPolling(pend.payment_id, pend.email, pend.plano);
   }
 
-  // Verifica VIP online em background
   if (isVipLocal()) {
     verificarVipOnline();
+    mostrarBannerTrialOuVip();
     return;
   }
 
-  // Trial expirou → bloqueia
+  mostrarBannerTrialOuVip();
+
   if (trialExpirou()) {
     setTimeout(() => abrirModalPagamento(true), 800);
   }
 }
 
+// ── BANNER DE TRIAL NO TOPO ───────────────────────────────────────────────────
+function mostrarBannerTrialOuVip() {
+  // Remove banner existente
+  const old = document.getElementById('trial-banner');
+  if (old) old.remove();
+
+  if (isVipLocal()) {
+    // Mostra badge VIP no menu
+    const cache = getVipCache();
+    const menuStatus = document.getElementById('menuVipStatus');
+    if (menuStatus && cache) {
+      const planoLabel = cache.plano === 'vitalicio'
+        ? '♾️ VIP Vitalício'
+        : `👑 VIP — expira em ${_diasRestantes(cache.expira_em)} dias`;
+      menuStatus.innerHTML = `<i class="fas fa-crown" style="color:gold"></i> ${planoLabel}`;
+    }
+    return;
+  }
+
+  // Calcula horas restantes
+  const horas = horasRestantesTrial();
+  if (horas <= 0) return; // já expirou, modal vai abrir
+
+  const banner = document.createElement('div');
+  banner.id = 'trial-banner';
+  const horasInt = Math.floor(horas);
+  const minutos  = Math.floor((horas - horasInt) * 60);
+  const tempoStr = horasInt > 0 ? `${horasInt}h${minutos > 0 ? minutos + 'min' : ''}` : `${minutos}min`;
+
+  banner.style.cssText = `
+    position: fixed; top: 0; left: 0; right: 0; z-index: 3000;
+    background: linear-gradient(90deg, #e50914, #ff5722);
+    color: #fff; text-align: center;
+    padding: 7px 12px; font-size: 12px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    box-shadow: 0 2px 10px rgba(229,9,20,0.5);
+  `;
+  banner.innerHTML = `
+    <span>⏰ Acesso grátis: <strong>${tempoStr} restantes</strong></span>
+    <button onclick="abrirModalPagamento(true); event.stopPropagation();"
+      style="background:#fff;color:#e50914;border:none;border-radius:20px;
+             padding:4px 12px;font-size:11px;font-weight:900;cursor:pointer;flex-shrink:0;">
+      Assinar VIP
+    </button>
+  `;
+
+  // Empurra o header para baixo
+  document.body.prepend(banner);
+  const header = document.getElementById('mainHeader');
+  if (header) header.style.top = '36px';
+}
+
 // ── MODAL DE PAGAMENTO ────────────────────────────────────────────────────────
 function abrirModalPagamento(forcar = false) {
   if (isVipLocal() && !_getJson(VIP_CACHE)?.expirado) return;
-
-  // Pré-preenche email se já tem conta
   const cache = getVipCache();
   if (cache?.email) {
     const emailInput = document.getElementById('pag-email');
     if (emailInput) emailInput.value = cache.email;
   }
-
   mostrarStep('step-planos');
   const modal = document.getElementById('pagamentoModal');
   if (modal) { modal.style.display = 'flex'; addNoScroll(); }
@@ -141,13 +186,13 @@ function _fecharModal(fromPS = false) {
 }
 
 function mostrarStep(stepId) {
-  ['step-planos','step-pix'].forEach(id => {
+  ['step-planos', 'step-pix', 'step-sucesso'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.style.display = id === stepId ? 'block' : 'none';
   });
 }
 
-// ── SELECIONAR PLANO + VALIDAR EMAIL ─────────────────────────────────────────
+// ── SELECIONAR PLANO ──────────────────────────────────────────────────────────
 let _emailAtual = '';
 let _planoAtual = '';
 
@@ -192,9 +237,7 @@ async function selecionarPlano(plano) {
 // ── EXIBIR PIX ────────────────────────────────────────────────────────────────
 function exibirPix(data) {
   mostrarStep('step-pix');
-
   document.getElementById('pix-titulo').innerText = data.titulo;
-
   if (data.qr_base64) {
     document.getElementById('pix-qr').src = 'data:image/png;base64,' + data.qr_base64;
     document.getElementById('pix-qr').style.display = 'block';
@@ -208,7 +251,6 @@ function exibirPix(data) {
     a.href = data.ticket_url;
     a.style.display = 'inline-flex';
   }
-
   setPixStatus('waiting', '⏳ Aguardando pagamento...');
 }
 
@@ -228,38 +270,41 @@ function copiarPix() {
 }
 
 function voltarPlanos() {
-  if (_pollingId) { clearInterval(_pollingId); _pollingId = null; }
+  if (_pollingId) { clearInterval(_pollingId); _pollingId = null; _currentPaymentId = null; }
   localStorage.removeItem(PAG_KEY);
   mostrarStep('step-planos');
 }
 
-// ── POLLING ───────────────────────────────────────────────────────────────────
-let _pollingId   = null;
-let _tentativas  = 0;
+// ── POLLING — CORRIGIDO (guard por payment_id) ────────────────────────────────
+let _pollingId        = null;
+let _currentPaymentId = null; // ← FIX: evita polling duplo
+let _tentativas       = 0;
 
 function iniciarPolling(paymentId, email, plano) {
+  // FIX: se já tem polling para este mesmo payment_id, não duplica
+  if (_pollingId && _currentPaymentId === paymentId) return;
+
   if (_pollingId) clearInterval(_pollingId);
+  _currentPaymentId = paymentId;
   _tentativas = 0;
 
   _pollingId = setInterval(async () => {
     _tentativas++;
     if (_tentativas > 72) { // 6 minutos
-      clearInterval(_pollingId); _pollingId = null;
+      clearInterval(_pollingId); _pollingId = null; _currentPaymentId = null;
       setPixStatus('err', '⏰ Tempo esgotado. Gere um novo PIX.');
       localStorage.removeItem(PAG_KEY);
       return;
     }
-
     try {
       const res = await fetch(`/api/pagamento?action=verificar&payment_id=${paymentId}&email=${encodeURIComponent(email)}&plano=${plano}`);
       const data = await res.json();
-
       if (data.aprovado) {
-        clearInterval(_pollingId); _pollingId = null;
+        clearInterval(_pollingId); _pollingId = null; _currentPaymentId = null;
         localStorage.removeItem(PAG_KEY);
         onAprovado(data);
       } else if (data.status === 'rejected' || data.status === 'cancelled') {
-        clearInterval(_pollingId); _pollingId = null;
+        clearInterval(_pollingId); _pollingId = null; _currentPaymentId = null;
         localStorage.removeItem(PAG_KEY);
         setPixStatus('err', '❌ Pagamento recusado. Tente novamente.');
       }
@@ -267,11 +312,10 @@ function iniciarPolling(paymentId, email, plano) {
   }, 5000);
 }
 
-// ── APROVADO → ATIVA VIP ──────────────────────────────────────────────────────
+// ── APROVADO → MODAL DE SUCESSO (não mais toast de 3s) ───────────────────────
 function onAprovado(data) {
   setPixStatus('ok', '✅ Pagamento confirmado! Ativando acesso...');
 
-  // Salva credenciais localmente
   salvarVipCache({
     email:     data.email,
     senha:     data.senha,
@@ -280,23 +324,68 @@ function onAprovado(data) {
     criado:    data.criado,
   });
 
-  const msg = data.criado
-    ? `🎉 VIP ativado! Sua senha de acesso: ${data.senha}`
-    : '🎉 Plano renovado com sucesso!';
-
+  // Pequena pausa para o usuário ver o status, depois exibe tela de sucesso
   setTimeout(() => {
-    _fecharModal();
-    mostrarToast(msg);
-    // Remove ads
-    document.querySelectorAll('script').forEach(s => {
-      if (['5gvci.com','al5sm.com','tag.min.js','omg10.com'].some(d => s.src.includes(d))) s.remove();
-    });
-    setTimeout(() => location.reload(), 2000);
-  }, 1200);
+    mostrarStep('step-sucesso');
+    _preencherTelaSuccesso(data);
+  }, 1000);
+}
+
+function _preencherTelaSuccesso(data) {
+  const elEmail = document.getElementById('sucesso-email');
+  const elSenha = document.getElementById('sucesso-senha');
+  const elPlano = document.getElementById('sucesso-plano');
+  if (elEmail) elEmail.innerText = data.email;
+  if (elSenha) elSenha.innerText = data.senha;
+  if (elPlano) {
+    elPlano.innerText = _planoAtual === 'vitalicio'
+      ? '♾️ Plano Vitalício — nunca expira'
+      : '📅 Plano Mensal — válido por 30 dias';
+  }
+}
+
+function copiarSenhaVip() {
+  const senha = document.getElementById('sucesso-senha')?.innerText;
+  if (!senha) return;
+  navigator.clipboard.writeText(senha)
+    .then(() => mostrarToast('✅ Senha copiada!'))
+    .catch(() => mostrarToast('Senha: ' + senha));
+}
+
+function concluirAtivacao() {
+  _fecharModal();
+  document.querySelectorAll('script').forEach(s => {
+    if (['5gvci.com','al5sm.com','tag.min.js','omg10.com'].some(d => s.src.includes(d))) s.remove();
+  });
+  // Remove banner de trial
+  const banner = document.getElementById('trial-banner');
+  if (banner) banner.remove();
+  const header = document.getElementById('mainHeader');
+  if (header) header.style.top = '';
+  setTimeout(() => location.reload(), 500);
+}
+
+// ── RECUPERAR SENHA ───────────────────────────────────────────────────────────
+function abrirRecuperarSenha() {
+  const email = document.getElementById('vipEmail')?.value?.trim();
+  const msg = document.getElementById('vipMsg');
+  if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (msg) { msg.innerText = 'Digite seu e-mail primeiro.'; msg.style.display = 'block'; }
+    return;
+  }
+  // Redireciona para Telegram com mensagem pré-preenchida
+  const texto = encodeURIComponent(`Olá! Preciso recuperar minha senha StreamFlix. E-mail: ${email}`);
+  window.open(`https://t.me/streamflixofc?text=${texto}`, '_blank');
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────
 function _getJson(key) { try { return JSON.parse(localStorage.getItem(key)); } catch(e) { return null; } }
+
+function _diasRestantes(expira_em) {
+  if (!expira_em) return '∞';
+  const diff = new Date(expira_em) - new Date();
+  return Math.max(0, Math.ceil(diff / 86400000));
+}
 
 // Expõe para popstate no app.js
 window._fecharModalPagamento = (fromPS) => _fecharModal(fromPS);
