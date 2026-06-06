@@ -104,30 +104,39 @@ async function fazerLoginVip() {
     finally { btn.innerText = "Entrar na Conta VIP"; btn.disabled = false; }
 }
 function verificarStatusVip() {
-    const btnVip = document.getElementById('btnOpenVip');
-    if(btnVip) btnVip.style.display = isVip() ? 'none' : 'block';
     const menuVipStatus = document.getElementById('menuVipStatus');
     if(menuVipStatus) {
         menuVipStatus.innerHTML = isVip()
             ? '<i class="fas fa-crown" style="color:gold"></i> VIP Ativo'
             : '<i class="fas fa-gem" style="color:var(--accent)"></i> Gratuito';
     }
-    // Botão "Assinar" no header
-    let btnAssinar = document.getElementById('btnHeaderAssinar');
-    if (!isVip()) {
-        if (!btnAssinar) {
-            btnAssinar = document.createElement('button');
-            btnAssinar.id = 'btnHeaderAssinar';
-            btnAssinar.onclick = () => abrirModalPagamento(true);
-            btnAssinar.style.cssText = 'background:linear-gradient(90deg,#e50914,#b00610);color:#fff;border:none;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:900;cursor:pointer;letter-spacing:0.5px;margin-left:8px;';
-            btnAssinar.innerHTML = '<i class="fas fa-crown" style="color:gold;margin-right:4px;"></i>Assinar';
-            const header = document.getElementById('mainHeader');
-            if (header) header.appendChild(btnAssinar);
-        }
-        btnAssinar.style.display = 'inline-flex';
-        btnAssinar.style.alignItems = 'center';
-    } else if (btnAssinar) {
-        btnAssinar.style.display = 'none';
+
+    // Esconde o ícone de coroa antigo (evita duplicação confusa)
+    const btnVip = document.getElementById('btnOpenVip');
+    if(btnVip) btnVip.style.display = 'none';
+
+    // Botão único inteligente no header
+    let btnHeader = document.getElementById('btnHeaderAssinar');
+    if (!btnHeader) {
+        btnHeader = document.createElement('button');
+        btnHeader.id = 'btnHeaderAssinar';
+        btnHeader.style.cssText = 'border:none;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:900;cursor:pointer;letter-spacing:0.5px;margin-left:8px;display:inline-flex;align-items:center;gap:4px;';
+        const header = document.getElementById('mainHeader');
+        if (header) header.appendChild(btnHeader);
+    }
+
+    if (isVip()) {
+        // VIP: botão dourado que abre gerenciar conta
+        btnHeader.style.background = 'linear-gradient(90deg,#b8860b,#ffd700)';
+        btnHeader.style.color = '#000';
+        btnHeader.innerHTML = '<i class="fas fa-crown" style="color:#000;"></i> VIP';
+        btnHeader.onclick = () => abrirModalVip();
+    } else {
+        // Não-VIP: botão vermelho que abre pagamento
+        btnHeader.style.background = 'linear-gradient(90deg,#e50914,#b00610)';
+        btnHeader.style.color = '#fff';
+        btnHeader.innerHTML = '<i class="fas fa-crown" style="color:gold;"></i> Assinar';
+        btnHeader.onclick = () => abrirModalPagamento(true);
     }
 }
 

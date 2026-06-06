@@ -142,7 +142,7 @@ function mostrarBannerTrialOuVip() {
     box-shadow: 0 2px 10px rgba(229,9,20,0.5);
   `;
   banner.innerHTML = `
-    <span>⏰ Acesso grátis: <strong>${tempoStr} restantes</strong></span>
+    <span id="trial-tempo">⏰ Acesso grátis: <strong>${tempoStr} restantes</strong></span>
     <button onclick="abrirModalPagamento(true); event.stopPropagation();"
       style="background:#fff;color:#e50914;border:none;border-radius:20px;
              padding:4px 12px;font-size:11px;font-weight:900;cursor:pointer;flex-shrink:0;">
@@ -154,6 +154,19 @@ function mostrarBannerTrialOuVip() {
   document.body.prepend(banner);
   const header = document.getElementById('mainHeader');
   if (header) header.style.top = '36px';
+
+  // ✅ Atualiza o tempo restante a cada minuto em tempo real
+  if (window._trialBannerInterval) clearInterval(window._trialBannerInterval);
+  window._trialBannerInterval = setInterval(() => {
+    const elTempo = document.getElementById('trial-tempo');
+    if (!elTempo) { clearInterval(window._trialBannerInterval); return; }
+    const h = horasRestantesTrial();
+    if (h <= 0) { clearInterval(window._trialBannerInterval); mostrarBannerTrialOuVip(); return; }
+    const hInt = Math.floor(h);
+    const min  = Math.floor((h - hInt) * 60);
+    const str  = hInt > 0 ? `${hInt}h${min > 0 ? min + 'min' : ''}` : `${min}min`;
+    elTempo.innerHTML = `⏰ Acesso grátis: <strong>${str} restantes</strong>`;
+  }, 60000); // atualiza a cada 1 minuto
 }
 
 // ── MODAL DE PAGAMENTO ────────────────────────────────────────────────────────
@@ -354,15 +367,26 @@ function copiarSenhaVip() {
 
 function concluirAtivacao() {
   _fecharModal();
+
+  // Remove scripts de anúncios
   document.querySelectorAll('script').forEach(s => {
     if (['5gvci.com','al5sm.com','tag.min.js','omg10.com'].some(d => s.src.includes(d))) s.remove();
   });
+
   // Remove banner de trial
   const banner = document.getElementById('trial-banner');
   if (banner) banner.remove();
   const header = document.getElementById('mainHeader');
   if (header) header.style.top = '';
-  setTimeout(() => location.reload(), 500);
+
+  // ✅ LOGIN AUTOMÁTICO: ativa VIP direto sem pedir senha manual
+  if (typeof desativarTodosAds === 'function') {
+    desativarTodosAds();
+  } else {
+    // Fallback: garante que o localStorage está marcado e recarrega
+    localStorage.setItem('streamflix_vip', 'true');
+    setTimeout(() => location.reload(), 500);
+  }
 }
 
 // ── RECUPERAR SENHA ───────────────────────────────────────────────────────────
