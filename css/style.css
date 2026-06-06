@@ -24,10 +24,17 @@ img {
     pointer-events: none;
 }
 
-input, textarea, select { 
-    -webkit-user-select: text; 
-    user-select: text; 
-    -webkit-touch-callout: default; 
+input, textarea, select, [contenteditable] { 
+    -webkit-user-select: text !important; 
+    user-select: text !important; 
+    -webkit-touch-callout: default !important; 
+}
+
+/* Senha exibida na tela de sucesso também pode ser selecionada/copiada */
+#sucesso-senha {
+    -webkit-user-select: text !important;
+    user-select: text !important;
+    cursor: text;
 }
 
 body { 
