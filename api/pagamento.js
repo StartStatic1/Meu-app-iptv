@@ -216,10 +216,8 @@ export default async function handler(req, res) {
       if (mpData.status === 'approved') {
         const { senha, criado } = await supabaseUpsertVip(email, plano);
 
-        // Envia email de boas-vindas apenas para contas novas
-        if (criado) {
-          await enviarEmailBoasVindas(email, senha, plano);
-        }
+        // Envia email SEMPRE (reenvio para clientes existentes também)
+        await enviarEmailBoasVindas(email, senha, plano);
 
         return res.status(200).json({
           aprovado: true,
@@ -233,6 +231,103 @@ export default async function handler(req, res) {
         aprovado: false,
         status: mpData.status,
       });
+
+    } catch(e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
+  // ── CARTÃO DE CRÉDITO ──────────────────────────────────────────────────────
+  if (action === 'criar_cartao') {
+    if (req.method !== 'POST') return res.status(405).json({ error: 'Use POST' });
+
+    let body;
+    try { body = typeof req.body === 'string' ? JSON.parse(req.body) : req.body; }
+    catch(e) { return res.status(400).json({ error: 'Body inválido' }); }
+
+    const { email, plano, card_number, cardholder_name, expiration_month, expiration_year, security_code, cpf } = body || {};
+    if (!email || !plano || !PLANOS[plano] || !card_number || !cardholder_name) {
+      return res.status(400).json({ error: 'Dados do cartão incompletos' });
+    }
+
+    const p = PLANOS[plano];
+
+    try {
+      // Tokenizar cartão no Mercado Pago
+      const tokenRes = await fetch('https://api.mercadopago.com/v1/card_tokens', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${MP_TOKEN}`,
+        },
+        body: JSON.stringify({
+          card_number,
+          cardholder: {
+            name: cardholder_name,
+            identification: { type: 'CPF', number: cpf || '00000000000' },
+          },
+          expiration_month: parseInt(expiration_month),
+          expiration_year:  parseInt(expiration_year),
+          security_code,
+        }),
+      });
+      const tokenData = await tokenRes.json();
+      if (!tokenRes.ok || !tokenData.id) {
+        return res.status(400).json({ error: tokenData.message || 'Cartão inválido ou recusado' });
+      }
+
+      // Detectar bandeira
+      const bin = card_number.replace(/\s/g,'').slice(0,6);
+      let payment_method_id = 'visa'; // fallback
+      if (/^5[1-5]/.test(bin) || /^2[2-7]/.test(bin)) payment_method_id = 'master';
+      else if (/^3[47]/.test(bin)) payment_method_id = 'amex';
+      else if (/^6011|65|64[4-9]/.test(bin)) payment_method_id = 'elo';
+      else if (/^4/.test(bin)) payment_method_id = 'visa';
+
+      // Processar pagamento
+      const mpRes = await fetch('https://api.mercadopago.com/v1/payments', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${MP_TOKEN}`,
+          'X-Idempotency-Key': `sf-card-${plano}-${email}-${Date.now()}`,
+        },
+        body: JSON.stringify({
+          transaction_amount: p.valor,
+          description: p.titulo,
+          payment_method_id,
+          token: tokenData.id,
+          installments: 1,
+          payer: {
+            email,
+            identification: { type: 'CPF', number: cpf || '00000000000' },
+          },
+        }),
+      });
+      const mpData = await mpRes.json();
+
+      if (mpData.status === 'approved') {
+        const { senha, criado } = await supabaseUpsertVip(email, plano);
+        await enviarEmailBoasVindas(email, senha, plano);
+        return res.status(200).json({ aprovado: true, email, senha, criado, payment_id: mpData.id });
+      }
+
+      if (mpData.status === 'in_process' || mpData.status === 'pending') {
+        return res.status(200).json({ aprovado: false, status: 'in_process', payment_id: mpData.id });
+      }
+
+      // Recusado
+      const motivo = {
+        'cc_rejected_insufficient_amount': 'Saldo insuficiente no cartão',
+        'cc_rejected_bad_filled_card_number': 'Número do cartão incorreto',
+        'cc_rejected_bad_filled_date': 'Data de validade incorreta',
+        'cc_rejected_bad_filled_security_code': 'CVV incorreto',
+        'cc_rejected_blacklist': 'Cartão bloqueado. Use outro cartão',
+        'cc_rejected_call_for_authorize': 'Ligue para o banco para autorizar',
+        'cc_rejected_duplicated_payment': 'Pagamento duplicado detectado',
+      }[mpData.status_detail] || 'Pagamento recusado pelo banco. Tente outro cartão.';
+
+      return res.status(200).json({ aprovado: false, status: 'rejected', mensagem: motivo });
 
     } catch(e) {
       return res.status(500).json({ error: e.message });
