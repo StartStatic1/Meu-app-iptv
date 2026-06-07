@@ -66,11 +66,45 @@ function isVip() {
     return localStorage.getItem('streamflix_vip') === 'true';
 }
 // ─── AVATARES DISPONÍVEIS ────────────────────────────────────────────────────
-const AVATARES = ['🎬','🍿','🎭','🦁','🐺','🦊','🐸','🐼','🎃','⚡','🔥','🌊','🌙','🌟','💎','🎮','🎯','🚀','🎧','🎵','🏆','👾','🤖','🦸','🧙'];
-const AVATAR_KEY = 'sf_avatar';
+// Avatares — personagens icônicos de anime e filmes
+const AVATAR_ESTILOS = [
+    // Anime
+    { id: 'av1',  label: 'Naruto',        url: 'https://image.tmdb.org/t/p/w185/xozAWwWbGVKBXV73qmMWxGGgqBc.jpg' },
+    { id: 'av2',  label: 'Goku',          url: 'https://image.tmdb.org/t/p/w185/unMMIT60To8d0lFdJMKf8WnE7iK.jpg' },
+    { id: 'av3',  label: 'Luffy',         url: 'https://image.tmdb.org/t/p/w185/e3NBGiAifW9Xt8xD5tpARskjccO.jpg' },
+    { id: 'av4',  label: 'Eren',          url: 'https://image.tmdb.org/t/p/w185/hTP1DtLGFamjfu8WqjnuScW0Abt.jpg' },
+    { id: 'av5',  label: 'Tanjiro',       url: 'https://image.tmdb.org/t/p/w185/spCAxD99U1A6jsiePFl3GkPpW5a.jpg' },
+    { id: 'av6',  label: 'Itachi',        url: 'https://image.tmdb.org/t/p/w185/xBHvZcjRiWyobQ9kxBhO6B2dtRI.jpg' },
+    // Filmes trash / cult
+    { id: 'av7',  label: 'Coringa',       url: 'https://image.tmdb.org/t/p/w185/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg' },
+    { id: 'av8',  label: 'John Wick',     url: 'https://image.tmdb.org/t/p/w185/fZPSd91yGE9fCcCe6OoQr6E3Bev.jpg' },
+    { id: 'av9',  label: 'Deadpool',      url: 'https://image.tmdb.org/t/p/w185/Or8R15PJPJRG6nfmIGJGF7z9dCk.jpg' },
+    { id: 'av10', label: 'Mad Max',       url: 'https://image.tmdb.org/t/p/w185/8tZYtuWezp8JbcsvHYO0O46tFbo.jpg' },
+    { id: 'av11', label: 'Freddy',        url: 'https://image.tmdb.org/t/p/w185/xVzvD4lQzgIGNxVonBGjHVlGJYA.jpg' },
+    { id: 'av12', label: 'Jason',         url: 'https://image.tmdb.org/t/p/w185/rFnMnzCFrx5R5CzBU5VBjPOJzcc.jpg' },
+    // Personagens cultuados
+    { id: 'av13', label: 'Walter White',  url: 'https://image.tmdb.org/t/p/w185/rWeRBFFMFOGV0VpMCjB9pYJJ84L.jpg' },
+    { id: 'av14', label: 'Darth Vader',   url: 'https://image.tmdb.org/t/p/w185/2MB14hUAFV5iMFRGYmZ5Pn2e4rw.jpg' },
+    { id: 'av15', label: 'Tony Stark',    url: 'https://image.tmdb.org/t/p/w185/cvF0VvJDfCiGJz6IHpBcUNUv5MH.jpg' },
+    { id: 'av16', label: 'Thanos',        url: 'https://image.tmdb.org/t/p/w185/giCRQJCMsIkbHOlO0FpWcuD4X0A.jpg' },
+    // Popcorn / diversão
+    { id: 'av17', label: 'Jack Sparrow',  url: 'https://image.tmdb.org/t/p/w185/yNa18Qe7FmYfUpqKyZJf9EiqKFy.jpg' },
+    { id: 'av18', label: 'Shrek',         url: 'https://image.tmdb.org/t/p/w185/iB64vpL3dIObOtMZgX3RqdVdQDc.jpg' },
+    { id: 'av19', label: 'Pennywise',     url: 'https://image.tmdb.org/t/p/w185/wzJRB4MKi1wuBg7QKIBC5sOYNj5.jpg' },
+    { id: 'av20', label: 'Alien',         url: 'https://image.tmdb.org/t/p/w185/vfrQk5IPloGg1v9Rzbh2Eg3VGyM.jpg' },
+    // Robôs / Sci-fi
+    { id: 'av21', label: 'Terminator',    url: 'https://image.tmdb.org/t/p/w185/qvktm0BHcnmDpul4Hz01GIazWPr.jpg' },
+    { id: 'av22', label: 'Neo',           url: 'https://image.tmdb.org/t/p/w185/6ajnCLmsTHFuGfBb3qNIzW1LJRQ.jpg' },
+    { id: 'av23', label: 'Optimus',       url: 'https://image.tmdb.org/t/p/w185/nOEfzBJIQbCFKFkUiTaBzBBg47f.jpg' },
+    // Doramas / K-pop
+    { id: 'av24', label: 'Gi-hun',        url: 'https://image.tmdb.org/t/p/w185/dIWwZW7dJJtqC6CgWzYkNVKIUm8.jpg' },
+    { id: 'av25', label: 'Takeshi',       url: 'https://image.tmdb.org/t/p/w185/jPIzQT1MLTV1rJVBq8Y9lMV97VN.jpg' },
+];
+const AVATAR_KEY = 'sf_avatar_v2';
+const AVATAR_DEFAULT = AVATAR_ESTILOS[0].url;
 
-function getAvatarAtual() { return localStorage.getItem(AVATAR_KEY) || '👤'; }
-function salvarAvatar(emoji) { localStorage.setItem(AVATAR_KEY, emoji); }
+function getAvatarAtual() { return localStorage.getItem(AVATAR_KEY) || AVATAR_DEFAULT; }
+function salvarAvatar(url) { localStorage.setItem(AVATAR_KEY, url); }
 
 // ─── ABRIR MODAL VIP/PERFIL ───────────────────────────────────────────────────
 function abrirModalVip() {
@@ -108,7 +142,7 @@ function renderPerfilVip() {
 
     // Avatar
     const avatarEl = document.getElementById('perfilAvatarEmoji');
-    if (avatarEl) avatarEl.textContent = avatar;
+    if (avatarEl) avatarEl.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
 
     // Nome (email sem domínio)
     const nomeEl = document.getElementById('perfilNome');
@@ -164,9 +198,29 @@ function abrirEscolhaAvatar() {
     if (!modal) return;
     const grid = document.getElementById('avatarGrid');
     const atual = getAvatarAtual();
-    grid.innerHTML = AVATARES.map(emoji =>
-        `<div onclick="escolherAvatar('${emoji}')" style="width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;background:${emoji===atual?'rgba(0,229,255,0.15)':'rgba(255,255,255,0.05)'};border:${emoji===atual?'2px solid var(--accent)':'2px solid transparent'};transition:0.15s;">${emoji}</div>`
-    ).join('');
+    const categorias = [
+        { nome: '⚔️ Anime',          range: [0, 5] },
+        { nome: '🎬 Filmes Trash',    range: [6, 11] },
+        { nome: '🦸 Personagens',     range: [12, 16] },
+        { nome: '🍿 Diversão',        range: [17, 20] },
+        { nome: '🤖 Sci-fi',          range: [21, 24] },
+    ];
+    let html = '';
+    categorias.forEach(cat => {
+        html += `<div style="grid-column:span 4;font-size:11px;font-weight:700;color:#888;padding:6px 0 2px;letter-spacing:1px;">${cat.nome}</div>`;
+        for (let i = cat.range[0]; i <= cat.range[1]; i++) {
+            const av = AVATAR_ESTILOS[i];
+            if (!av) continue;
+            const ativo = av.url === atual;
+            html += `<div onclick="escolherAvatar('${av.url}')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;">
+                <div style="width:58px;height:58px;border-radius:50%;overflow:hidden;border:2.5px solid ${ativo?'var(--accent)':'transparent'};background:#111;transition:0.15s;">
+                    <img src="${av.url}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.parentElement.innerHTML='<div style=width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#555;font-size:20px;><i class=fas fa-user></i></div>'">
+                </div>
+                <span style="font-size:9px;color:#888;text-align:center;line-height:1.2;max-width:62px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${av.label||''}</span>
+            </div>`;
+        }
+    });
+    grid.innerHTML = html;
     modal.style.display = 'flex';
 }
 
@@ -175,19 +229,19 @@ function fecharAvatarModal() {
     if (modal) modal.style.display = 'none';
 }
 
-function escolherAvatar(emoji) {
-    salvarAvatar(emoji);
+function escolherAvatar(url) {
+    salvarAvatar(url);
     const el = document.getElementById('perfilAvatarEmoji');
-    if (el) el.textContent = emoji;
+    if (el) el.innerHTML = `<img src="${url}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
     atualizarMenuAvatar();
     fecharAvatarModal();
-    if (typeof mostrarToast === 'function') mostrarToast('Avatar atualizado! ' + emoji);
+    if (typeof mostrarToast === 'function') mostrarToast('Avatar atualizado!');
 }
 
 function atualizarMenuAvatar() {
     const avatar = getAvatarAtual();
     const menuAv = document.getElementById('menu-avatar-emoji');
-    if (menuAv) menuAv.textContent = avatar;
+    if (menuAv) menuAv.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
 }
 
 // ─── SAIR ─────────────────────────────────────────────────────────────────────
@@ -1209,12 +1263,22 @@ async function dispararPlayer(id, tipo, ext, titulo) {
     const btn = (tipo==='live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
     if(btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`; btn.disabled = true; }
     try {
+        // Canais ao vivo IPTV: usa BetterFlix player integrado (sem bloqueio CORS/HLS)
+        if(tipo==='live') {
+            const iframe = document.getElementById('embedFrame');
+            const modal = document.getElementById('embedModal');
+            iframe.removeAttribute('srcdoc');
+            iframe.src = '';
+            iframe.src = `https://betterflix.click/api/player?id=${encodeURIComponent(id)}&type=channel`;
+            modal.style.display = 'flex';
+            addNoScroll();
+            history.pushState({ view: 'embed', modal: true }, null, '');
+            return;
+        }
+
         let urlFinal = "";
         if(tipo==='vod') {
             const res = await fetch(`/api/iptv?action=get_movie_url&stream_id=${id}&extension=${ext||'mp4'}`);
-            const data = await res.json(); urlFinal = data.url;
-        } else if(tipo==='live') {
-            const res = await fetch(`/api/iptv?action=get_live_url&stream_id=${id}`);
             const data = await res.json(); urlFinal = data.url;
         } else if(tipo==='episode') {
             const res = await fetch(`/api/iptv?action=get_series_url&stream_id=${id}&extension=${ext||'mp4'}`);
@@ -1306,7 +1370,7 @@ function mudarAbaIPTV(contentId, tabEl) {
     document.getElementById(contentId).classList.add('active');
     if(contentId==='iptv-filmes'&&!iptvCarregado.filmes) carregarIPTFilmes();
     if(contentId==='iptv-series'&&!iptvCarregado.series) carregarIPTSeries();
-    if(contentId==='iptv-tv') iniciarIPTVCanais();
+    if(contentId==='iptv-tv'&&!iptvCarregado.tv) carregarIPTTV();
 }
 
 async function carregarIPTFilmes() {
