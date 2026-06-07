@@ -27,7 +27,13 @@
 
     <div class="header" id="mainHeader">
         <h1 class="header-logo">Stream<span>Flix</span></h1>
-        <i class="fas fa-crown header-btn header-vip-btn" id="btnOpenVip" onclick="abrirModalVip()"></i>
+        <div class="header-right-actions">
+            <div id="headerAvatarBtn" onclick="abrirModalVip()" class="header-avatar-btn" title="Meu perfil">
+                <img id="headerAvatarImg" src="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:none;" onerror="this.style.display='none'">
+                <i class="fas fa-user-circle" id="headerAvatarFallback" style="color:rgba(255,255,255,0.4);font-size:18px;"></i>
+            </div>
+            <i class="fas fa-crown header-btn header-vip-btn" id="btnOpenVip" onclick="abrirModalVip()"></i>
+        </div>
     </div>
 
     <div id="pushPromptModal" style="display:none; position:fixed; bottom:80px; left:5%; width:90%; background:linear-gradient(45deg, #00e5ff, #0055ff); padding:15px; border-radius:12px; z-index:4000; box-shadow:0 5px 15px rgba(0,229,255,0.4); text-align:center;">
@@ -194,37 +200,33 @@
         </div>
 
         <!-- Chips dos streamings -->
-        <div class="streaming-chips" id="streamingChips">
+                <div class="streaming-chips" id="streamingChips">
             <div class="streaming-chip active" onclick="selecionarStreaming(8,'Netflix','#e50914')" id="chip-8">
-                <img class="s-logo" src="https://image.tmdb.org/t/p/original/t2yyOv40HZeVlLjYsCsPHnWLk4W.jpg" onerror="this.style.display='none'"><span class="s-name">Netflix</span>
+                <div class="s-logo-wrap" style="background:#000;"><img class="s-logo" src="https://cdn.brandfetch.io/netflix.com/w/64/h/64/logo?c=1id_ElYkOEpYB84-oCRLgm" onerror="this.parentElement.innerHTML='<span style=color:#E50914;font-weight:900;font-size:11px;>N</span>'"></div><span class="s-name">Netflix</span>
             </div>
             <div class="streaming-chip" onclick="selecionarStreaming(337,'Disney+','#0f3fa6')" id="chip-337">
-                <img class="s-logo" src="https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vagN73kUh.jpg" onerror="this.style.display='none'"><span class="s-name">Disney+</span>
+                <div class="s-logo-wrap" style="background:#040714;"><img class="s-logo" src="https://cdn.brandfetch.io/disneyplus.com/w/64/h/64/logo?c=1id_ElYkOEpYB84-oCRLgm" onerror="this.parentElement.innerHTML='<span style=color:#0063e5;font-weight:900;font-size:9px;>D+</span>'"></div><span class="s-name">Disney+</span>
             </div>
             <div class="streaming-chip" onclick="selecionarStreaming(119,'Prime','#00a8e1')" id="chip-119">
-                <img class="s-logo" src="https://image.tmdb.org/t/p/original/68MNrwlkpF7WnmNPXLah69CR5xh.jpg" onerror="this.style.display='none'"><span class="s-name">Prime</span>
+                <div class="s-logo-wrap" style="background:#00244f;"><img class="s-logo" src="https://cdn.brandfetch.io/primevideo.com/w/64/h/64/logo?c=1id_ElYkOEpYB84-oCRLgm" onerror="this.parentElement.innerHTML='<span style=color:#00A8E1;font-weight:900;font-size:9px;>PV</span>'"></div><span class="s-name">Prime</span>
             </div>
-            <div class="streaming-chip" onclick="selecionarStreaming(384,'Max','#002be7')" id="chip-384">
-                <img class="s-logo" src="https://image.tmdb.org/t/p/original/aS2zvJWn9mwiCOeaaCkIh4wleZS.jpg" onerror="this.style.display='none'"><span class="s-name">Max</span>
+            <div class="streaming-chip" onclick="selecionarStreaming(384,'Max','#6B2FA0')" id="chip-384">
+                <div class="s-logo-wrap" style="background:#002BE7;"><img class="s-logo" src="https://cdn.brandfetch.io/max.com/w/64/h/64/logo?c=1id_ElYkOEpYB84-oCRLgm" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-weight:900;font-size:11px;>Max</span>'"></div><span class="s-name">Max</span>
             </div>
             <div class="streaming-chip" onclick="selecionarStreaming(283,'Crunchyroll','#ff5c00')" id="chip-283">
-                <img class="s-logo" src="https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg" onerror="this.style.display='none'"><span class="s-name">Crunchyroll</span>
+                <div class="s-logo-wrap" style="background:#F47521;"><img class="s-logo" src="https://cdn.brandfetch.io/crunchyroll.com/w/64/h/64/logo?c=1id_ElYkOEpYB84-oCRLgm" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-weight:900;font-size:11px;>CR</span>'"></div><span class="s-name">Crunchyroll</span>
             </div>
             <div class="streaming-chip" onclick="selecionarStreaming(531,'Paramount+','#0064ff')" id="chip-531">
-                <img class="s-logo" src="https://image.tmdb.org/t/p/original/h5DcR0J2EESLitnhR8xLG1QymTE.jpg" onerror="this.style.display='none'"><span class="s-name">Paramount+</span>
+                <div class="s-logo-wrap" style="background:#0064FF;"><img class="s-logo" src="https://cdn.brandfetch.io/paramountplus.com/w/64/h/64/logo?c=1id_ElYkOEpYB84-oCRLgm" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-weight:900;font-size:8px;>P+</span>'"></div><span class="s-name">Paramount+</span>
             </div>
             <div class="streaming-chip" onclick="selecionarStreaming(307,'Globoplay','#f24c00')" id="chip-307">
-                <img class="s-logo" src="https://image.tmdb.org/t/p/original/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg" onerror="this.style.display='none'"><span class="s-name">Globoplay</span>
+                <div class="s-logo-wrap" style="background:#F24C00;"><img class="s-logo" src="https://cdn.brandfetch.io/globoplay.com/w/64/h/64/logo?c=1id_ElYkOEpYB84-oCRLgm" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-weight:900;font-size:8px;>glo<br>bo</span>'"></div><span class="s-name">Globoplay</span>
             </div>
             <div class="streaming-chip" onclick="selecionarStreaming(350,'Apple TV+','#1c1c1e')" id="chip-350">
-                <img class="s-logo" src="https://image.tmdb.org/t/p/original/6uhKBfmtzFqOcLousHwZuzcrScK.jpg" onerror="this.style.display='none'"><span class="s-name">Apple TV+</span>
+                <div class="s-logo-wrap" style="background:#1c1c1e;"><img class="s-logo" src="https://cdn.brandfetch.io/apple.com/w/64/h/64/logo?c=1id_ElYkOEpYB84-oCRLgm" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-weight:900;font-size:8px;>TV+</span>'"></div><span class="s-name">Apple TV+</span>
             </div>
         </div>
-
-        <!-- Tipo filme/série -->
-        <div class="streaming-type-toggle">
-            <div class="streaming-type-btn active" id="stype-movie" onclick="setStreamingType('movie')">Filmes</div>
-            <div class="streaming-type-btn" id="stype-tv" onclick="setStreamingType('tv')">Séries</div>
+<div class="streaming-type-btn" id="stype-tv" onclick="setStreamingType('tv')">Séries</div>
         </div>
 
         <!-- Genre chips -->
@@ -276,14 +278,10 @@
         <div id="iptv-tv" class="iptv-content">
             <div class="search-container" style="margin: 15px auto;">
                 <i class="fas fa-search search-icon"></i>
-                <input type="text" class="search-bar" id="inputBuscaCanais" placeholder="Buscar canal ao vivo..." oninput="buscarCanalIPTV()">
+                <input type="text" class="search-bar" id="inputBuscaIPTVTV" placeholder="Buscar canal ao vivo..." oninput="pesquisarTV()">
             </div>
-            <div id="iptv-tv-cat-title" style="display:none; align-items:center; gap:10px; padding: 5px 15px 10px; cursor:pointer;" onclick="voltarCategorias()">
-                <i class="fas fa-arrow-left" style="color:var(--accent);"></i>
-                <span style="color:#fff; font-weight:700; font-size:14px;"></span>
-            </div>
-            <div id="iptv-tv-categorias"></div>
-            <div id="iptv-tv-canais" style="display:none;"></div>
+            <div id="conteudo-iptv-tv"><p class="loading-text"><i class="fas fa-spinner fa-spin"></i> A carregar canais...</p></div>
+            <div class="grid-container" id="resultados-iptv-tv" style="display:none;"></div>
         </div>
     </div>
 
@@ -323,7 +321,7 @@
             <div class="tv-cat-pill active" onclick="filtrarTVCategoria(null, this)">Todos</div>
         </div>
         <!-- Destaque canal ativo -->
-        <div id="tvDestaque" style="display:none;">
+        <div id="tvDestaque" style="display:none;" class="tv-destaque-bar">
             <div class="tv-destaque-wrap">
                 <div class="tv-destaque-logo-wrap" id="tvDestaqueLogo"></div>
                 <div class="tv-destaque-info">
@@ -420,8 +418,9 @@
         <div class="server-btn" onclick="abrirPlayerWeb('embedmovies')"><div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; EmbedMovies <span style="font-size:10px;color:#888;">(Leg/Dub)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-btn" onclick="abrirPlayerWeb('embedplayapi')"><div><i class="fas fa-play-circle" style="color:#00e676;"></i> &nbsp; EmbedPlay <span style="font-size:10px;color:#888;">(Dublado)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <div class="server-btn" onclick="abrirPlayerWeb('betterflix')"><div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; BetterFlix <span style="font-size:10px;color:#888;">(Rápido)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
-        <div class="server-btn" onclick="abrirPlayerWeb('megaembed')"><div><i class="fas fa-play-circle" style="color:#ffd600;"></i> &nbsp; MegaEmbed <span style="font-size:10px;color:#888;">(Backup)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
-        <p style="text-align:center;color:#555;font-size:10px;margin:10px 0 5px;">Se um servidor der erro 404, tente o próximo.</p>
+        <div class="server-btn" onclick="abrirPlayerWeb('vidsrc')"><div><i class="fas fa-play-circle" style="color:#00e5ff;"></i> &nbsp; VidSrc <span style="font-size:10px;color:#888;">(Legendado)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-btn" onclick="abrirPlayerWeb('videasy')"><div><i class="fas fa-play-circle" style="color:#a855f7;"></i> &nbsp; Videasy <span style="font-size:10px;color:#888;">(Próx. Ep ✓)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <p style="text-align:center;color:#555;font-size:10px;margin:10px 0 5px;">Se um servidor não carregar, tente o próximo.</p>
     </div>
 
     <!-- ========== BOTTOM SHEET TV ========== -->
