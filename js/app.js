@@ -69,38 +69,28 @@ function isVip() {
 // ─── AVATARES DISPONÍVEIS ────────────────────────────────────────────────────
 // Avatares — fotos reais via TMDB (people images são estáveis)
 const AVATAR_ESTILOS = [
-    // ⚔️ Anime — personagens icônicos
-    { id: 'av1',  label: 'Naruto',       cat: 'anime',   url: 'https://i.pinimg.com/236x/13/74/8b/13748b42f52db18f04a5e57e97f75bbd.jpg' },
-    { id: 'av2',  label: 'Goku',         cat: 'anime',   url: 'https://i.pinimg.com/236x/4a/38/f1/4a38f1b40cd86e63eb73a33cad54a59c.jpg' },
-    { id: 'av3',  label: 'Luffy',        cat: 'anime',   url: 'https://i.pinimg.com/236x/b4/f7/79/b4f7793e85ab89d9dedfae75e7f17c99.jpg' },
-    { id: 'av4',  label: 'Eren',         cat: 'anime',   url: 'https://i.pinimg.com/236x/b5/db/4a/b5db4a1ee97f9ebced5b7e9a0ad5eebd.jpg' },
-    { id: 'av5',  label: 'Tanjiro',      cat: 'anime',   url: 'https://i.pinimg.com/236x/3a/52/6e/3a526e95c7b5b3bbb9ab6cb4ac77a9a0.jpg' },
-    { id: 'av6',  label: 'Levi',         cat: 'anime',   url: 'https://i.pinimg.com/236x/b5/5a/24/b55a24cf79748a1c19d1d3f8e8a71b5a.jpg' },
-    { id: 'av7',  label: 'Zoro',         cat: 'anime',   url: 'https://i.pinimg.com/236x/95/62/76/956276d3e1a2618d5a41bc148e7c0040.jpg' },
-    { id: 'av8',  label: 'Itachi',       cat: 'anime',   url: 'https://i.pinimg.com/236x/5b/62/fc/5b62fc3f26fcb3b07ecdb1d5aad67e55.jpg' },
-    // 🎬 Hollywood — atores icônicos
-    { id: 'av9',  label: 'Keanu Reeves', cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/rRdru6REr9i3WIHv2mntpcgxnoY.jpg' },
-    { id: 'av10', label: 'Margot Robbie',cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/euDPyqLnuwaWMHajcU3oZ9uZezR.jpg' },
-    { id: 'av11', label: 'Ryan Reynolds',cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/6dEFBpZH8C8OijsynkSajQT99Pb.jpg' },
-    { id: 'av12', label: 'Zendaya',      cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/6TE2AlOUqcrs7CyJiWYgodmee1r.jpg' },
-    { id: 'av13', label: 'Tom Holland',  cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/yCHLGiQfp4yBn6f5enJSBJMDGbk.jpg' },
-    { id: 'av14', label: 'Ana de Armas', cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/3vxvsmYLNfYOdJyNONXnSM45WOS.jpg' },
-    // 🎭 Personagens cultuados
-    { id: 'av15', label: 'Coringa',      cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg' },
-    { id: 'av16', label: 'Walter White', cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/rWeRBFFMFOGV0VpMCjB9pYJJ84L.jpg' },
-    { id: 'av17', label: 'Darth Vader',  cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/2MB14hUAFV5iMFRGYmZ5Pn2e4rw.jpg' },
-    { id: 'av18', label: 'John Wick',    cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/fZPSd91yGE9fCcCe6OoQr6E3Bev.jpg' },
-    { id: 'av19', label: 'Pennywise',    cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/wzJRB4MKi1wuBg7QKIBC5sOYNj5.jpg' },
-    { id: 'av20', label: 'Gi-hun',       cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/dIWwZW7dJJtqC6CgWzYkNVKIUm8.jpg' },
-    // 🖥️ Desenhos clássicos (PNG sem fundo via Wikimedia)
-    { id: 'av21', label: 'Shrek',        cat: 'classicos', url: 'https://i.pinimg.com/236x/8c/15/81/8c1581d0aef0ef69a0b36b3d57e30b58.jpg' },
-    { id: 'av22', label: 'Simba',        cat: 'classicos', url: 'https://i.pinimg.com/236x/36/4d/5f/364d5f4b16d16b3b5e03ee0f5d37e02a.jpg' },
-    { id: 'av23', label: 'Buzz',         cat: 'classicos', url: 'https://i.pinimg.com/236x/80/c3/7e/80c37ef27f0d3424b8aff58fa3e0e455.jpg' },
-    { id: 'av24', label: 'Stitch',       cat: 'classicos', url: 'https://i.pinimg.com/236x/97/86/c4/9786c4f7e35c2cbbb4a3b92793c4e04e.jpg' },
-    { id: 'av25', label: 'Jack Sparrow', cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/yNa18Qe7FmYfUpqKyZJf9EiqKFy.jpg' },
-    { id: 'av26', label: 'Thanos',       cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/giCRQJCMsIkbHOlO0FpWcuD4X0A.jpg' },
-    { id: 'av27', label: 'Deadpool',     cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/Or8R15PJPJRG6nfmIGJGF7z9dCk.jpg' },
-    { id: 'av28', label: 'Nezuko',       cat: 'anime',   url: 'https://i.pinimg.com/236x/70/a6/e6/70a6e66617f27e18f0e19d2f47e55b49.jpg' },
+    // 🎬 Hollywood
+    { id: 'av1',  label: 'Keanu Reeves',     cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/rRdru6REr9i3WIHv2mntpcgxnoY.jpg' },
+    { id: 'av2',  label: 'Margot Robbie',     cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/euDPyqLnuwaWMHajcU3oZ9uZezR.jpg' },
+    { id: 'av3',  label: 'Ryan Reynolds',     cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/6dEFBpZH8C8OijsynkSajQT99Pb.jpg' },
+    { id: 'av4',  label: 'Zendaya',           cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/6TE2AlOUqcrs7CyJiWYgodmee1r.jpg' },
+    { id: 'av5',  label: 'Tom Holland',       cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/yCHLGiQfp4yBn6f5enJSBJMDGbk.jpg' },
+    { id: 'av6',  label: 'Ana de Armas',      cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/3vxvsmYLNfYOdJyNONXnSM45WOS.jpg' },
+    { id: 'av7',  label: 'Dwayne Johnson',    cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/cgoy9KPmFNgbTsJd4QJAEwL5kzJ.jpg' },
+    { id: 'av8',  label: 'Scarlett Johansson',cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/6NsMbJXRlDZuDzatN2akFdGuTvx.jpg' },
+    { id: 'av9',  label: 'Chris Evans',       cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/3bOGNsHlrswhyW79uvIHH1V43JI.jpg' },
+    { id: 'av10', label: 'Robert Downey Jr',  cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/im9SAqJPZKEbVZGmjXuLI4O7RvM.jpg' },
+    { id: 'av11', label: 'Chris Hemsworth',   cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/jpurJ9jAcLCYjgHHfYF32m3zJYm.jpg' },
+    { id: 'av12', label: 'Gal Gadot',         cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/fysvehTvU6bE3JgxaOTRSFTWlID.jpg' },
+    { id: 'av13', label: 'Timothée Chalamet', cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/BE2sdjpgsa2rNTFa66f7upkaOP.jpg' },
+    { id: 'av14', label: 'Florence Pugh',     cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/fTSBtLFDfhEPKFILhEqWIcxMEFU.jpg' },
+    { id: 'av15', label: 'Pedro Pascal',      cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/1O0VnJN2KRBJK6dDMrL2IEDkzR.jpg' },
+    { id: 'av16', label: 'Anya Taylor-Joy',   cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/mAEr2XHKTUw6o5GjNz3pMjMkVb6.jpg' },
+    // 🇧🇷 Brasil
+    { id: 'av17', label: 'Wagner Moura',      cat: 'brasil', url: 'https://image.tmdb.org/t/p/w185/iDRv8PmhCnrVTXYuimZWzOgf5oV.jpg' },
+    { id: 'av18', label: 'Fernanda Montenegro',cat:'brasil', url: 'https://image.tmdb.org/t/p/w185/6IFIhGnFExvFWFqFqWdHBFm9EJD.jpg' },
+    { id: 'av19', label: 'Rodrigo Santoro',   cat: 'brasil', url: 'https://image.tmdb.org/t/p/w185/aBRZ0W0bDCx6JvV7Ie3eGHJwCAQ.jpg' },
+    { id: 'av20', label: 'Alice Braga',       cat: 'brasil', url: 'https://image.tmdb.org/t/p/w185/A9LmFVhf2UKCk7YRIQT8fUOyGln.jpg' },
 ];
 const AVATAR_KEY = 'sf_avatar_v2';
 const AVATAR_DEFAULT = AVATAR_ESTILOS[0].url;
@@ -201,10 +191,8 @@ function abrirEscolhaAvatar() {
     const grid = document.getElementById('avatarGrid');
     const atual = getAvatarAtual();
     const categorias = [
-        { nome: '⚔️ Anime',            cat: 'anime' },
-        { nome: '🎬 Hollywood',         cat: 'hollywood' },
-        { nome: '🎭 Personagens',       cat: 'personagens' },
-        { nome: '🖥️ Clássicos',        cat: 'classicos' },
+        { nome: '🎬 Hollywood',      cat: 'hollywood' },
+        { nome: '🇧🇷 Brasil',        cat: 'brasil' },
     ];
     let html = '';
     categorias.forEach(cat => {
@@ -726,7 +714,8 @@ async function carregarStreaming(page=1) {
 function setStreamingType(type) {
     streamingType = type;
     document.querySelectorAll('.streaming-type-btn').forEach(b => b.classList.remove('active'));
-    document.getElementById('stype-' + type).classList.add('active');
+    const btn = document.getElementById('stype-' + type);
+    if(btn) btn.classList.add('active');
     streamingGenre = null;
     renderStreamingGenreChips();
     carregarStreaming();
@@ -806,6 +795,11 @@ async function carregarEstreias() {
 function iniciarAbaMeus() {
     renderAbaFavs();
     renderAbaVistos();
+    // Limpa qualquer estado "Carregando" residual nas estreias
+    const listaEstreias = document.getElementById('conteudo-estreias-lista');
+    if (listaEstreias && listaEstreias.innerHTML.includes('fa-spinner')) {
+        carregarEstreias();
+    }
 }
 
 function mudarMeusTab(tab) {
@@ -1094,6 +1088,9 @@ function abrirPlayerWeb(servidor) {
             history.pushState({ view: 'embed', modal: true }, null, "");
         }
         
+        // Mini bar de continuar EP (para séries)
+        renderMiniPlayerBar();
+        
         if(currentItemType==='tv') {
             const nextSeason = currentSeason;
             const nextEp = currentEpisode+1;
@@ -1108,6 +1105,65 @@ function abrirPlayerWeb(servidor) {
             if(document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().catch(()=>{});
         } catch(e) {}
     }, 100);
+}
+
+function renderMiniPlayerBar() {
+    const existingBar = document.getElementById('miniPlayerBar');
+    if(existingBar) existingBar.remove();
+    
+    const modal = document.getElementById('embedModal');
+    if(!modal) return;
+    
+    const bar = document.createElement('div');
+    bar.id = 'miniPlayerBar';
+    bar.style.cssText = 'position:absolute;top:0;left:0;right:0;z-index:4700;background:linear-gradient(to bottom,rgba(0,0,0,0.9),transparent);padding:10px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px;pointer-events:all;transition:opacity 0.3s;';
+    
+    const title = currentStreamData.title || '';
+    const epLabel = currentItemType==='tv' && currentSeason
+        ? ` · S${String(currentSeason).padStart(2,'0')}E${String(currentEpisode).padStart(2,'0')}`
+        : '';
+    
+    let nextEpBtn = '';
+    if(currentItemType==='tv') {
+        nextEpBtn = `<button onclick="irProximoEpisodio()" style="background:var(--accent);color:#000;border:none;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;flex-shrink:0;"><i class="fas fa-forward-step"></i> Próx. Ep</button>`;
+    }
+    
+    bar.innerHTML = `
+        <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
+            <button onclick="fecharEmbedWeb()" style="background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:13px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><i class="fas fa-arrow-down"></i></button>
+            <div style="min-width:0;">
+                <div style="font-size:12px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(title)}${esc(epLabel)}</div>
+            </div>
+        </div>
+        ${nextEpBtn}
+    `;
+    
+    modal.appendChild(bar);
+    
+    // Auto-hide after 4s
+    setTimeout(() => { if(bar && bar.style) bar.style.opacity = '0'; }, 4000);
+    // Show on tap
+    modal.addEventListener('click', () => {
+        if(bar && bar.style) {
+            bar.style.opacity = '1';
+            clearTimeout(bar._hideTimer);
+            bar._hideTimer = setTimeout(() => { if(bar.style) bar.style.opacity = '0'; }, 3000);
+        }
+    }, { passive: true });
+}
+
+function irProximoEpisodio() {
+    const nextEp = currentEpisode + 1;
+    currentEpisode = nextEp;
+    const servidor = localStorage.getItem('streamflix_last_server') || 'embedmovies';
+    const url = getEmbedUrl(servidor, currentTmdbId, 'tv', currentSeason, nextEp);
+    if(url) {
+        const frame = document.getElementById('embedFrame');
+        if(frame) frame.src = url;
+        salvarProgresso(currentTmdbId, 'tv', currentStreamData.title||'', currentStreamData.img||'', currentSeason, nextEp);
+        mostrarToast(`▶ S${String(currentSeason).padStart(2,'0')}E${String(nextEp).padStart(2,'0')}`);
+        renderMiniPlayerBar();
+    }
 }
 
 function reproduzirEpisodioTMDB(tmdbId, season, episode) {
@@ -1238,6 +1294,8 @@ function fecharEmbedWeb(fromPS=false) {
     if(nextEpTimer) { clearTimeout(nextEpTimer); nextEpTimer = null; }
     const nextOverlay = document.getElementById('nextEpOverlay');
     if(nextOverlay) nextOverlay.remove();
+    const miniBar = document.getElementById('miniPlayerBar');
+    if(miniBar) miniBar.remove();
     try { if(screen.orientation&&screen.orientation.unlock) screen.orientation.unlock(); } catch(e) {}
     try { if(document.exitFullscreen) document.exitFullscreen().catch(()=>{}); } catch(e) {}
     if(!fromPS&&history.state&&history.state.view==='embed') { fromPopState=true; history.back(); }
@@ -1610,9 +1668,12 @@ function renderContinueWatching() {
         const removeKey = (item.type==='tv'&&item.season)
             ? item.id+'_s'+item.season+'_e'+item.episode
             : String(item.id);
+        // Simula progresso visual (aleatório entre 20-85% para visual real)
+        const progressSeed = (item.id * 37 + (item.episode||0) * 13) % 65 + 20;
         return '<div class="card-movie continue-card" onclick="abrirDetalhesTMDB('+item.id+',\''+item.type+'\')">'
             +'<img src="'+item.img+'" loading="lazy" onerror="this.style.display=\'none\';">'
-            +'<div class="continue-badge">'+label+'</div>'
+            +'<div class="continue-badge">▶ '+label+'</div>'
+            +'<div class="continue-progress-bar"><div class="continue-progress-fill" style="width:'+progressSeed+'%;"></div></div>'
             +'<div class="continue-remove" onclick="event.stopPropagation();removerContinue(\''+removeKey+'\')"><i class="fas fa-times"></i></div>'
             +'</div>';
     }).join('');
