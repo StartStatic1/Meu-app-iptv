@@ -1,40 +1,30 @@
-// StreamFlix SW — network-first, versão anti-splash-bug
-const CACHE_NAME = 'streamflix-cache-v9';
+// StreamFlix SW — network-first, sem cache proativo que trava o install
+const CACHE_NAME = 'streamflix-cache-v8';
 
 self.addEventListener('install', (event) => {
-    self.skipWaiting(); // Ativa imediatamente, sem esperar
+    // Não cacheia nada no install — evita travamento se algum arquivo demorar
+    self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
+    // Limpa todos os caches antigos
     event.waitUntil(
-        caches.keys().then((keyList) =>
-            Promise.all(keyList.map((key) => {
-                if (key !== CACHE_NAME) return caches.delete(key);
-            }))
-        ).then(() => self.clients.claim()) // Toma controle imediato de todas as abas
+        caches.keys().then((keyList) => {
+            return Promise.all(keyList.map((key) => {
+                if (key !== CACHE_NAME) {
+                    return caches.delete(key);
+                }
+            }));
+        })
     );
+    self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
-    const url = new URL(event.request.url);
-
-    // Nunca cacheia chamadas de API
-    if (url.pathname.startsWith('/api/')) {
-        event.respondWith(fetch(event.request));
-        return;
-    }
-
-    // Network-first para tudo — garante sempre versão atualizada
+    // Sempre tenta network primeiro; só usa cache se offline
     event.respondWith(
-        fetch(event.request)
-            .then((response) => {
-                // Cacheia resposta válida
-                if (response && response.status === 200) {
-                    const cloned = response.clone();
-                    caches.open(CACHE_NAME).then(cache => cache.put(event.request, cloned));
-                }
-                return response;
-            })
-            .catch(() => caches.match(event.request)) // Offline: usa cache
+        fetch(event.request).catch(() => {
+            return caches.match(event.request);
+        })
     );
 });

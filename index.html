@@ -27,12 +27,7 @@
 
     <div class="header" id="mainHeader">
         <h1 class="header-logo">Stream<span>Flix</span></h1>
-        <div style="display:flex;align-items:center;gap:8px;">
-            <!-- Avatar na home ao lado do VIP -->
-            <div id="headerAvatarBtn" onclick="abrirModalVip()" style="width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,0.15);overflow:hidden;cursor:pointer;flex-shrink:0;background:#1a1d29;display:flex;align-items:center;justify-content:center;">
-                <img id="headerAvatarImg" src="https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix1&backgroundColor=b6e3f4" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.parentElement.innerHTML='<i class=\'fas fa-user\' style=\'color:#aaa;font-size:16px;\'></i>'">
-            </div>
-        </div>
+        <i class="fas fa-crown header-btn header-vip-btn" id="btnOpenVip" onclick="abrirModalVip()"></i>
     </div>
 
     <div id="pushPromptModal" style="display:none; position:fixed; bottom:80px; left:5%; width:90%; background:linear-gradient(45deg, #00e5ff, #0055ff); padding:15px; border-radius:12px; z-index:4000; box-shadow:0 5px 15px rgba(0,229,255,0.4); text-align:center;">
@@ -173,9 +168,6 @@
             <div class="meus-tab" id="meus-tab-estreias" onclick="mudarMeusTab('estreias')">
                 <i class="fas fa-calendar-alt"></i> Estreias
             </div>
-            <div class="meus-tab" id="meus-tab-iptv" onclick="mudarMeusTab('iptv')">
-                <i class="fas fa-satellite-dish"></i> IPTV
-            </div>
         </div>
         <div id="meus-favs" class="meus-content active">
             <div class="grid-container" id="conteudo-favs"></div>
@@ -185,43 +177,6 @@
         </div>
         <div id="meus-estreias" class="meus-content">
             <div id="conteudo-estreias-lista" style="padding: 10px 0;"><p class="loading-text" style="margin-top:30px;"><i class="fas fa-spinner fa-spin"></i> Carregando...</p></div>
-        </div>
-        <!-- Nova aba IPTV em Meus -->
-        <div id="meus-iptv" class="meus-content">
-            <div style="padding:16px;">
-                <!-- Acesso rápido IPTV -->
-                <div style="background:linear-gradient(135deg,rgba(0,229,255,0.08),rgba(0,145,234,0.05));border:1px solid rgba(0,229,255,0.15);border-radius:16px;padding:16px;margin-bottom:16px;">
-                    <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
-                        <div style="width:44px;height:44px;border-radius:12px;background:linear-gradient(135deg,#00e5ff,#0091ea);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
-                            <i class="fas fa-satellite-dish" style="color:#000;font-size:18px;"></i>
-                        </div>
-                        <div>
-                            <div style="color:#fff;font-weight:900;font-size:15px;">Modo IPTV</div>
-                            <div style="color:#888;font-size:11px;">Filmes, Séries e TV do servidor</div>
-                        </div>
-                    </div>
-                    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;">
-                        <button onclick="entrarModoIPTVAba('iptv-filmes')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;">
-                            <i class="fas fa-film" style="color:#e50914;font-size:20px;"></i>Filmes
-                        </button>
-                        <button onclick="entrarModoIPTVAba('iptv-series')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;">
-                            <i class="fas fa-tv" style="color:#b388ff;font-size:20px;"></i>Séries
-                        </button>
-                        <button onclick="entrarModoIPTVAba('iptv-tv')" style="background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:12px 8px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;">
-                            <i class="fas fa-broadcast-tower" style="color:#00e5ff;font-size:20px;"></i>TV
-                        </button>
-                    </div>
-                </div>
-                <!-- Canais favoritos IPTV -->
-                <div style="margin-bottom:12px;">
-                    <div style="color:#fff;font-weight:800;font-size:14px;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
-                        <i class="fas fa-star" style="color:gold;"></i> Canais Favoritos
-                    </div>
-                    <div id="meus-iptv-favoritos">
-                        <p style="color:#555;font-size:13px;text-align:center;padding:20px 0;">Nenhum canal favoritado ainda.<br><span style="font-size:11px;color:#444;">Vá em TV e adicione canais aos favoritos.</span></p>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -241,28 +196,28 @@
         <!-- Chips dos streamings -->
         <div class="streaming-chips" id="streamingChips">
             <div class="streaming-chip active" onclick="selecionarStreaming(8,'Netflix','#e50914')" id="chip-8">
-                <img class="s-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Netflix_2015_logo.svg/120px-Netflix_2015_logo.svg.png" onerror="this.style.display='none'"><span class="s-name">Netflix</span>
+                <img class="s-logo" src="https://image.tmdb.org/t/p/original/t2yyOv40HZeVlLjYsCsPHnWLk4W.jpg" onerror="this.style.display='none'"><span class="s-name">Netflix</span>
             </div>
             <div class="streaming-chip" onclick="selecionarStreaming(337,'Disney+','#0f3fa6')" id="chip-337">
-                <img class="s-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3e/Disney%2B_logo.svg/120px-Disney%2B_logo.svg.png" onerror="this.style.display='none'"><span class="s-name">Disney+</span>
+                <img class="s-logo" src="https://image.tmdb.org/t/p/original/7rwgEs15tFwyR9NPQ5vagN73kUh.jpg" onerror="this.style.display='none'"><span class="s-name">Disney+</span>
             </div>
             <div class="streaming-chip" onclick="selecionarStreaming(119,'Prime','#00a8e1')" id="chip-119">
-                <img class="s-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/11/Amazon_Prime_Video_logo.svg/120px-Amazon_Prime_Video_logo.svg.png" onerror="this.style.display='none'"><span class="s-name">Prime</span>
+                <img class="s-logo" src="https://image.tmdb.org/t/p/original/68MNrwlkpF7WnmNPXLah69CR5xh.jpg" onerror="this.style.display='none'"><span class="s-name">Prime</span>
             </div>
             <div class="streaming-chip" onclick="selecionarStreaming(384,'Max','#002be7')" id="chip-384">
-                <img class="s-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/1/17/HBO_Max_Logo.svg/120px-HBO_Max_Logo.svg.png" onerror="this.style.display='none'"><span class="s-name">Max</span>
+                <img class="s-logo" src="https://image.tmdb.org/t/p/original/aS2zvJWn9mwiCOeaaCkIh4wleZS.jpg" onerror="this.style.display='none'"><span class="s-name">Max</span>
             </div>
             <div class="streaming-chip" onclick="selecionarStreaming(283,'Crunchyroll','#ff5c00')" id="chip-283">
-                <img class="s-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Crunchyroll_logo.svg/120px-Crunchyroll_logo.svg.png" onerror="this.style.display='none'"><span class="s-name">Crunchyroll</span>
+                <img class="s-logo" src="https://image.tmdb.org/t/p/original/8Gt1iClBlzTeQs8WQm8UrCoIxnQ.jpg" onerror="this.style.display='none'"><span class="s-name">Crunchyroll</span>
             </div>
             <div class="streaming-chip" onclick="selecionarStreaming(531,'Paramount+','#0064ff')" id="chip-531">
-                <img class="s-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a3/Paramount_Plus_logo.svg/120px-Paramount_Plus_logo.svg.png" onerror="this.style.display='none'"><span class="s-name">Paramount+</span>
+                <img class="s-logo" src="https://image.tmdb.org/t/p/original/h5DcR0J2EESLitnhR8xLG1QymTE.jpg" onerror="this.style.display='none'"><span class="s-name">Paramount+</span>
             </div>
             <div class="streaming-chip" onclick="selecionarStreaming(307,'Globoplay','#f24c00')" id="chip-307">
-                <img class="s-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0b/Globoplay_logo_2022.svg/120px-Globoplay_logo_2022.svg.png" onerror="this.style.display='none'"><span class="s-name">Globoplay</span>
+                <img class="s-logo" src="https://image.tmdb.org/t/p/original/bxBlRPEPpMVDc4jMhSrTf2339DW.jpg" onerror="this.style.display='none'"><span class="s-name">Globoplay</span>
             </div>
             <div class="streaming-chip" onclick="selecionarStreaming(350,'Apple TV+','#1c1c1e')" id="chip-350">
-                <img class="s-logo" src="https://upload.wikimedia.org/wikipedia/commons/thumb/2/28/Apple_TV_Plus_Logo.svg/120px-Apple_TV_Plus_Logo.svg.png" onerror="this.style.display='none'"><span class="s-name">Apple TV+</span>
+                <img class="s-logo" src="https://image.tmdb.org/t/p/original/6uhKBfmtzFqOcLousHwZuzcrScK.jpg" onerror="this.style.display='none'"><span class="s-name">Apple TV+</span>
             </div>
         </div>
 
@@ -345,54 +300,13 @@
     </div>
 
 
-    <!-- ========== TV AO VIVO (BetterFlix API) ========== -->
+    <!-- ========== TV AO VIVO (SuperFlixAPI) ========== -->
     <div id="view-tv" class="view">
-        <!-- PLAYER NO TOPO - estilo foto StreamFlix -->
-        <div id="tvPlayerTopo" style="background:#000;position:relative;width:100%;aspect-ratio:16/9;display:none;">
-            <div id="tvPlayerTopoInfo" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#0d0d0d,#1a1a2e);z-index:1;">
-                <div id="tvPlayerTopoLogo" style="width:80px;height:80px;border-radius:16px;background:#111;display:flex;align-items:center;justify-content:center;margin-bottom:12px;overflow:hidden;">
-                    <i class="fas fa-tv" style="color:var(--accent);font-size:28px;"></i>
-                </div>
-                <div id="tvPlayerTopoNome" style="color:#fff;font-size:18px;font-weight:900;margin-bottom:4px;">Selecione um canal</div>
-                <div id="tvPlayerTopoCat" style="color:var(--accent);font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;">AO VIVO</div>
-                <div style="color:#888;font-size:11px;margin-bottom:14px;">Powered by <span style="color:var(--accent);font-weight:700;">BetterFlix API</span></div>
-                <button id="tvPlayerTopoBtn" onclick="abrirPlayerTVAoVivoInline()" style="background:var(--accent);color:#000;border:none;border-radius:50px;padding:12px 28px;font-size:15px;font-weight:900;cursor:pointer;display:flex;align-items:center;gap:8px;display:none;">
-                    <i class="fas fa-play"></i> Assistir Agora
-                </button>
-                <div style="font-size:10px;color:#555;margin-top:8px;">Problemas na API? <a href="https://t.me/streamflixofc" target="_blank" style="color:var(--accent);">Fale com suporte</a></div>
-            </div>
-            <iframe id="tvPlayerTopoFrame" style="width:100%;height:100%;border:none;display:none;position:absolute;inset:0;z-index:2;"
-                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
-                allowfullscreen></iframe>
-            <button id="tvPlayerTopoClose" onclick="fecharPlayerTopo()" style="position:absolute;top:8px;right:8px;z-index:3;background:rgba(0,0,0,0.7);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:14px;cursor:pointer;display:none;">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
-        <!-- Info do canal ativo -->
-        <div id="tvCanalAtivoInfo" style="display:none;background:#0d0f18;padding:12px 16px;border-bottom:1px solid rgba(255,255,255,0.06);">
-            <div style="display:flex;align-items:center;gap:12px;">
-                <div id="tvCanalAtivoLogo" style="width:44px;height:44px;border-radius:10px;background:#111;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-                    <i class="fas fa-tv" style="color:var(--accent);font-size:18px;"></i>
-                </div>
-                <div style="flex:1;min-width:0;">
-                    <div id="tvCanalAtivoNome" style="color:#fff;font-weight:800;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
-                    <div style="display:flex;align-items:center;gap:6px;margin-top:2px;">
-                        <span id="tvCanalAtivoCat" style="color:#888;font-size:11px;"></span>
-                        <span style="display:flex;align-items:center;gap:4px;color:#00e676;font-size:10px;font-weight:700;"><span style="width:6px;height:6px;border-radius:50%;background:#00e676;display:inline-block;animation:pulse 1.5s infinite;"></span> AO VIVO</span>
-                    </div>
-                </div>
-                <button onclick="abrirPlayerTVAoVivoInline()" style="background:var(--accent);border:none;border-radius:20px;padding:7px 14px;color:#000;font-size:11px;font-weight:900;cursor:pointer;flex-shrink:0;display:flex;align-items:center;gap:5px;">
-                    <i class="fas fa-play"></i> Play
-                </button>
-            </div>
-        </div>
-
         <div class="tv-header">
             <div style="display:flex;align-items:center;justify-content:space-between;">
                 <div>
                     <h2><i class="fas fa-satellite-dish" style="color:var(--accent)"></i> TV Ao Vivo</h2>
-                    <p>Canais via BetterFlix</p>
+                    <p>Canais via SuperFlix</p>
                 </div>
                 <button onclick="entrarModoIPTV()" style="background:rgba(0,229,255,0.1);border:1.5px solid rgba(0,229,255,0.3);color:var(--accent);border-radius:20px;padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0;">
                     <i class="fas fa-server"></i> Modo IPTV
@@ -407,6 +321,20 @@
         <!-- Filtros de categoria -->
         <div class="tv-cats-scroll" id="tvCatsScroll">
             <div class="tv-cat-pill active" onclick="filtrarTVCategoria(null, this)">Todos</div>
+        </div>
+        <!-- Destaque canal ativo -->
+        <div id="tvDestaque" style="display:none;">
+            <div class="tv-destaque-wrap">
+                <div class="tv-destaque-logo-wrap" id="tvDestaqueLogo"></div>
+                <div class="tv-destaque-info">
+                    <div class="tv-destaque-nome" id="tvDestaqueNome"></div>
+                    <div class="tv-destaque-cat" id="tvDestaqueCat"></div>
+                    <div class="tv-live-badge"><span class="tv-live-dot"></span> AO VIVO</div>
+                </div>
+                <button class="tv-play-btn" id="tvDestaquePlayBtn">
+                    <i class="fas fa-play"></i> Assistir
+                </button>
+            </div>
         </div>
         <!-- Grid canais -->
         <div id="tvCanaisGrid" class="tv-canais-grid"></div>
