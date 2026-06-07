@@ -105,6 +105,9 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
 .header-btn { position: absolute; color: #fff; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px;}
 .header-btn:active { transform: scale(0.9); color: var(--accent); }
 .header-vip-btn { right: 20px; color: gold; text-shadow: 0 0 10px rgba(255,215,0,0.5); display: none;}
+.header-right-actions { position: absolute; right: 15px; display: flex; align-items: center; gap: 8px; }
+.header-avatar-btn { width: 32px; height: 32px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(0,229,255,0.4); cursor: pointer; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
+.header-avatar-btn:active { transform: scale(0.9); border-color: var(--accent); }
 
 /* =========================================
    HOME HERO BANNER
@@ -318,7 +321,9 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
 }
 .streaming-chip:active { transform: scale(0.93); }
 .streaming-chip.active { border-color: var(--accent); background: rgba(0,229,255,0.1); }
-.streaming-chip .s-logo { width: 36px; height: 36px; object-fit: contain; border-radius: 8px; }
+.streaming-chip .s-logo { width: 28px; height: 28px; object-fit: contain; }
+.streaming-chip .s-logo-svg { background: rgba(255,255,255,0.08); padding: 4px; border-radius: 8px; }
+.streaming-chip .s-logo-wrap { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0; }
 .streaming-chip .s-name { font-size: 9px; font-weight: 800; color: #ccc; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
 .streaming-chip.active .s-name { color: var(--accent); }
 
@@ -629,7 +634,7 @@ body:has(#trial-banner) #view-home { padding-top: 96px !important; }
 .tv-cat-pill.active { background: var(--accent); border-color: var(--accent); color: #000; }
 
 /* Destaque canal */
-.tv-destaque-wrap { display: flex; align-items: center; gap: 12px; background: rgba(0,229,255,0.06); border: 1.5px solid rgba(0,229,255,0.2); border-radius: 16px; margin: 0 15px 12px; padding: 14px; }
+.tv-destaque-bar { display: flex; align-items: center; gap: 12px; background: rgba(0,229,255,0.06); border: 1.5px solid rgba(0,229,255,0.2); border-radius: 16px; margin: 0 15px 12px; padding: 14px; }
 .tv-destaque-logo-wrap { width: 64px; height: 48px; flex: 0 0 64px; border-radius: 10px; background: rgba(255,255,255,0.08); overflow: hidden; display: flex; align-items: center; justify-content: center; }
 .tv-destaque-logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
 .tv-destaque-info { flex: 1; min-width: 0; }
@@ -640,18 +645,20 @@ body:has(#trial-banner) #view-home { padding-top: 96px !important; }
 @keyframes pulse-live { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.7); } }
 .tv-play-btn { flex: 0 0 auto; background: var(--accent); color: #000; font-size: 12px; font-weight: 800; border: none; border-radius: 20px; padding: 8px 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 
-/* Grid de canais */
-.tv-canais-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 15px 90px; }
-.tv-canal-card { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px 8px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: 0.18s; position: relative; overflow: hidden; }
-.tv-canal-card:active { transform: scale(0.95); background: rgba(0,229,255,0.1); border-color: var(--accent); }
-.tv-canal-logo { width: 56px; height: 42px; object-fit: contain; border-radius: 6px; }
-.tv-canal-logo-fallback { width: 56px; height: 42px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.06); border-radius: 6px; color: var(--accent); font-size: 22px; }
-.tv-canal-nome { font-size: 10px; font-weight: 700; color: #ccc; text-align: center; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
-.tv-canal-cat-tag { font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 0.3px; }
-
-/* Canal selecionado */
-.tv-canal-card.selected { border-color: var(--accent); background: rgba(0,229,255,0.12); }
-.tv-canal-card.selected .tv-canal-nome { color: var(--accent); }
+/* Lista de canais estilo BetterFlix */
+.tv-canais-lista { display: flex; flex-direction: column; padding: 0 15px 90px; gap: 0; }
+.tv-lista-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.06); cursor: pointer; transition: background 0.15s; }
+.tv-lista-item:active { background: rgba(0,229,255,0.05); border-radius: 10px; }
+.tv-lista-logo { width: 56px; height: 42px; flex: 0 0 56px; background: rgba(255,255,255,0.07); border-radius: 8px; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.tv-lista-logo img { width: 100%; height: 100%; object-fit: contain; }
+.tv-lista-logo-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: #555; font-size: 18px; }
+.tv-lista-info { flex: 1; min-width: 0; }
+.tv-lista-nome { font-size: 14px; font-weight: 700; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tv-lista-cat { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.4px; margin-top: 2px; }
+.tv-lista-live { display: flex; align-items: center; padding: 0 6px; }
+.tv-lista-play { width: 32px; height: 32px; border-radius: 50%; background: rgba(0,229,255,0.15); border: 1.5px solid rgba(0,229,255,0.3); display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+.tv-lista-play i { font-size: 10px; color: var(--accent); margin-left: 2px; }
+.tv-live-dot-small { width: 6px; height: 6px; border-radius: 50%; background: #ff4444; animation: pulse-live 1.2s infinite; flex-shrink: 0; }
 
 /* TV Loading state */
-.tv-loading { grid-column: span 3; text-align: center; padding: 50px 20px; color: #888; line-height: 1.8; }
+.tv-lista-loading { text-align: center; padding: 50px 20px; color: #888; line-height: 1.8; }
