@@ -59,7 +59,12 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
     align-items: center; justify-content: center;
     transition: opacity 0.5s ease, visibility 0.5s ease;
 }
-#splashScreen.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+#splashScreen.hide {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    display: none !important;
+}
 .splash-logo {
     font-size: 42px; font-weight: 900; color: #fff;
     letter-spacing: 1px; margin-bottom: 8px;
