@@ -281,7 +281,7 @@ function renderCard(item, type, badge='') {
     const realType = tmdbType === 'tv' ? 'tv' : 'movie';
     const title = item.title || item.name || 'Sem Título';
     const img = item.poster_path ? `${TMDB_IMG}/w300${item.poster_path}` : 'https://via.placeholder.com/220x330/111/fff';
-    const nota = item.vote_average ? `<span style="position:absolute;top:5px;right:5px;background:rgba(0,0,0,0.7);color:gold;font-size:10px;font-weight:900;padding:3px 6px;border-radius:4px;z-index:2;"><i class="fas fa-star"></i> ${item.vote_average.toFixed(1)}</span>` : '';
+    const nota = item.vote_average ? `<span style="position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,0.75);color:gold;font-size:10px;font-weight:900;padding:3px 6px;border-radius:4px;z-index:2;"><i class="fas fa-star"></i> ${item.vote_average.toFixed(1)}</span>` : '';
     const favs = getFavList();
     const isFav = favs[item.id] ? 'active' : '';
     const favBtn = `<div class="card-fav-btn ${isFav}" onclick="event.stopPropagation();toggleFavCard(${item.id},'${realType}','${esc(title)}','${esc(img)}')"><i class="fas fa-heart"></i></div>`;
@@ -533,13 +533,19 @@ async function buscarNoStreaming() {
 
 // ===================== CALENDÁRIO DE ESTREIAS =====================
 async function carregarEstreias() {
-    // Chamado após home carregar — vai popular a seção de estreias no home
+    // Chamado após home carregar — popula aba Meus > Estreias
     try {
         const data = await getUpcomingMovies(1);
         const items = (data.results || []).filter(m => m.release_date && new Date(m.release_date) > new Date()).slice(0, 15);
-        if(items.length === 0) return;
+        
+        // Popular o container da aba Meus > Estreias
+        const listaContainer = document.getElementById('conteudo-estreias-lista');
+        if (!items.length) {
+            if(listaContainer) listaContainer.innerHTML = `<p class="loading-text" style="margin-top:30px;"><i class="fas fa-calendar-alt" style="color:#e040fb;font-size:30px;display:block;margin-bottom:10px;"></i>Nenhuma estreia disponível.</p>`;
+            return;
+        }
 
-        let html = `<div class="section-header"><div class="section-title"><i class="fas fa-calendar-alt" style="color:#e040fb;"></i> Calendário de Estreias</div></div>`;
+        let html = '';
         items.forEach(movie => {
             const poster = movie.poster_path ? `${TMDB_IMG}/w200${movie.poster_path}` : 'https://via.placeholder.com/100x150/111/fff';
             const date = new Date(movie.release_date + 'T00:00:00');
@@ -559,9 +565,7 @@ async function carregarEstreias() {
             </div>`;
         });
 
-        // Insere antes do fim do conteudo-dinamico
-        const dinamico = document.getElementById('conteudo-dinamico');
-        if(dinamico) dinamico.insertAdjacentHTML('beforeend', html);
+        if(listaContainer) listaContainer.innerHTML = html;
     } catch(e) { /* silencioso */ }
 }
 
@@ -576,6 +580,10 @@ function mudarMeusTab(tab) {
     document.querySelectorAll('.meus-content').forEach(c => c.classList.remove('active'));
     document.getElementById('meus-tab-' + tab).classList.add('active');
     document.getElementById('meus-' + tab).classList.add('active');
+    if (tab === 'estreias') {
+        const lista = document.getElementById('conteudo-estreias-lista');
+        if (lista && lista.querySelector('.fa-spinner')) carregarEstreias();
+    }
 }
 
 function renderAbaFavs() {
@@ -1117,9 +1125,11 @@ function entrarModoIPTV() {
     document.getElementById('view-iptv').classList.add('active');
     document.querySelectorAll('.view').forEach(v=>{ if(v.id!=='view-iptv') v.classList.remove('active'); });
     document.querySelectorAll('.nav-item').forEach(b=>b.classList.remove('active'));
+    const navIptv = document.getElementById('nav-iptv');
+    if(navIptv) navIptv.classList.add('active');
     const mainHeader = document.getElementById('mainHeader');
     if(mainHeader) mainHeader.style.display = 'none';
-    history.pushState({ view: 'view-iptv' }, null, "");
+    history.pushState({ view: 'view-iptv' }, null, '');
     carregarIPTFilmes();
 }
 function mudarAbaIPTV(contentId, tabEl) {
@@ -1129,7 +1139,7 @@ function mudarAbaIPTV(contentId, tabEl) {
     document.getElementById(contentId).classList.add('active');
     if(contentId==='iptv-filmes'&&!iptvCarregado.filmes) carregarIPTFilmes();
     if(contentId==='iptv-series'&&!iptvCarregado.series) carregarIPTSeries();
-    if(contentId==='iptv-tv'&&!iptvCarregado.tv) carregarIPTTV();
+    if(contentId==='iptv-tv') iniciarIPTVCanais();
 }
 
 async function carregarIPTFilmes() {
