@@ -662,3 +662,39 @@ body:has(#trial-banner) #view-home { padding-top: 96px !important; }
 
 /* TV Loading state */
 .tv-loading { grid-column: span 3; text-align: center; padding: 50px 20px; color: #888; line-height: 1.8; }
+
+/* ===== NOVAS CORREÇÕES ===== */
+
+/* Meus tabs - suporte a 4 abas */
+.meus-tabs { display: flex; gap: 0; overflow-x: auto; border-bottom: 1.5px solid rgba(255,255,255,0.07); scrollbar-width: none; }
+.meus-tabs::-webkit-scrollbar { display: none; }
+.meus-tab { flex: 0 0 auto; padding: 10px 14px; font-size: 12px; font-weight: 700; color: #555; cursor: pointer; border-bottom: 2px solid transparent; white-space: nowrap; transition: 0.15s; display: flex; align-items: center; gap: 5px; }
+.meus-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* Header avatar */
+#headerAvatarBtn { transition: 0.15s; }
+#headerAvatarBtn:active { transform: scale(0.92); }
+
+/* TV player topo */
+#tvPlayerTopo { border-radius: 0; }
+#tvPlayerTopoInfo { flex-direction: column; align-items: center; justify-content: center; padding: 20px; }
+
+/* Canal ativo info bar */
+#tvCanalAtivoInfo { animation: slideDown 0.2s ease; }
+@keyframes slideDown { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+/* Canais grid nos favoritos IPTV */
+.canal-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 10px 6px 8px; cursor: pointer; transition: 0.15s; }
+.canal-card:active { transform: scale(0.95); border-color: var(--accent); }
+
+/* Pulse animation */
+@keyframes pulse { 0%,100% { opacity:1; } 50% { opacity:0.4; } }
+
+/* Streaming chips scroll fix */
+.streaming-chips { display: flex; gap: 10px; overflow-x: auto; padding: 10px 15px; scrollbar-width: none; }
+.streaming-chips::-webkit-scrollbar { display: none; }
+.streaming-chip { flex: 0 0 auto; border-radius: 14px; border: 2px solid rgba(255,255,255,0.1); background: rgba(255,255,255,0.05); padding: 8px 14px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 70px; transition: 0.15s; }
+.streaming-chip.active { border-color: var(--accent); background: rgba(0,229,255,0.1); }
+.streaming-chip .s-logo { width: 32px; height: 32px; object-fit: contain; border-radius: 6px; }
+.streaming-chip .s-name { font-size: 10px; font-weight: 700; color: #ccc; white-space: nowrap; }
+.streaming-chip.active .s-name { color: var(--accent); }
