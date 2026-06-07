@@ -1,22 +1,13 @@
-// V7 — força limpeza do cache v2/v6 antigo
-const CACHE_NAME = 'streamflix-cache-v7';
+// StreamFlix SW — network-first, sem cache proativo que trava o install
+const CACHE_NAME = 'streamflix-cache-v8';
 
 self.addEventListener('install', (event) => {
-    event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            return cache.addAll([
-                '/',
-                '/index.html',
-                '/css/style.css',
-                '/js/app.js',
-                '/js/config.js'
-            ]);
-        })
-    );
+    // Não cacheia nada no install — evita travamento se algum arquivo demorar
     self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
+    // Limpa todos os caches antigos
     event.waitUntil(
         caches.keys().then((keyList) => {
             return Promise.all(keyList.map((key) => {
@@ -30,6 +21,7 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
+    // Sempre tenta network primeiro; só usa cache se offline
     event.respondWith(
         fetch(event.request).catch(() => {
             return caches.match(event.request);
