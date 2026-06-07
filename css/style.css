@@ -652,3 +652,6 @@ body:has(#trial-banner) #view-home { padding-top: 96px !important; }
 /* Canal selecionado */
 .tv-canal-card.selected { border-color: var(--accent); background: rgba(0,229,255,0.12); }
 .tv-canal-card.selected .tv-canal-nome { color: var(--accent); }
+
+/* TV Loading state */
+.tv-loading { grid-column: span 3; text-align: center; padding: 50px 20px; color: #888; line-height: 1.8; }
