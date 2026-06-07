@@ -56,6 +56,7 @@ function forceRemoveNoScroll() {
 
 // ===================== SUPABASE / VIP =====================
 function getSupabase() {
+    if(!window.supabase) return null;
     if(!meuSupabase) {
         meuSupabase = window.supabase.createClient('https://gkujbjpvphuvrejpvvtz.supabase.co', 'sb_publishable_C9FMCjUyZnlzhINK2KZXWQ_ahpGu0yy');
     }
@@ -283,6 +284,7 @@ async function fazerLoginVip() {
     btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...'; btn.disabled = true; msg.style.display = 'none';
     try {
         const supa = getSupabase();
+        if(!supa) throw new Error('Serviço indisponível. Tente novamente.');
         const { data, error } = await supa.from('streamflix_users').select('*').eq('email', email).eq('senha', senha);
         if(error) throw error;
         if(data && data.length > 0) {
