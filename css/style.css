@@ -612,3 +612,43 @@ body:has(#trial-banner) #view-home { padding-top: 96px !important; }
 .canal-logo-wrap img { width: 100%; height: 100%; object-fit: contain; border-radius: 4px; }
 .canal-logo-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 24px; }
 .canal-nome { font-size: 10px; font-weight: 700; color: #ccc; text-align: center; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+/* ===== TV AO VIVO VIEW ===== */
+.tv-header { padding: 55px 15px 5px; }
+.tv-header h2 { font-size: 22px; font-weight: 800; color: #fff; margin-bottom: 2px; }
+.tv-header p { font-size: 12px; color: #888; }
+.tv-search-wrap { position: relative; margin: 10px 15px 8px; }
+.tv-search-bar { width: 100%; background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 11px 15px 11px 40px; color: #fff; font-size: 14px; outline: none; }
+.tv-search-bar::placeholder { color: #666; }
+.tv-search-wrap .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: #666; font-size: 14px; }
+
+/* Pills de categoria */
+.tv-cats-scroll { display: flex; gap: 8px; overflow-x: auto; padding: 4px 15px 10px; scrollbar-width: none; }
+.tv-cats-scroll::-webkit-scrollbar { display: none; }
+.tv-cat-pill { flex: 0 0 auto; padding: 6px 16px; border-radius: 20px; background: rgba(255,255,255,0.07); border: 1.5px solid rgba(255,255,255,0.1); color: #aaa; font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: 0.2s; }
+.tv-cat-pill.active { background: var(--accent); border-color: var(--accent); color: #000; }
+
+/* Destaque canal */
+.tv-destaque-wrap { display: flex; align-items: center; gap: 12px; background: rgba(0,229,255,0.06); border: 1.5px solid rgba(0,229,255,0.2); border-radius: 16px; margin: 0 15px 12px; padding: 14px; }
+.tv-destaque-logo-wrap { width: 64px; height: 48px; flex: 0 0 64px; border-radius: 10px; background: rgba(255,255,255,0.08); overflow: hidden; display: flex; align-items: center; justify-content: center; }
+.tv-destaque-logo-wrap img { width: 100%; height: 100%; object-fit: contain; }
+.tv-destaque-info { flex: 1; min-width: 0; }
+.tv-destaque-nome { font-size: 15px; font-weight: 800; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tv-destaque-cat { font-size: 11px; color: #888; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+.tv-live-badge { display: flex; align-items: center; gap: 5px; margin-top: 4px; font-size: 11px; font-weight: 700; color: var(--accent); }
+.tv-live-dot { width: 7px; height: 7px; border-radius: 50%; background: #ff4444; animation: pulse-live 1.2s infinite; }
+@keyframes pulse-live { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.5; transform:scale(0.7); } }
+.tv-play-btn { flex: 0 0 auto; background: var(--accent); color: #000; font-size: 12px; font-weight: 800; border: none; border-radius: 20px; padding: 8px 14px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
+
+/* Grid de canais */
+.tv-canais-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 15px 90px; }
+.tv-canal-card { background: rgba(255,255,255,0.05); border: 1.5px solid rgba(255,255,255,0.08); border-radius: 14px; padding: 12px 8px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; transition: 0.18s; position: relative; overflow: hidden; }
+.tv-canal-card:active { transform: scale(0.95); background: rgba(0,229,255,0.1); border-color: var(--accent); }
+.tv-canal-logo { width: 56px; height: 42px; object-fit: contain; border-radius: 6px; }
+.tv-canal-logo-fallback { width: 56px; height: 42px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,0.06); border-radius: 6px; color: var(--accent); font-size: 22px; }
+.tv-canal-nome { font-size: 10px; font-weight: 700; color: #ccc; text-align: center; line-height: 1.3; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.tv-canal-cat-tag { font-size: 9px; color: #666; text-transform: uppercase; letter-spacing: 0.3px; }
+
+/* Canal selecionado */
+.tv-canal-card.selected { border-color: var(--accent); background: rgba(0,229,255,0.12); }
+.tv-canal-card.selected .tv-canal-nome { color: var(--accent); }
