@@ -102,9 +102,12 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
 .header { position: absolute; top: 0; width: 100%; padding: 15px; z-index: 100; text-align: center; background: linear-gradient(to bottom, rgba(4,7,20,0.9), transparent); display: flex; justify-content: center; align-items: center; }
 .header-logo { font-size: 22px; font-weight: 900; color: #fff; margin: 0; letter-spacing: 1px;}
 .header-logo span { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.6); }
-.header-btn { position: absolute; color: #fff; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px;}
+.header-btn { color: #fff; font-size: 20px; cursor: pointer; transition: 0.2s; padding: 5px; position: relative; }
 .header-btn:active { transform: scale(0.9); color: var(--accent); }
-.header-vip-btn { right: 20px; color: gold; text-shadow: 0 0 10px rgba(255,215,0,0.5); display: none;}
+.header-vip-btn { color: gold; text-shadow: 0 0 10px rgba(255,215,0,0.5); display: none; }
+.header-right-actions { position: absolute; right: 12px; display: flex; align-items: center; gap: 6px; }
+.header-avatar-btn { width: 34px; height: 34px; border-radius: 50%; overflow: hidden; border: 2px solid rgba(0,229,255,0.35); cursor: pointer; background: rgba(255,255,255,0.08); display: flex; align-items: center; justify-content: center; transition: 0.2s; flex-shrink: 0; }
+.header-avatar-btn:active { transform: scale(0.92); border-color: var(--accent); }
 
 /* =========================================
    HOME HERO BANNER
