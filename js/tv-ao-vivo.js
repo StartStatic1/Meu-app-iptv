@@ -7,7 +7,7 @@ let tvCanaisFiltrados = [];
 let tvCatAtiva = null;
 let tvCarregado = false;
 let tvDestaqueAtual = null;
-timeoutBuscaTV = null;
+let tvTimeoutBuscaTV = null;
 
 function escTV(s) {
     return String(s || '').replace(/[&<>"']/g, c =>
@@ -92,7 +92,7 @@ async function filtrarTVCategoria(catId, catNome, el) {
 }
 
 function buscarCanalTV() {
-    clearTimeout(timeoutBuscaTV);
+    clearTimeout(tvTimeoutBuscaTV);
     const q = document.getElementById('inputBuscaTV').value.trim();
 
     if (q.length < 2) {
@@ -100,7 +100,7 @@ function buscarCanalTV() {
         return;
     }
 
-    timeoutBuscaTV = setTimeout(() => {
+    tvTimeoutBuscaTV = setTimeout(() => {
         const ql = q.toLowerCase();
         const resultado = tvCanaisAll.filter(c => (c.name || '').toLowerCase().includes(ql));
         renderTVGrid(resultado);

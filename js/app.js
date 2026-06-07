@@ -67,39 +67,40 @@ function isVip() {
     return localStorage.getItem('streamflix_vip') === 'true';
 }
 // ─── AVATARES DISPONÍVEIS ────────────────────────────────────────────────────
-// Avatares estilo personagem usando DiceBear API (gratuito, sem bloqueio)
+// Avatares — fotos reais via TMDB (people images são estáveis)
 const AVATAR_ESTILOS = [
-    // Anime / Cartoon
-    { id: 'av1',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix1&backgroundColor=b6e3f4&clothingColor=3c4f5c&eyebrowType=raisedExcited&eyeType=happy&mouthType=smile' },
-    { id: 'av2',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix2&backgroundColor=d1d4f9&hairColor=2c1b18&eyeType=wink&mouthType=twinkle' },
-    { id: 'av3',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix3&backgroundColor=ffd5dc&accessoriesType=kurt&eyebrowType=raised&mouthType=smile' },
-    { id: 'av4',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix4&backgroundColor=c0aede&eyeType=hearts&mouthType=tongue' },
-    { id: 'av5',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix5&backgroundColor=b6e3f4&topType=longHairStraight&hairColor=4a312c' },
-    { id: 'av6',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix6&backgroundColor=ffdbb4&topType=shortHairShortFlat&eyeType=side' },
-    // Pixel Art
-    { id: 'av7',  url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=hero1&backgroundColor=1a1a2e&clothing=shirt1' },
-    { id: 'av8',  url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=hero2&backgroundColor=16213e&hair=short01' },
-    { id: 'av9',  url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=hero3&backgroundColor=0f3460' },
-    { id: 'av10', url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=hero4&backgroundColor=533483' },
-    // Lorelei (ilustração)
-    { id: 'av11', url: 'https://api.dicebear.com/9.x/lorelei/svg?seed=cat1&backgroundColor=0d0d0d&freckles=true' },
-    { id: 'av12', url: 'https://api.dicebear.com/9.x/lorelei/svg?seed=wolf1&backgroundColor=111111' },
-    { id: 'av13', url: 'https://api.dicebear.com/9.x/lorelei/svg?seed=dragon1&backgroundColor=0a0a0a' },
-    { id: 'av14', url: 'https://api.dicebear.com/9.x/lorelei/svg?seed=ninja1&backgroundColor=0d0d0d' },
-    // Fun characters
-    { id: 'av15', url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=ghost&backgroundColor=1a1a2e' },
-    { id: 'av16', url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=robot&backgroundColor=16213e' },
-    { id: 'av17', url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=alien&backgroundColor=0f3460' },
-    { id: 'av18', url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=wizard&backgroundColor=1a0a2e' },
-    // Bottts (robôs)
-    { id: 'av19', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=r2d2&backgroundColor=1e1e2e' },
-    { id: 'av20', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=hal9000&backgroundColor=0d1117' },
-    { id: 'av21', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=wall-e&backgroundColor=1a1a1a' },
-    { id: 'av22', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=terminator&backgroundColor=0a0a0a' },
-    // Anime style (Adventurer)
-    { id: 'av23', url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=sasuke&backgroundColor=16213e&eyes=variant08' },
-    { id: 'av24', url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=naruto&backgroundColor=1a0a00&hair=long01' },
-    { id: 'av25', url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=zoro&backgroundColor=001a0a' },
+    // ⚔️ Anime — personagens icônicos
+    { id: 'av1',  label: 'Naruto',       cat: 'anime',   url: 'https://i.pinimg.com/236x/13/74/8b/13748b42f52db18f04a5e57e97f75bbd.jpg' },
+    { id: 'av2',  label: 'Goku',         cat: 'anime',   url: 'https://i.pinimg.com/236x/4a/38/f1/4a38f1b40cd86e63eb73a33cad54a59c.jpg' },
+    { id: 'av3',  label: 'Luffy',        cat: 'anime',   url: 'https://i.pinimg.com/236x/b4/f7/79/b4f7793e85ab89d9dedfae75e7f17c99.jpg' },
+    { id: 'av4',  label: 'Eren',         cat: 'anime',   url: 'https://i.pinimg.com/236x/b5/db/4a/b5db4a1ee97f9ebced5b7e9a0ad5eebd.jpg' },
+    { id: 'av5',  label: 'Tanjiro',      cat: 'anime',   url: 'https://i.pinimg.com/236x/3a/52/6e/3a526e95c7b5b3bbb9ab6cb4ac77a9a0.jpg' },
+    { id: 'av6',  label: 'Levi',         cat: 'anime',   url: 'https://i.pinimg.com/236x/b5/5a/24/b55a24cf79748a1c19d1d3f8e8a71b5a.jpg' },
+    { id: 'av7',  label: 'Zoro',         cat: 'anime',   url: 'https://i.pinimg.com/236x/95/62/76/956276d3e1a2618d5a41bc148e7c0040.jpg' },
+    { id: 'av8',  label: 'Itachi',       cat: 'anime',   url: 'https://i.pinimg.com/236x/5b/62/fc/5b62fc3f26fcb3b07ecdb1d5aad67e55.jpg' },
+    // 🎬 Hollywood — atores icônicos
+    { id: 'av9',  label: 'Keanu Reeves', cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/rRdru6REr9i3WIHv2mntpcgxnoY.jpg' },
+    { id: 'av10', label: 'Margot Robbie',cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/euDPyqLnuwaWMHajcU3oZ9uZezR.jpg' },
+    { id: 'av11', label: 'Ryan Reynolds',cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/6dEFBpZH8C8OijsynkSajQT99Pb.jpg' },
+    { id: 'av12', label: 'Zendaya',      cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/6TE2AlOUqcrs7CyJiWYgodmee1r.jpg' },
+    { id: 'av13', label: 'Tom Holland',  cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/yCHLGiQfp4yBn6f5enJSBJMDGbk.jpg' },
+    { id: 'av14', label: 'Ana de Armas', cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/3vxvsmYLNfYOdJyNONXnSM45WOS.jpg' },
+    // 🎭 Personagens cultuados
+    { id: 'av15', label: 'Coringa',      cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg' },
+    { id: 'av16', label: 'Walter White', cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/rWeRBFFMFOGV0VpMCjB9pYJJ84L.jpg' },
+    { id: 'av17', label: 'Darth Vader',  cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/2MB14hUAFV5iMFRGYmZ5Pn2e4rw.jpg' },
+    { id: 'av18', label: 'John Wick',    cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/fZPSd91yGE9fCcCe6OoQr6E3Bev.jpg' },
+    { id: 'av19', label: 'Pennywise',    cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/wzJRB4MKi1wuBg7QKIBC5sOYNj5.jpg' },
+    { id: 'av20', label: 'Gi-hun',       cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/dIWwZW7dJJtqC6CgWzYkNVKIUm8.jpg' },
+    // 🖥️ Desenhos clássicos (PNG sem fundo via Wikimedia)
+    { id: 'av21', label: 'Shrek',        cat: 'classicos', url: 'https://i.pinimg.com/236x/8c/15/81/8c1581d0aef0ef69a0b36b3d57e30b58.jpg' },
+    { id: 'av22', label: 'Simba',        cat: 'classicos', url: 'https://i.pinimg.com/236x/36/4d/5f/364d5f4b16d16b3b5e03ee0f5d37e02a.jpg' },
+    { id: 'av23', label: 'Buzz',         cat: 'classicos', url: 'https://i.pinimg.com/236x/80/c3/7e/80c37ef27f0d3424b8aff58fa3e0e455.jpg' },
+    { id: 'av24', label: 'Stitch',       cat: 'classicos', url: 'https://i.pinimg.com/236x/97/86/c4/9786c4f7e35c2cbbb4a3b92793c4e04e.jpg' },
+    { id: 'av25', label: 'Jack Sparrow', cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/yNa18Qe7FmYfUpqKyZJf9EiqKFy.jpg' },
+    { id: 'av26', label: 'Thanos',       cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/giCRQJCMsIkbHOlO0FpWcuD4X0A.jpg' },
+    { id: 'av27', label: 'Deadpool',     cat: 'personagens', url: 'https://image.tmdb.org/t/p/w185/Or8R15PJPJRG6nfmIGJGF7z9dCk.jpg' },
+    { id: 'av28', label: 'Nezuko',       cat: 'anime',   url: 'https://i.pinimg.com/236x/70/a6/e6/70a6e66617f27e18f0e19d2f47e55b49.jpg' },
 ];
 const AVATAR_KEY = 'sf_avatar_v2';
 const AVATAR_DEFAULT = AVATAR_ESTILOS[0].url;
@@ -199,25 +200,27 @@ function abrirEscolhaAvatar() {
     if (!modal) return;
     const grid = document.getElementById('avatarGrid');
     const atual = getAvatarAtual();
-    // Categorias de avatares
     const categorias = [
-        { nome: '😄 Cartoon', range: [0,5] },
-        { nome: '🎮 Pixel', range: [6,9] },
-        { nome: '🎨 Ilustração', range: [10,13] },
-        { nome: '😜 Fun', range: [14,17] },
-        { nome: '🤖 Robô', range: [18,21] },
-        { nome: '⚔️ Anime', range: [22,24] },
+        { nome: '⚔️ Anime',            cat: 'anime' },
+        { nome: '🎬 Hollywood',         cat: 'hollywood' },
+        { nome: '🎭 Personagens',       cat: 'personagens' },
+        { nome: '🖥️ Clássicos',        cat: 'classicos' },
     ];
     let html = '';
     categorias.forEach(cat => {
-        html += `<div style="grid-column:span 4;font-size:11px;font-weight:700;color:#888;padding:4px 0 2px;letter-spacing:1px;">${cat.nome}</div>`;
-        for(let i = cat.range[0]; i <= cat.range[1]; i++) {
-            const av = AVATAR_ESTILOS[i];
+        const avsCat = AVATAR_ESTILOS.filter(a => a.cat === cat.cat);
+        if (!avsCat.length) return;
+        html += `<div style="grid-column:span 4;font-size:11px;font-weight:700;color:#888;padding:8px 0 4px;letter-spacing:1px;">${cat.nome}</div>`;
+        avsCat.forEach(av => {
             const ativo = av.url === atual;
-            html += `<div onclick="escolherAvatar('${av.url}')" style="width:60px;height:60px;border-radius:14px;overflow:hidden;cursor:pointer;border:2px solid ${ativo?'var(--accent)':'transparent'};background:rgba(255,255,255,0.04);transition:0.15s;display:flex;align-items:center;justify-content:center;">
-                <img src="${av.url}" style="width:54px;height:54px;border-radius:10px;" loading="lazy">
+            html += `<div onclick="escolherAvatar('${av.url}')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;">
+                <div style="width:62px;height:62px;border-radius:50%;overflow:hidden;border:2.5px solid ${ativo?'var(--accent)':'transparent'};background:#111;transition:0.15s;">
+                    <img src="${av.url}" style="width:100%;height:100%;object-fit:cover;" loading="lazy"
+                        onerror="this.style.display='none';this.parentElement.style.background='#222';this.parentElement.innerHTML='<div style=width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#555;font-size:22px;><i class=fas fa-user></i></div>'">
+                </div>
+                <span style="font-size:9px;color:#888;text-align:center;line-height:1.2;max-width:66px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${av.label||''}</span>
             </div>`;
-        }
+        });
     });
     grid.innerHTML = html;
     modal.style.display = 'flex';
@@ -239,8 +242,17 @@ function escolherAvatar(url) {
 
 function atualizarMenuAvatar() {
     const avatar = getAvatarAtual();
+    // Menu lateral
     const menuAv = document.getElementById('menu-avatar-emoji');
     if (menuAv) menuAv.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    // Header
+    const headerImg = document.getElementById('headerAvatarImg');
+    const headerFallback = document.getElementById('headerAvatarFallback');
+    if (headerImg && avatar !== AVATAR_DEFAULT || avatar) {
+        headerImg.src = avatar;
+        headerImg.style.display = 'block';
+        if (headerFallback) headerFallback.style.display = 'none';
+    }
 }
 
 // ─── SAIR ─────────────────────────────────────────────────────────────────────
@@ -1373,7 +1385,7 @@ function mudarAbaIPTV(contentId, tabEl) {
     document.getElementById(contentId).classList.add('active');
     if(contentId==='iptv-filmes'&&!iptvCarregado.filmes) carregarIPTFilmes();
     if(contentId==='iptv-series'&&!iptvCarregado.series) carregarIPTSeries();
-    if(contentId==='iptv-tv') iniciarIPTVCanais();
+    if(contentId==='iptv-tv'&&!iptvCarregado.tv) carregarIPTTV();
 }
 
 async function carregarIPTFilmes() {
@@ -1705,18 +1717,22 @@ function getEmbedUrl(servidor, tmdbId, type, season, episode) {
             return type==='movie'
                 ? `https://myembed.biz/filme/${tmdbId}`
                 : `https://myembed.biz/serie/${tmdbId}/${season}/${episode}`;
-        case 'embedplayapi':
+        case 'vidsrc':
             return type==='movie'
-                ? `https://embedplayapi.top/embed/${tmdbId}`
-                : `https://embedplayapi.top/embed/${tmdbId}/${season}/${episode}`;
+                ? `https://vidsrc-embed.ru/embed/movie?tmdb=${tmdbId}`
+                : `https://vidsrc-embed.ru/embed/tv?tmdb=${tmdbId}&season=${season}&episode=${episode}`;
+        case 'videasy':
+            return type==='movie'
+                ? `https://player.videasy.net/movie/${tmdbId}?color=00e5ff`
+                : `https://player.videasy.net/tv/${tmdbId}/${season}/${episode}?color=00e5ff&nextEpisode=true`;
         case 'superflix':
             return type==='movie'
                 ? `https://superflixapi.fit/filme/${tmdbId}`
                 : `https://superflixapi.fit/serie/${tmdbId}/${season}/${episode}`;
-        case 'megaembed':
+        case 'embedplayapi':
             return type==='movie'
-                ? `https://megaembedapi.site/embed/${tmdbId}`
-                : `https://megaembedapi.site/embed/${tmdbId}/${season}/${episode}`;
+                ? `https://embedplayapi.top/embed/${tmdbId}`
+                : `https://embedplayapi.top/embed/${tmdbId}/${season}/${episode}`;
         default:
             return '';
     }
