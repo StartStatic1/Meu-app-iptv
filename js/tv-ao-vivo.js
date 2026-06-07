@@ -6,7 +6,7 @@ let tvCanaisFiltrados = [];
 let tvCatAtiva = null;
 let tvCarregado = false;
 let tvDestaqueAtual = null;
-let timeoutBuscaTV = null;
+timeoutBuscaTV = null;
 
 function escTV(s) {
     return String(s || '').replace(/[&<>"']/g, c =>
