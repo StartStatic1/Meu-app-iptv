@@ -240,8 +240,12 @@ function escolherAvatar(url) {
 
 function atualizarMenuAvatar() {
     const avatar = getAvatarAtual();
+    // Menu lateral
     const menuAv = document.getElementById('menu-avatar-emoji');
     if (menuAv) menuAv.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    // Header principal
+    const headerImg = document.getElementById('headerAvatarImg');
+    if (headerImg) { headerImg.src = avatar; headerImg.style.display = 'block'; }
 }
 
 // ─── SAIR ─────────────────────────────────────────────────────────────────────
@@ -568,6 +572,7 @@ async function initApp() {
     renderGenreChips();
     renderStreamingGenreChips();
     iniciarAbaMeus();
+    atualizarMenuAvatar();
 
     const continueHtml = renderContinueWatching();
     const continueSection = document.getElementById('section-continuar');
