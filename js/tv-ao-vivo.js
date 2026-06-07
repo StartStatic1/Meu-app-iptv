@@ -1,5 +1,5 @@
 // ===================== TV AO VIVO - BetterFlix API =====================
-const TV_PROXY = '/api/tv';
+const BF_CANAIS_URL = 'https://betterflix.click/api/canais.json';
 const BF_PLAYER = 'https://betterflix.click/api/player';
 
 let tvCanaisAll = [];
@@ -23,25 +23,24 @@ async function iniciarTVAoVivo() {
     grid.innerHTML = `<div class="tv-loading"><i class="fas fa-spinner fa-spin fa-2x"></i><br><br>Carregando canais...</div>`;
 
     try {
-        const [resCats, resCanais] = await Promise.all([
-            fetch(`${TV_PROXY}?action=categories`),
-            fetch(`${TV_PROXY}?action=all`)
-        ]);
-
-        const dataCats = await resCats.json();
-        const dataCanais = await resCanais.json();
-
-        const cats = Array.isArray(dataCats) ? dataCats : (dataCats.categories || []);
-        tvCanaisAll = Array.isArray(dataCanais) ? dataCanais : (dataCanais.channels || dataCanais.data || []);
+        const res = await fetch(BF_CANAIS_URL);
+        if (!res.ok) throw new Error('Servidor retornou ' + res.status);
+        const data = await res.json();
 
         // Normaliza campos BetterFlix -> padrão interno
-        tvCanaisAll = tvCanaisAll.map(c => ({
+        tvCanaisAll = (Array.isArray(data) ? data : []).map(c => ({
             ...c,
             name: c.nome || c.name || c.title || 'Canal',
             logo: c.imagem || c.logo || c.stream_icon || '',
             category_name: c.categoria || c.category || c.category_name || '',
-            id: c.id || c.stream_id || ''
+            id: String(c.id || c.stream_id || '')
         }));
+
+        if (!tvCanaisAll.length) throw new Error('Nenhum canal recebido');
+
+        // Extrai categorias únicas
+        const catNames = [...new Set(tvCanaisAll.map(c => c.category_name).filter(Boolean))];
+        const cats = catNames.map(c => ({ id: c, name: c }));
 
         tvCanaisFiltrados = [...tvCanaisAll];
         renderTVCategoryPills(cats);
@@ -49,11 +48,12 @@ async function iniciarTVAoVivo() {
         if (tvCanaisAll.length > 0) mostrarTVDestaque(tvCanaisAll[0]);
 
     } catch(e) {
+        tvCarregado = false; // permite tentar novamente
         grid.innerHTML = `<div class="tv-loading" style="color:#f87171;">
             <i class="fas fa-exclamation-circle fa-2x"></i><br><br>
             Erro ao carregar canais.<br>
             <small style="color:#666;">${e.message}</small><br><br>
-            <button onclick="tvCarregado=false;iniciarTVAoVivo()" style="background:var(--accent);color:#000;border:none;padding:8px 18px;border-radius:20px;font-weight:700;cursor:pointer;">
+            <button onclick="iniciarTVAoVivo()" style="background:var(--accent);color:#000;border:none;padding:8px 18px;border-radius:20px;font-weight:700;cursor:pointer;">
                 <i class="fas fa-redo"></i> Tentar novamente
             </button>
         </div>`;

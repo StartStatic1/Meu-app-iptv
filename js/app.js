@@ -17,6 +17,7 @@ let bancoFilmes = null;
 let bancoSeries = null;
 let bancoTV = null;
 let iptvCarregado = { filmes: false, series: false, tv: false };
+let iptvInitialized = false;
 let adsInjetados = false;
 let currentEpisodeData = {};
 let nextEpTimer = null;
@@ -69,8 +70,17 @@ function isVip() {
 // ─── AVATARES DISPONÍVEIS ────────────────────────────────────────────────────
 // Avatares — fotos reais via TMDB (people images são estáveis)
 const AVATAR_ESTILOS = [
-    // 🎬 Hollywood
-    { id: 'av1',  label: 'Keanu Reeves',     cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/rRdru6REr9i3WIHv2mntpcgxnoY.jpg' },
+    // 🎭 Animados (DiceBear - nunca quebram)
+    { id: 'an1',  label: 'Astronauta',    cat: 'animado', url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Astro&backgroundColor=0d1117&clothingColor=ff0055&hairColor=2c1b18&skinColor=ae5d29' },
+    { id: 'an2',  label: 'Guerreira',     cat: 'animado', url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Warrior&backgroundColor=0d1117&clothingColor=00e5ff&hairColor=000000&skinColor=d08b5b' },
+    { id: 'an3',  label: 'Hacker',        cat: 'animado', url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Hacker&backgroundColor=0d1117&clothingColor=262e33&hairColor=4a312c&skinColor=f8d25c' },
+    { id: 'an4',  label: 'Pop Star',      cat: 'animado', url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=PopStar&backgroundColor=0d1117&clothingColor=ff4444&hairColor=c93305&skinColor=edb98a' },
+    { id: 'an5',  label: 'Gamer',         cat: 'animado', url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Gamer&backgroundColor=0d1117&clothingColor=1d1d1d&hairColor=2c1b18&skinColor=ae5d29' },
+    { id: 'an6',  label: 'Cientista',     cat: 'animado', url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Science&backgroundColor=0d1117&clothingColor=3c4f5c&hairColor=b58143&skinColor=f8d25c' },
+    { id: 'an7',  label: 'Detetive',      cat: 'animado', url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Detective&backgroundColor=0d1117&clothingColor=262e33&hairColor=4a312c&skinColor=d08b5b' },
+    { id: 'an8',  label: 'Artista',       cat: 'animado', url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=Artist&backgroundColor=0d1117&clothingColor=ff0055&hairColor=000000&skinColor=ae5d29' },
+    // 🎬 Hollywood (TMDB - podem falhar, têm onerror)
+    { id: 'av1',  label: 'Keanu Reeves',      cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/rRdru6REr9i3WIHv2mntpcgxnoY.jpg' },
     { id: 'av2',  label: 'Margot Robbie',     cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/euDPyqLnuwaWMHajcU3oZ9uZezR.jpg' },
     { id: 'av3',  label: 'Ryan Reynolds',     cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/6dEFBpZH8C8OijsynkSajQT99Pb.jpg' },
     { id: 'av4',  label: 'Zendaya',           cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/6TE2AlOUqcrs7CyJiWYgodmee1r.jpg' },
@@ -87,10 +97,12 @@ const AVATAR_ESTILOS = [
     { id: 'av15', label: 'Pedro Pascal',      cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/1O0VnJN2KRBJK6dDMrL2IEDkzR.jpg' },
     { id: 'av16', label: 'Anya Taylor-Joy',   cat: 'hollywood', url: 'https://image.tmdb.org/t/p/w185/mAEr2XHKTUw6o5GjNz3pMjMkVb6.jpg' },
     // 🇧🇷 Brasil
-    { id: 'av17', label: 'Wagner Moura',      cat: 'brasil', url: 'https://image.tmdb.org/t/p/w185/iDRv8PmhCnrVTXYuimZWzOgf5oV.jpg' },
-    { id: 'av18', label: 'Fernanda Montenegro',cat:'brasil', url: 'https://image.tmdb.org/t/p/w185/6IFIhGnFExvFWFqFqWdHBFm9EJD.jpg' },
-    { id: 'av19', label: 'Rodrigo Santoro',   cat: 'brasil', url: 'https://image.tmdb.org/t/p/w185/aBRZ0W0bDCx6JvV7Ie3eGHJwCAQ.jpg' },
-    { id: 'av20', label: 'Alice Braga',       cat: 'brasil', url: 'https://image.tmdb.org/t/p/w185/A9LmFVhf2UKCk7YRIQT8fUOyGln.jpg' },
+    { id: 'av17', label: 'Wagner Moura',       cat: 'brasil', url: 'https://image.tmdb.org/t/p/w185/iDRv8PmhCnrVTXYuimZWzOgf5oV.jpg' },
+    { id: 'av18', label: 'Fernanda Montenegro', cat: 'brasil', url: 'https://image.tmdb.org/t/p/w185/6IFIhGnFExvFWFqFqWdHBFm9EJD.jpg' },
+    { id: 'av19', label: 'Rodrigo Santoro',    cat: 'brasil', url: 'https://image.tmdb.org/t/p/w185/aBRZ0W0bDCx6JvV7Ie3eGHJwCAQ.jpg' },
+    { id: 'av20', label: 'Alice Braga',        cat: 'brasil', url: 'https://image.tmdb.org/t/p/w185/A9LmFVhf2UKCk7YRIQT8fUOyGln.jpg' },
+    { id: 'av21', label: 'Selton Mello',       cat: 'brasil', url: 'https://image.tmdb.org/t/p/w185/lKTSMf7bKGbKxcWDvMJkR1GEVgT.jpg' },
+    { id: 'av22', label: 'Débora Falabella',   cat: 'brasil', url: 'https://image.tmdb.org/t/p/w185/frNkFNSrBNUX7sernFGDjpLEZlK.jpg' },
 ];
 const AVATAR_KEY = 'sf_avatar_v2';
 const AVATAR_DEFAULT = AVATAR_ESTILOS[0].url;
@@ -191,6 +203,7 @@ function abrirEscolhaAvatar() {
     const grid = document.getElementById('avatarGrid');
     const atual = getAvatarAtual();
     const categorias = [
+        { nome: '🎭 Animados',       cat: 'animado' },
         { nome: '🎬 Hollywood',      cat: 'hollywood' },
         { nome: '🇧🇷 Brasil',        cat: 'brasil' },
     ];
@@ -501,7 +514,7 @@ function renderCard(item, type, badge='') {
     const favBtn = `<div class="card-fav-btn ${isFav}" onclick="event.stopPropagation();toggleFavCard(${item.id},'${realType}','${esc(title)}','${esc(img)}')"><i class="fas fa-heart"></i></div>`;
     const badgeHtml = badge ? `<span class="stream-badge" style="background:${badge.color};color:#fff;">${badge.label}</span>` : '';
     const imgTag = img
-        ? `<img src="${img}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">`
+        ? `<img src="${img}" loading="lazy" onerror="this.src='https://placehold.co/220x330/111/333?text=Sem+Capa';">`
         : '';
     const fallbackStyle = img ? 'display:none' : 'display:block';
     return `<div class="card-movie" onclick="abrirDetalhesTMDB(${item.id},'${realType}')">${nota}${favBtn}${badgeHtml}${imgTag}<div class="titulo-fallback" style="${fallbackStyle}">${esc(title)}</div></div>`;
@@ -1110,46 +1123,47 @@ function abrirPlayerWeb(servidor) {
 function renderMiniPlayerBar() {
     const existingBar = document.getElementById('miniPlayerBar');
     if(existingBar) existingBar.remove();
-    
+
     const modal = document.getElementById('embedModal');
     if(!modal) return;
-    
+
     const bar = document.createElement('div');
     bar.id = 'miniPlayerBar';
-    bar.style.cssText = 'position:absolute;top:0;left:0;right:0;z-index:4700;background:linear-gradient(to bottom,rgba(0,0,0,0.9),transparent);padding:10px 15px;display:flex;align-items:center;justify-content:space-between;gap:10px;pointer-events:all;transition:opacity 0.3s;';
-    
+    // Começa invisível, aparece ao toque
+    bar.style.cssText = 'position:absolute;top:0;left:0;right:0;z-index:4700;background:linear-gradient(to bottom,rgba(0,0,0,0.92),transparent);padding:10px 15px 24px;display:flex;align-items:center;justify-content:space-between;gap:10px;pointer-events:none;opacity:0;transition:opacity 0.25s;';
+
     const title = currentStreamData.title || '';
     const epLabel = currentItemType==='tv' && currentSeason
-        ? ` · S${String(currentSeason).padStart(2,'0')}E${String(currentEpisode).padStart(2,'0')}`
+        ? ' · S'+String(currentSeason).padStart(2,'0')+'E'+String(currentEpisode).padStart(2,'0')
         : '';
-    
+
     let nextEpBtn = '';
     if(currentItemType==='tv') {
-        nextEpBtn = `<button onclick="irProximoEpisodio()" style="background:var(--accent);color:#000;border:none;border-radius:20px;padding:6px 14px;font-size:11px;font-weight:800;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;flex-shrink:0;"><i class="fas fa-forward-step"></i> Próx. Ep</button>`;
+        nextEpBtn = '<button onclick="irProximoEpisodio()" style="background:var(--accent);color:#000;border:none;border-radius:20px;padding:7px 15px;font-size:12px;font-weight:800;cursor:pointer;white-space:nowrap;display:flex;align-items:center;gap:5px;flex-shrink:0;pointer-events:all;"><i class=\"fas fa-forward-step\"></i> Próx. Ep</button>';
     }
-    
-    bar.innerHTML = `
-        <div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">
-            <button onclick="fecharEmbedWeb()" style="background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:32px;height:32px;color:#fff;font-size:13px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;"><i class="fas fa-arrow-down"></i></button>
-            <div style="min-width:0;">
-                <div style="font-size:12px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(title)}${esc(epLabel)}</div>
-            </div>
-        </div>
-        ${nextEpBtn}
-    `;
-    
+
+    bar.innerHTML =
+        '<div style="display:flex;align-items:center;gap:8px;min-width:0;flex:1;">'
+        +'<button onclick="fecharEmbedWeb()" style="background:rgba(255,255,255,0.15);border:none;border-radius:50%;width:34px;height:34px;color:#fff;font-size:14px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;pointer-events:all;"><i class="fas fa-arrow-down"></i></button>'
+        +'<div style="min-width:0;"><div style="font-size:12px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+esc(title)+esc(epLabel)+'</div></div>'
+        +'</div>'
+        +nextEpBtn;
+
     modal.appendChild(bar);
-    
-    // Auto-hide after 4s
-    setTimeout(() => { if(bar && bar.style) bar.style.opacity = '0'; }, 4000);
-    // Show on tap
-    modal.addEventListener('click', () => {
-        if(bar && bar.style) {
-            bar.style.opacity = '1';
-            clearTimeout(bar._hideTimer);
-            bar._hideTimer = setTimeout(() => { if(bar.style) bar.style.opacity = '0'; }, 3000);
-        }
-    }, { passive: true });
+
+    // Controle de toque: mostra ao tocar, some 3s depois de parar
+    let _hideTimer = null;
+    function mostrarBar() {
+        bar.style.opacity = '1';
+        bar.style.pointerEvents = 'all';
+        clearTimeout(_hideTimer);
+        _hideTimer = setTimeout(() => {
+            bar.style.opacity = '0';
+            bar.style.pointerEvents = 'none';
+        }, 3000);
+    }
+    modal.addEventListener('touchstart', mostrarBar, { passive: true });
+    modal.addEventListener('click', mostrarBar, { passive: true });
 }
 
 function irProximoEpisodio() {
@@ -1434,6 +1448,8 @@ function entrarModoIPTV() {
     const mainHeader = document.getElementById('mainHeader');
     if(mainHeader) mainHeader.style.display = 'none';
     history.pushState({ view: 'view-iptv' }, null, '');
+    // Sempre recarrega filmes ao entrar (garante dados frescos)
+    iptvCarregado.filmes = false;
     carregarIPTFilmes();
 }
 function mudarAbaIPTV(contentId, tabEl) {
@@ -1670,7 +1686,11 @@ function renderContinueWatching() {
             : String(item.id);
         // Simula progresso visual (aleatório entre 20-85% para visual real)
         const progressSeed = (item.id * 37 + (item.episode||0) * 13) % 65 + 20;
-        return '<div class="card-movie continue-card" onclick="abrirDetalhesTMDB('+item.id+',\''+item.type+'\')">'
+        // Séries: vai direto ao player no episódio salvo. Filmes: vai aos detalhes
+        const clickAction = (item.type==='tv' && item.season && item.episode)
+            ? 'reproduzirEpisodioTMDB('+item.id+','+item.season+','+item.episode+')'
+            : 'abrirDetalhesTMDB('+item.id+',\''+item.type+'\')';
+        return '<div class="card-movie continue-card" onclick="'+clickAction+'">'
             +'<img src="'+item.img+'" loading="lazy" onerror="this.style.display=\'none\';">'
             +'<div class="continue-badge">▶ '+label+'</div>'
             +'<div class="continue-progress-bar"><div class="continue-progress-fill" style="width:'+progressSeed+'%;"></div></div>'
