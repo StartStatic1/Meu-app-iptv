@@ -280,13 +280,17 @@ function renderCard(item, type, badge='') {
     const tmdbType = item.media_type || type;
     const realType = tmdbType === 'tv' ? 'tv' : 'movie';
     const title = item.title || item.name || 'Sem Título';
-    const img = item.poster_path ? `${TMDB_IMG}/w300${item.poster_path}` : 'https://via.placeholder.com/220x330/111/fff';
+    const img = item.poster_path ? `${TMDB_IMG}/w342${item.poster_path}` : '';
     const nota = item.vote_average ? `<span style="position:absolute;bottom:5px;left:5px;background:rgba(0,0,0,0.75);color:gold;font-size:10px;font-weight:900;padding:3px 6px;border-radius:4px;z-index:2;"><i class="fas fa-star"></i> ${item.vote_average.toFixed(1)}</span>` : '';
     const favs = getFavList();
     const isFav = favs[item.id] ? 'active' : '';
     const favBtn = `<div class="card-fav-btn ${isFav}" onclick="event.stopPropagation();toggleFavCard(${item.id},'${realType}','${esc(title)}','${esc(img)}')"><i class="fas fa-heart"></i></div>`;
     const badgeHtml = badge ? `<span class="stream-badge" style="background:${badge.color};color:#fff;">${badge.label}</span>` : '';
-    return `<div class="card-movie" onclick="abrirDetalhesTMDB(${item.id},'${realType}')">${nota}${favBtn}${badgeHtml}<img src="${img}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';"><div class="titulo-fallback" style="display:none">${esc(title)}</div></div>`;
+    const imgTag = img
+        ? `<img src="${img}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">`
+        : '';
+    const fallbackStyle = img ? 'display:none' : 'display:block';
+    return `<div class="card-movie" onclick="abrirDetalhesTMDB(${item.id},'${realType}')">${nota}${favBtn}${badgeHtml}${imgTag}<div class="titulo-fallback" style="${fallbackStyle}">${esc(title)}</div></div>`;
 }
 
 function toggleFavCard(id, type, title, img) {
@@ -1117,6 +1121,9 @@ function mudarAba(idView, btn, originHistory=false) {
         // Carrega streaming se for a primeira vez
         const container = document.getElementById('resultados-streaming');
         if(container && container.innerHTML.includes('Carregando')) carregarStreaming();
+    }
+    if(idView==='view-tv') {
+        iniciarTVAoVivo();
     }
 }
 
