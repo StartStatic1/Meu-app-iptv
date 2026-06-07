@@ -568,18 +568,21 @@ function esconderSplash() {
 // ===================== APP INIT =====================
 async function initApp() {
     esconderSplash();
-    verificarStatusVip();
-    verificarPagamentoOuTrial();
-    injetarAnuncios(); 
-    renderGenreChips();
-    renderStreamingGenreChips();
-    iniciarAbaMeus();
-    atualizarMenuAvatar();
 
-    const continueHtml = renderContinueWatching();
-    const continueSection = document.getElementById('section-continuar');
-    if(continueSection && continueHtml) continueSection.innerHTML = continueHtml;
-    else if(continueSection && !continueHtml) continueSection.style.display = 'none';
+    // Funções auxiliares protegidas — erro aqui nunca pode travar o app
+    try { verificarStatusVip(); } catch(e) { console.warn('verificarStatusVip:', e); }
+    try { verificarPagamentoOuTrial(); } catch(e) { console.warn('verificarPagamentoOuTrial:', e); }
+    try { injetarAnuncios(); } catch(e) { console.warn('injetarAnuncios:', e); }
+    try { renderGenreChips(); } catch(e) {}
+    try { renderStreamingGenreChips(); } catch(e) {}
+    try { iniciarAbaMeus(); } catch(e) {}
+    try { atualizarMenuAvatar(); } catch(e) {}
+    try {
+        const continueHtml = renderContinueWatching();
+        const continueSection = document.getElementById('section-continuar');
+        if(continueSection && continueHtml) continueSection.innerHTML = continueHtml;
+        else if(continueSection && !continueHtml) continueSection.style.display = 'none';
+    } catch(e) {}
 
     try {
         const [trendingM, trendingS, upcoming, top10BR] = await Promise.all([
