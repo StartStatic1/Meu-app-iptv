@@ -27,7 +27,12 @@
 
     <div class="header" id="mainHeader">
         <h1 class="header-logo">Stream<span>Flix</span></h1>
-        <i class="fas fa-crown header-btn header-vip-btn" id="btnOpenVip" onclick="abrirModalVip()"></i>
+        <div class="header-right-actions">
+            <div id="headerAvatarBtn" onclick="abrirModalVip()" class="header-avatar-btn">
+                <img id="headerAvatarImg" src="" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" onerror="this.style.display='none'">
+            </div>
+            <i class="fas fa-crown header-btn header-vip-btn" id="btnOpenVip" onclick="abrirModalVip()"></i>
+        </div>
     </div>
 
     <div id="pushPromptModal" style="display:none; position:fixed; bottom:80px; left:5%; width:90%; background:linear-gradient(45deg, #00e5ff, #0055ff); padding:15px; border-radius:12px; z-index:4000; box-shadow:0 5px 15px rgba(0,229,255,0.4); text-align:center;">
@@ -196,8 +201,30 @@
         <!-- Chips dos streamings -->
         <div class="streaming-chips" id="streamingChips">
             <div class="streaming-chip active" onclick="selecionarStreaming(8,'Netflix','#e50914')" id="chip-8">
-                <img class="s-logo s-logo-svg" src="https://cdn.simpleicons.org/netflix/E50914" onerror="this.style.display='none'"><span class="s-name">Netflix</span>
+                <div class="s-logo-wrap" style="background:#000;"><img class="s-logo" src="https://cdn.simpleicons.org/netflix/E50914" onerror="this.src='https://upload.wikimedia.org/wikipedia/commons/0/08/Netflix_2015_logo.svg'"></div><span class="s-name">Netflix</span>
             </div>
+            <div class="streaming-chip" onclick="selecionarStreaming(337,'Disney+','#0f3fa6')" id="chip-337">
+                <div class="s-logo-wrap" style="background:#040714;"><img class="s-logo" src="https://cdn.simpleicons.org/disneyplus/0063e5" onerror="this.src=''"></div><span class="s-name">Disney+</span>
+            </div>
+            <div class="streaming-chip" onclick="selecionarStreaming(119,'Prime','#00a8e1')" id="chip-119">
+                <div class="s-logo-wrap" style="background:#0F79AF;"><img class="s-logo" src="https://cdn.simpleicons.org/primevideo/ffffff" onerror="this.src=''"></div><span class="s-name">Prime</span>
+            </div>
+            <div class="streaming-chip" onclick="selecionarStreaming(384,'Max','#6B2FA0')" id="chip-384">
+                <div class="s-logo-wrap" style="background:#002BE7;"><img class="s-logo" src="https://cdn.simpleicons.org/hbo/ffffff" onerror="this.src=''"></div><span class="s-name">Max</span>
+            </div>
+            <div class="streaming-chip" onclick="selecionarStreaming(283,'Crunchyroll','#ff5c00')" id="chip-283">
+                <div class="s-logo-wrap" style="background:#F47521;"><img class="s-logo" src="https://cdn.simpleicons.org/crunchyroll/ffffff" onerror="this.src=''"></div><span class="s-name">Crunchyroll</span>
+            </div>
+            <div class="streaming-chip" onclick="selecionarStreaming(531,'Paramount+','#0064ff')" id="chip-531">
+                <div class="s-logo-wrap" style="background:#0064FF;"><img class="s-logo" src="https://cdn.simpleicons.org/paramountplus/ffffff" onerror="this.src=''"></div><span class="s-name">Paramount+</span>
+            </div>
+            <div class="streaming-chip" onclick="selecionarStreaming(307,'Globoplay','#f24c00')" id="chip-307">
+                <div class="s-logo-wrap" style="background:#F24C00;"><img class="s-logo" src="https://logodownload.org/wp-content/uploads/2021/04/globoplay-logo-1.png" onerror="this.parentElement.innerHTML='<span style=color:#fff;font-size:10px;font-weight:900;>globo<br>play</span>'"></div><span class="s-name">Globoplay</span>
+            </div>
+            <div class="streaming-chip" onclick="selecionarStreaming(350,'Apple TV+','#1c1c1e')" id="chip-350">
+                <div class="s-logo-wrap" style="background:#1c1c1e;"><img class="s-logo" src="https://cdn.simpleicons.org/appletv/ffffff" onerror="this.src=''"></div><span class="s-name">Apple TV+</span>
+            </div>
+        </div>
             <div class="streaming-chip" onclick="selecionarStreaming(337,'Disney+','#0f3fa6')" id="chip-337">
                 <img class="s-logo s-logo-svg" src="https://cdn.simpleicons.org/disneyplus/0063e5" onerror="this.style.display='none'"><span class="s-name">Disney+</span>
             </div>
