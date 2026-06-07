@@ -1,6 +1,5 @@
-// ===================== IPTV CANAIS - Servidor M3U (Xtream Codes) =====================
-// ATENÇÃO: Este módulo usa /api/iptv (servidor M3U), NÃO o /api/tv (BetterFlix)
-const IPTV_CANAIS_PROXY = '/api/iptv';
+// ===================== IPTV CANAIS - SuperFlixAPI =====================
+const IPTV_CANAIS_PROXY = '/api/tv';
 let canalCategorias = [];
 let todosCanais = [];
 let canaisCarregado = false;
@@ -21,10 +20,12 @@ async function carregarCategoriasCanais() {
     divCats.innerHTML = `<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Carregando categorias...</p>`;
     
     try {
-        const res = await fetch(`${IPTV_CANAIS_PROXY}?action=get_live_categories`);
+        const res = await fetch(`${IPTV_CANAIS_PROXY}?action=categories`);
         const data = await res.json();
         const cats = Array.isArray(data) ? data : (data.categories || data.data || []);
         canalCategorias = cats;
+        
+        if (!cats.length) {
             divCats.innerHTML = `<p class="loading-text">Nenhuma categoria encontrada.</p>`;
             return;
         }
@@ -67,7 +68,7 @@ async function carregarCategoriasCanais() {
 
 async function carregarTodosCanaisBackground() {
     try {
-        const res = await fetch(`${IPTV_CANAIS_PROXY}?action=get_live_streams`);
+        const res = await fetch(`${IPTV_CANAIS_PROXY}?action=all`);
         const data = await res.json();
         todosCanais = Array.isArray(data) ? data : (data.channels || data.data || []);
     } catch(e) {}
@@ -87,7 +88,7 @@ async function carregarCanaisCategoria(catId, catNome) {
     divCanais.innerHTML = `<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Carregando ${catNome}...</p>`;
     
     try {
-        const res = await fetch(`${IPTV_CANAIS_PROXY}?action=get_live_streams&category_id=${encodeURIComponent(catId)}`);
+        const res = await fetch(`${IPTV_CANAIS_PROXY}?action=by_genre&genre=${encodeURIComponent(catId)}`);
         const data = await res.json();
         const canais = Array.isArray(data) ? data : (data.channels || data.data || []);
         
@@ -176,49 +177,22 @@ function buscarCanalIPTV() {
     }, 400);
 }
 
-// ===================== PLAYER DE CANAL IPTV =====================
+// ===================== PLAYER DE CANAL =====================
 let playerCanalAtivo = null;
 
-async function abrirPlayerCanal(url, nome, logo, id) {
+function abrirPlayerCanal(url, nome, logo, id) {
     if (!id) { mostrarToast('Canal não disponível.'); return; }
 
-    // Busca URL real do servidor IPTV (M3U - Xtream Codes)
-    try {
-        const res = await fetch(`${IPTV_CANAIS_PROXY}?action=get_live_url&stream_id=${encodeURIComponent(id)}`);
-        const data = await res.json();
-        const streamUrl = data.url || url;
+    // BetterFlix player integrado — sem bloqueios de CORS/HLS
+    const playerUrl = `https://betterflix.click/api/player?id=${encodeURIComponent(id)}&type=channel`;
 
-        // Usa o BetterFlix player apenas se não tiver URL direta
-        // Para IPTV: usa embed com URL nativa do servidor
-        const iframe = document.getElementById('embedFrame');
-        const modal = document.getElementById('embedModal');
+    const iframe = document.getElementById('embedFrame');
+    const modal = document.getElementById('embedModal');
 
-        if (streamUrl && streamUrl.startsWith('http')) {
-            // Usa HLS player inline (SuperFlix embed)
-            const playerUrl = `https://superflix.online/iframe-src/live/${encodeURIComponent(streamUrl)}`;
-            iframe.removeAttribute('srcdoc');
-            iframe.src = '';
-            iframe.src = playerUrl;
-        } else {
-            // Fallback: BetterFlix
-            const bfUrl = `https://betterflix.click/api/player?id=${encodeURIComponent(id)}&type=channel`;
-            iframe.removeAttribute('srcdoc');
-            iframe.src = '';
-            iframe.src = bfUrl;
-        }
-        modal.style.display = 'flex';
-        if (typeof addNoScroll === 'function') addNoScroll();
-        history.pushState({ view: 'embed', modal: true }, null, '');
-    } catch(e) {
-        // Fallback direto
-        const bfUrl = `https://betterflix.click/api/player?id=${encodeURIComponent(id)}&type=channel`;
-        const iframe = document.getElementById('embedFrame');
-        const modal = document.getElementById('embedModal');
-        iframe.removeAttribute('srcdoc');
-        iframe.src = '';
-        iframe.src = bfUrl;
-        modal.style.display = 'flex';
-        if (typeof addNoScroll === 'function') addNoScroll();
-        history.pushState({ view: 'embed', modal: true }, null, '');
-    }
+    iframe.removeAttribute('srcdoc');
+    iframe.src = '';
+    iframe.src = playerUrl;
+    modal.style.display = 'flex';
+    if (typeof addNoScroll === 'function') addNoScroll();
+    history.pushState({ view: 'embed', modal: true }, null, '');
 }
