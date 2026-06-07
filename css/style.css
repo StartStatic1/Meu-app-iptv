@@ -318,7 +318,7 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
 }
 .streaming-chip:active { transform: scale(0.93); }
 .streaming-chip.active { border-color: var(--accent); background: rgba(0,229,255,0.1); }
-.streaming-chip .s-icon { font-size: 22px; }
+.streaming-chip .s-logo { width: 36px; height: 36px; object-fit: contain; border-radius: 8px; }
 .streaming-chip .s-name { font-size: 9px; font-weight: 800; color: #ccc; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
 .streaming-chip.active .s-name { color: var(--accent); }
 
@@ -569,3 +569,46 @@ body:has(#trial-banner) #view-home { padding-top: 96px !important; }
    LABEL VIP NO MENU
 ========================================= */
 #menuVipStatus { font-size: 12px; font-weight: 700; transition: color 0.3s; }
+
+/* ===== 5 abas na bottom nav ===== */
+.bottom-nav { grid-template-columns: repeat(5, 1fr); }
+
+/* ===== Meus com 3 tabs ===== */
+.meus-tabs { grid-template-columns: repeat(3, 1fr); }
+.meus-tab { font-size: 11px; padding: 10px 5px; }
+
+/* ===== Canal Categories Grid ===== */
+.canal-cats-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 10px; padding: 10px 15px;
+}
+.canal-cat-item {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 16px 8px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 8px;
+    cursor: pointer; transition: 0.2s;
+}
+.canal-cat-item:active { transform: scale(0.95); background: rgba(0,229,255,0.1); }
+.canal-cat-item i { font-size: 22px; color: var(--accent); }
+.canal-cat-item span { font-size: 11px; font-weight: 700; color: #ccc; text-align: center; line-height: 1.2; }
+
+/* ===== Canais Grid ===== */
+.canais-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 10px; padding: 10px 15px 80px;
+}
+.canal-card {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px; padding: 12px 8px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 8px;
+    cursor: pointer; transition: 0.2s; overflow: hidden;
+}
+.canal-card:active { transform: scale(0.95); background: rgba(0,229,255,0.1); border-color: var(--accent); }
+.canal-logo-wrap { width: 60px; height: 45px; display: flex; align-items: center; justify-content: center; }
+.canal-logo-wrap img { width: 100%; height: 100%; object-fit: contain; border-radius: 4px; }
+.canal-logo-fallback { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 24px; }
+.canal-nome { font-size: 10px; font-weight: 700; color: #ccc; text-align: center; line-height: 1.2; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
