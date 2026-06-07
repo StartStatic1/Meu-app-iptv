@@ -226,6 +226,40 @@
         <div class="grid-container" id="conteudo-grade"></div>
     </div>
 
+
+    <!-- ========== TV AO VIVO (SuperFlixAPI) ========== -->
+    <div id="view-tv" class="view">
+        <div class="tv-header">
+            <h2><i class="fas fa-satellite-dish" style="color:var(--accent)"></i> TV Ao Vivo</h2>
+            <p>Canais via SuperFlix</p>
+        </div>
+        <div class="tv-search-wrap">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" class="tv-search-bar" id="inputBuscaTV"
+                placeholder="Buscar canal..." oninput="buscarCanalTV()">
+        </div>
+        <!-- Filtros de categoria -->
+        <div class="tv-cats-scroll" id="tvCatsScroll">
+            <div class="tv-cat-pill active" onclick="filtrarTVCategoria(null, this)">Todos</div>
+        </div>
+        <!-- Destaque canal ativo -->
+        <div id="tvDestaque" style="display:none;">
+            <div class="tv-destaque-wrap">
+                <div class="tv-destaque-logo-wrap" id="tvDestaqueLogo"></div>
+                <div class="tv-destaque-info">
+                    <div class="tv-destaque-nome" id="tvDestaqueNome"></div>
+                    <div class="tv-destaque-cat" id="tvDestaqueCat"></div>
+                    <div class="tv-live-badge"><span class="tv-live-dot"></span> AO VIVO</div>
+                </div>
+                <button class="tv-play-btn" id="tvDestaquePlayBtn">
+                    <i class="fas fa-play"></i> Assistir
+                </button>
+            </div>
+        </div>
+        <!-- Grid canais -->
+        <div id="tvCanaisGrid" class="tv-canais-grid"></div>
+    </div>
+
     <!-- ========== BOTTOM NAV (4 abas) ========== -->
     <div class="bottom-nav" id="bottomNav">
         <div class="nav-item active" id="nav-home" onclick="mudarAba('view-home', this)">
@@ -234,7 +268,7 @@
         <div class="nav-item" id="nav-streaming" onclick="mudarAba('view-streaming', this)">
             <i class="fas fa-play-circle"></i><span>Streaming</span>
         </div>
-        <div class="nav-item" id="nav-iptv" onclick="entrarModoIPTV()">
+        <div class="nav-item" id="nav-tv" onclick="mudarAba('view-tv', this)">
             <i class="fas fa-satellite-dish"></i><span>TV</span>
         </div>
         <div class="nav-item" id="nav-buscar" onclick="mudarAba('view-buscar', this)">
@@ -518,6 +552,7 @@
     <script src="/js/config.js"></script>
     <script src="/js/pagamento.js"></script>
     <script src="/js/iptv-canais.js"></script>
+    <script src="/js/tv-ao-vivo.js"></script>
     <script src="/js/app.js"></script>
 </body>
 </html>
