@@ -665,3 +665,127 @@ body:has(#trial-banner) #view-home { padding-top: 96px !important; }
 
 /* TV Loading state */
 .tv-loading { grid-column: span 3; text-align: center; padding: 50px 20px; color: #888; line-height: 1.8; }
+
+/* =========================================
+   v9 FIXES & IMPROVEMENTS
+========================================= */
+
+/* --- Mini Player Bar (dentro do embed) --- */
+#miniPlayerBar {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+/* --- Streaming type toggle fix --- */
+.streaming-type-toggle {
+    display: flex;
+    background: rgba(255,255,255,0.05);
+    border-radius: 10px;
+    margin: 0 15px 15px;
+    padding: 4px;
+    gap: 0;
+}
+.streaming-type-btn {
+    flex: 1;
+    text-align: center;
+    padding: 9px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    color: #888;
+    cursor: pointer;
+    transition: 0.2s;
+    border: none;
+    background: transparent;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.streaming-type-btn.active {
+    background: rgba(255,255,255,0.12);
+    color: #fff;
+}
+.streaming-type-btn i { font-size: 13px; }
+.streaming-type-btn.active i { color: var(--accent); }
+
+/* --- s-logo-wrap fix (logo do streaming) --- */
+.s-logo-wrap {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+}
+
+/* --- Continuar Assistindo - Real Design --- */
+.continue-card {
+    position: relative;
+    border-radius: 10px;
+    overflow: hidden;
+}
+.continue-progress-bar {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 3px;
+    background: rgba(255,255,255,0.15);
+    z-index: 4;
+}
+.continue-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 3px;
+    min-width: 8%;
+    max-width: 95%;
+}
+.continue-badge {
+    position: absolute; bottom: 3px; left: 0; right: 0;
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, transparent 100%);
+    color: var(--accent); font-size: 10px; font-weight: 900;
+    padding: 22px 6px 6px; text-align: center; letter-spacing: 0.5px;
+    z-index: 3;
+}
+
+/* --- TV ao vivo: BetterFlix destaque (photo-based) --- */
+.tv-destaque-bar {
+    margin: 0 0 8px;
+}
+.tv-canal-card img {
+    pointer-events: none;
+    -webkit-user-drag: none;
+}
+
+/* --- Avatar grid categorias --- */
+.avatar-cat-label {
+    grid-column: span 4;
+    font-size: 11px; font-weight: 700;
+    color: #888; padding: 8px 0 4px;
+    letter-spacing: 1px;
+}
+
+/* --- Botão "Próx. Ep" no mini player --- */
+#miniPlayerBar button {
+    touch-action: manipulation;
+}
+
+/* --- Estreias: "Carregando..." fix --- */
+#conteudo-estreias-lista .fa-spinner {
+    display: block;
+    margin: 0 auto 10px;
+    font-size: 24px;
+    color: var(--accent);
+}
+
+/* --- Home: "Continuar Assistindo" vazio oculto --- */
+#section-continuar:empty { display: none; }
+
+/* --- Toast posição ao vivo embed --- */
+#toast-msg { z-index: 10001; }
+
+/* --- Grade IPTV fix padding bottom --- */
+#conteudo-grade { padding-bottom: 90px; }
+
+/* --- TV Canal card selected ring --- */
+.tv-canal-card.selected {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0,229,255,0.3);
+}
