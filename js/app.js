@@ -564,11 +564,25 @@ function renderTop10Carousel(title, items, type) {
 
 // ===================== SPLASH SCREEN =====================
 function esconderSplash() {
-    setTimeout(() => {
+    // Proteção 1: tenta esconder imediatamente após 1.8s (barra termina em 1.8s)
+    const _hide = () => {
         const splash = document.getElementById('splashScreen');
-        if(splash) splash.classList.add('hide');
-        setTimeout(() => { if(splash) splash.remove(); }, 600);
-    }, 2000);
+        if (!splash) return;
+        splash.classList.add('hide');
+        // Proteção 2: remove do DOM após transição
+        setTimeout(() => {
+            const s = document.getElementById('splashScreen');
+            if (s) s.remove();
+        }, 600);
+    };
+
+    setTimeout(_hide, 2000);
+
+    // Proteção 3: failsafe absoluto — se depois de 4s ainda existir, mata
+    setTimeout(() => {
+        const s = document.getElementById('splashScreen');
+        if (s) { s.style.display = 'none'; s.remove(); }
+    }, 4000);
 }
 
 // ===================== APP INIT =====================
@@ -1586,7 +1600,13 @@ window.addEventListener('popstate', function(event) {
 
 document.addEventListener('backbutton', function(e) { e.preventDefault(); history.back(); }, false);
 
-window.onload = () => {
+document.addEventListener('backbutton', function(e) { e.preventDefault(); history.back(); }, false);
+
+// Garante que o app inicia mesmo se window.onload não disparar (PWA cache)
+let _appIniciado = false;
+function _iniciarApp() {
+    if (_appIniciado) return;
+    _appIniciado = true;
     history.replaceState({ view: 'view-home' }, null, "");
     initApp();
     document.addEventListener('contextmenu', event=>event.preventDefault());
@@ -1596,7 +1616,19 @@ window.onload = () => {
             if(embedEl && embedEl.style.display !== 'flex') forceRemoveNoScroll();
         }
     });
-};
+}
+
+// Dispara pelo DOMContentLoaded (mais rápido, funciona em PWA)
+document.addEventListener('DOMContentLoaded', _iniciarApp);
+// Fallback: window.onload (caso DOMContentLoaded já tenha passado)
+window.onload = _iniciarApp;
+// Failsafe final: se depois de 5s ainda não iniciou, força
+setTimeout(() => {
+    if (!_appIniciado) _iniciarApp();
+    // Também mata o splash de qualquer forma
+    const s = document.getElementById('splashScreen');
+    if (s) { s.style.display = 'none'; s.remove(); }
+}, 5000);
 
 function fecharAdBlock() {
     const el = document.getElementById('adBlockModal');
