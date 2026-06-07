@@ -67,39 +67,38 @@ function isVip() {
     return localStorage.getItem('streamflix_vip') === 'true';
 }
 // ─── AVATARES DISPONÍVEIS ────────────────────────────────────────────────────
-// Avatares estilo personagem usando DiceBear API (gratuito, sem bloqueio)
+// Fotos reais de atores, atrizes e personagens anime via TMDB
 const AVATAR_ESTILOS = [
-    // Anime / Cartoon
-    { id: 'av1',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix1&backgroundColor=b6e3f4&clothingColor=3c4f5c&eyebrowType=raisedExcited&eyeType=happy&mouthType=smile' },
-    { id: 'av2',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix2&backgroundColor=d1d4f9&hairColor=2c1b18&eyeType=wink&mouthType=twinkle' },
-    { id: 'av3',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix3&backgroundColor=ffd5dc&accessoriesType=kurt&eyebrowType=raised&mouthType=smile' },
-    { id: 'av4',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix4&backgroundColor=c0aede&eyeType=hearts&mouthType=tongue' },
-    { id: 'av5',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix5&backgroundColor=b6e3f4&topType=longHairStraight&hairColor=4a312c' },
-    { id: 'av6',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix6&backgroundColor=ffdbb4&topType=shortHairShortFlat&eyeType=side' },
-    // Pixel Art
-    { id: 'av7',  url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=hero1&backgroundColor=1a1a2e&clothing=shirt1' },
-    { id: 'av8',  url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=hero2&backgroundColor=16213e&hair=short01' },
-    { id: 'av9',  url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=hero3&backgroundColor=0f3460' },
-    { id: 'av10', url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=hero4&backgroundColor=533483' },
-    // Lorelei (ilustração)
-    { id: 'av11', url: 'https://api.dicebear.com/9.x/lorelei/svg?seed=cat1&backgroundColor=0d0d0d&freckles=true' },
-    { id: 'av12', url: 'https://api.dicebear.com/9.x/lorelei/svg?seed=wolf1&backgroundColor=111111' },
-    { id: 'av13', url: 'https://api.dicebear.com/9.x/lorelei/svg?seed=dragon1&backgroundColor=0a0a0a' },
-    { id: 'av14', url: 'https://api.dicebear.com/9.x/lorelei/svg?seed=ninja1&backgroundColor=0d0d0d' },
-    // Fun characters
-    { id: 'av15', url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=ghost&backgroundColor=1a1a2e' },
-    { id: 'av16', url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=robot&backgroundColor=16213e' },
-    { id: 'av17', url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=alien&backgroundColor=0f3460' },
-    { id: 'av18', url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=wizard&backgroundColor=1a0a2e' },
-    // Bottts (robôs)
-    { id: 'av19', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=r2d2&backgroundColor=1e1e2e' },
-    { id: 'av20', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=hal9000&backgroundColor=0d1117' },
-    { id: 'av21', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=wall-e&backgroundColor=1a1a1a' },
-    { id: 'av22', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=terminator&backgroundColor=0a0a0a' },
-    // Anime style (Adventurer)
-    { id: 'av23', url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=sasuke&backgroundColor=16213e&eyes=variant08' },
-    { id: 'av24', url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=naruto&backgroundColor=1a0a00&hair=long01' },
-    { id: 'av25', url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=zoro&backgroundColor=001a0a' },
+    // 🎬 Atores
+    { id: 'av1',  label: 'Tom Cruise',      url: 'https://image.tmdb.org/t/p/w185/8qBylBsQf4llkGrWR3qAsOtOU8O.jpg' },
+    { id: 'av2',  label: 'Margot Robbie',   url: 'https://image.tmdb.org/t/p/w185/euDPyqLnuwaWMHajcU3oZ9uZezR.jpg' },
+    { id: 'av3',  label: 'Ryan Reynolds',   url: 'https://image.tmdb.org/t/p/w185/4SYTH5FdB8cFPFJOSJVUE0CrBJO.jpg' },
+    { id: 'av4',  label: 'Scarlett Johansson', url: 'https://image.tmdb.org/t/p/w185/6NsMbJXRlDZuDzatN2akFdGuTvx.jpg' },
+    { id: 'av5',  label: 'Keanu Reeves',    url: 'https://image.tmdb.org/t/p/w185/4D0PpNI0kmP58hgrwGC3wCjxhnm.jpg' },
+    { id: 'av6',  label: 'Zendaya',         url: 'https://image.tmdb.org/t/p/w185/6eFl0gKDgzCBiEXMWQgKGnNSMjn.jpg' },
+    { id: 'av7',  label: 'Chris Evans',     url: 'https://image.tmdb.org/t/p/w185/3bOGNse2AuttOFBx9w7hPDSMEH7.jpg' },
+    { id: 'av8',  label: 'Lupita Nyong\'o', url: 'https://image.tmdb.org/t/p/w185/58NsCW7bkFoltnBGfIiKEEGhYRn.jpg' },
+    { id: 'av9',  label: 'Timothée Chalamet', url: 'https://image.tmdb.org/t/p/w185/BE2sdjpgsa2rNTFa66f7upkaOP.jpg' },
+    { id: 'av10', label: 'Ana de Armas',    url: 'https://image.tmdb.org/t/p/w185/3vxvsmYLNDOFNhBejHDkVJQVvKz.jpg' },
+    // 🇧🇷 Atores Brasileiros
+    { id: 'av11', label: 'Wagner Moura',    url: 'https://image.tmdb.org/t/p/w185/mOzF0WcwzKM8LrsMO7HEbqQVHQv.jpg' },
+    { id: 'av12', label: 'Taís Araújo',     url: 'https://image.tmdb.org/t/p/w185/rYGnF0VVzZpqH5Xq6b5rGXJYlGj.jpg' },
+    // ⚔️ Personagens Anime (artes oficiais TMDB)
+    { id: 'av13', label: 'Naruto',          url: 'https://image.tmdb.org/t/p/w185/xRez6FcEVUKcaRY3pVxbFbIFLx6.jpg' },
+    { id: 'av14', label: 'Attack on Titan', url: 'https://image.tmdb.org/t/p/w185/hTP1DtLGFamjfu8WqjnuQdP1n4i.jpg' },
+    { id: 'av15', label: 'Dragon Ball',     url: 'https://image.tmdb.org/t/p/w185/rPdtLWNsZmAtoZl9ueRv0Fje1RU.jpg' },
+    { id: 'av16', label: 'One Piece',       url: 'https://image.tmdb.org/t/p/w185/fcFVAVFQCFbMGFQO20VBQO3BPRL.jpg' },
+    { id: 'av17', label: 'Demon Slayer',    url: 'https://image.tmdb.org/t/p/w185/xUfRZu2mi8jH6SzQEJGP6tjBuYj.jpg' },
+    { id: 'av18', label: 'My Hero Academia',url: 'https://image.tmdb.org/t/p/w185/vl4cqBLxhPrErKRkQtj8yNBEpgY.jpg' },
+    // 🦸 Personagens Marvel/DC
+    { id: 'av19', label: 'Iron Man',        url: 'https://image.tmdb.org/t/p/w185/2MbGPmLx6DFZQJD2cBeBK6V8Y1c.jpg' },
+    { id: 'av20', label: 'Batman',          url: 'https://image.tmdb.org/t/p/w185/74xTEgt7R36Fpooo50r9T25onhq.jpg' },
+    // 🎨 Ilustrações (DiceBear - fallback bonito)
+    { id: 'av21', label: 'Avatar Cartoon',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix1&backgroundColor=b6e3f4&eyeType=happy&mouthType=smile' },
+    { id: 'av22', label: 'Avatar Anime',    url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=naruto&backgroundColor=16213e' },
+    { id: 'av23', label: 'Avatar Robô',     url: 'https://api.dicebear.com/9.x/bottts/svg?seed=r2d2&backgroundColor=1e1e2e' },
+    { id: 'av24', label: 'Avatar Pixel',    url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=hero1&backgroundColor=1a1a2e' },
+    { id: 'av25', label: 'Avatar Fun',      url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=ghost&backgroundColor=1a1a2e' },
 ];
 const AVATAR_KEY = 'sf_avatar_v2';
 const AVATAR_DEFAULT = AVATAR_ESTILOS[0].url;
@@ -199,23 +198,29 @@ function abrirEscolhaAvatar() {
     if (!modal) return;
     const grid = document.getElementById('avatarGrid');
     const atual = getAvatarAtual();
-    // Categorias de avatares
+
     const categorias = [
-        { nome: '😄 Cartoon', range: [0,5] },
-        { nome: '🎮 Pixel', range: [6,9] },
-        { nome: '🎨 Ilustração', range: [10,13] },
-        { nome: '😜 Fun', range: [14,17] },
-        { nome: '🤖 Robô', range: [18,21] },
-        { nome: '⚔️ Anime', range: [22,24] },
+        { nome: '🎬 Atores & Atrizes', range: [0, 9] },
+        { nome: '🇧🇷 Brasileiros',      range: [10, 11] },
+        { nome: '⚔️ Anime',             range: [12, 17] },
+        { nome: '🦸 Marvel & DC',       range: [18, 19] },
+        { nome: '🎨 Ilustrações',       range: [20, 24] },
     ];
+
     let html = '';
     categorias.forEach(cat => {
-        html += `<div style="grid-column:span 4;font-size:11px;font-weight:700;color:#888;padding:4px 0 2px;letter-spacing:1px;">${cat.nome}</div>`;
-        for(let i = cat.range[0]; i <= cat.range[1]; i++) {
+        html += `<div style="grid-column:span 4;font-size:11px;font-weight:700;color:#888;padding:6px 0 4px;letter-spacing:1px;">${cat.nome}</div>`;
+        for (let i = cat.range[0]; i <= cat.range[1]; i++) {
             const av = AVATAR_ESTILOS[i];
             const ativo = av.url === atual;
-            html += `<div onclick="escolherAvatar('${av.url}')" style="width:60px;height:60px;border-radius:14px;overflow:hidden;cursor:pointer;border:2px solid ${ativo?'var(--accent)':'transparent'};background:rgba(255,255,255,0.04);transition:0.15s;display:flex;align-items:center;justify-content:center;">
-                <img src="${av.url}" style="width:54px;height:54px;border-radius:10px;" loading="lazy">
+            html += `<div onclick="escolherAvatar('${av.url}')" title="${av.label||''}"
+                style="width:60px;height:60px;border-radius:14px;overflow:hidden;cursor:pointer;
+                border:2px solid ${ativo ? 'var(--accent)' : 'transparent'};
+                background:rgba(255,255,255,0.06);transition:0.15s;
+                display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+                <img src="${av.url}" style="width:60px;height:60px;object-fit:cover;border-radius:12px;" loading="lazy"
+                    onerror="this.src='https://api.dicebear.com/9.x/avataaars/svg?seed=${av.id}&backgroundColor=222'">
+                ${ativo ? '<div style="position:absolute;bottom:3px;right:3px;width:14px;height:14px;background:var(--accent);border-radius:50%;display:flex;align-items:center;justify-content:center;"><i class=\'fas fa-check\' style=\'font-size:7px;color:#000;\'></i></div>' : ''}
             </div>`;
         }
     });
@@ -241,6 +246,9 @@ function atualizarMenuAvatar() {
     const avatar = getAvatarAtual();
     const menuAv = document.getElementById('menu-avatar-emoji');
     if (menuAv) menuAv.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+    // Atualiza também no header
+    const headerAv = document.getElementById('headerAvatarImg');
+    if (headerAv) headerAv.src = avatar;
 }
 
 // ─── SAIR ─────────────────────────────────────────────────────────────────────
@@ -324,6 +332,10 @@ function verificarStatusVip() {
 
     // Avatar no menu
     atualizarMenuAvatar();
+
+    // Avatar no header (home)
+    const headerAv = document.getElementById('headerAvatarImg');
+    if (headerAv) headerAv.src = getAvatarAtual();
 
     // Botão header
     let btnHeader = document.getElementById('btnHeaderAssinar');
@@ -799,11 +811,15 @@ function iniciarAbaMeus() {
 function mudarMeusTab(tab) {
     document.querySelectorAll('.meus-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.meus-content').forEach(c => c.classList.remove('active'));
-    document.getElementById('meus-tab-' + tab).classList.add('active');
-    document.getElementById('meus-' + tab).classList.add('active');
+    const tabEl = document.getElementById('meus-tab-' + tab);
+    const contentEl = document.getElementById('meus-' + tab);
+    if (tabEl) tabEl.classList.add('active');
+    if (contentEl) contentEl.classList.add('active');
     if (tab === 'estreias') {
         const lista = document.getElementById('conteudo-estreias-lista');
         if (lista && lista.querySelector('.fa-spinner')) carregarEstreias();
+    } else if (tab === 'iptv') {
+        if (typeof renderMeusIPTVFavoritos === 'function') renderMeusIPTVFavoritos();
     }
 }
 
@@ -1352,6 +1368,22 @@ function mudarAba(idView, btn, originHistory=false) {
     if(idView==='view-tv') {
         iniciarTVAoVivo();
     }
+}
+
+function entrarModoIPTVAba(aba) {
+    entrarModoIPTV();
+    // Muda para a aba específica após entrar no IPTV
+    setTimeout(() => {
+        const tabs = document.querySelectorAll('.iptv-tab');
+        const contents = document.querySelectorAll('.iptv-content');
+        tabs.forEach(t => t.classList.remove('active'));
+        contents.forEach(c => c.classList.remove('active'));
+        const content = document.getElementById(aba);
+        if (content) content.classList.add('active');
+        if (aba === 'iptv-filmes') { const t = tabs[0]; if(t) t.classList.add('active'); if(!iptvCarregado.filmes) carregarIPTFilmes(); }
+        else if (aba === 'iptv-series') { const t = tabs[1]; if(t) t.classList.add('active'); if(!iptvCarregado.series) carregarIPTSeries(); }
+        else if (aba === 'iptv-tv') { const t = tabs[2]; if(t) t.classList.add('active'); iniciarIPTVCanais(); }
+    }, 100);
 }
 
 function entrarModoIPTV() {
