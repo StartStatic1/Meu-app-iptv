@@ -30,7 +30,6 @@ input, textarea, select, [contenteditable] {
     -webkit-touch-callout: default !important; 
 }
 
-/* Senha exibida na tela de sucesso também pode ser selecionada/copiada */
 #sucesso-senha {
     -webkit-user-select: text !important;
     user-select: text !important;
@@ -48,8 +47,54 @@ body {
     padding-bottom: 90px; 
 }
 
-/* BUG FIX: aplica no-scroll em html E body para evitar scroll travado */
 html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !important; position: fixed; width: 100%; }
+
+/* =========================================
+   SPLASH SCREEN
+========================================= */
+#splashScreen {
+    position: fixed; inset: 0; z-index: 99999;
+    background: linear-gradient(135deg, #0a0c17 0%, #1a1d29 50%, #0a0c17 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+#splashScreen.hide { opacity: 0; visibility: hidden; pointer-events: none; }
+.splash-logo {
+    font-size: 42px; font-weight: 900; color: #fff;
+    letter-spacing: 1px; margin-bottom: 8px;
+    animation: splashPop 0.6s cubic-bezier(0.22,1,0.36,1) both;
+}
+.splash-logo span { color: var(--accent); text-shadow: 0 0 20px rgba(0,229,255,0.8); }
+.splash-tagline {
+    font-size: 12px; color: rgba(255,255,255,0.4); font-weight: 600;
+    letter-spacing: 3px; text-transform: uppercase;
+    animation: splashFade 0.8s 0.3s both;
+}
+.splash-bar {
+    width: 120px; height: 3px; background: rgba(255,255,255,0.1);
+    border-radius: 10px; margin-top: 40px; overflow: hidden;
+    animation: splashFade 0.5s 0.2s both;
+}
+.splash-bar-fill {
+    height: 100%; width: 0%;
+    background: linear-gradient(90deg, var(--accent), #0055ff);
+    border-radius: 10px;
+    animation: splashLoad 1.8s 0.3s ease forwards;
+}
+@keyframes splashPop {
+    from { opacity: 0; transform: scale(0.8); }
+    to   { opacity: 1; transform: scale(1); }
+}
+@keyframes splashFade {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes splashLoad {
+    0%   { width: 0%; }
+    60%  { width: 80%; }
+    100% { width: 100%; }
+}
 
 /* =========================================
    CABEÇALHO PRINCIPAL
@@ -69,12 +114,10 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
 .hero-title { font-size: 32px; font-weight: 900; margin: 0 0 8px 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.9); line-height: 1.1; }
 .hero-tags { font-size: 11px; color: #ccc; font-weight: 700; margin-bottom: 8px; text-transform: uppercase; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; text-shadow: 1px 1px 5px rgba(0,0,0,0.8);}
 .hero-synopsis { font-size: 12px; color: #ddd; margin: 0 0 15px 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-shadow: 1px 1px 5px rgba(0,0,0,0.9); line-height: 1.5; max-width: 95%; font-weight: 500;}
-
 .hero-buttons { display: flex; gap: 10px; align-items: center; }
 .hero-info-btn { background: var(--accent); color: #000; padding: 10px 20px; border-radius: 25px; font-weight: 800; font-size: 12px; border: none; cursor: pointer; display: flex; align-items: center; gap: 8px; text-transform: uppercase; box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4); transition: 0.2s;}
 .hero-info-btn i { font-size: 14px; }
 .hero-info-btn:active { transform: scale(0.95); }
-
 .hero-trailer-btn { background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.3); color: #fff; padding: 10px 18px; border-radius: 25px; font-weight: 700; font-size: 11px; display: flex; justify-content: center; align-items: center; gap: 6px; text-transform: uppercase; cursor: pointer; transition: 0.2s; backdrop-filter: blur(5px); }
 .hero-trailer-btn i { color: #ff0055; font-size: 14px;}
 .hero-trailer-btn:active { transform: scale(0.95); background: rgba(255, 255, 255, 0.25); }
@@ -99,8 +142,24 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
 .card-movie .titulo-fallback { position: absolute; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: white; font-size: 9px; padding: 8px 4px; text-align: center; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .card-badges { position: absolute; top: 5px; left: 5px; display: flex; flex-direction: column; gap: 4px; z-index: 2; pointer-events: none; }
 
+/* Skeleton nos cards do carrossel */
+.card-skel { flex: 0 0 110px; height: 165px; border-radius: 8px; scroll-snap-align: start; }
+
 .grid-container { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 0 15px 20px 15px; }
 .grid-container .card-movie { flex: unset; width: 100%; height: 160px; }
+
+/* Favorito no card */
+.card-fav-btn {
+    position: absolute; top: 5px; right: 5px; z-index: 5;
+    background: rgba(0,0,0,0.65); border-radius: 50%;
+    width: 26px; height: 26px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; color: rgba(255,255,255,0.5);
+    border: 1px solid rgba(255,255,255,0.15);
+    pointer-events: all; cursor: pointer; transition: 0.2s;
+}
+.card-fav-btn.active { color: #ff4081; border-color: #ff4081; background: rgba(255,64,129,0.2); }
+.card-fav-btn:active { transform: scale(0.85); }
 
 /* Histórico e TV */
 .card-history { flex: unset; width: 100%; height: 120px; border-radius: 8px; background-color: #2a2d3e; cursor: pointer; position: relative !important; box-shadow: 0 4px 10px rgba(0,0,0,0.4); overflow: hidden;}
@@ -136,16 +195,16 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
 .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 16px; }
 
 /* =========================================
-   BOTTOM NAV
+   BOTTOM NAV (4 ITENS)
 ========================================= */
 .bottom-nav { position: fixed; bottom: 0; width: 100%; background: var(--glass); backdrop-filter: blur(15px); -webkit-backdrop-filter: blur(15px); border-top: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-around; padding: 12px 0; z-index: 1000; }
-.nav-item { color: var(--text-muted); font-size: 18px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; width: 33%; transition: 0.2s; }
+.nav-item { color: var(--text-muted); font-size: 18px; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 5px; width: 25%; transition: 0.2s; }
 .nav-item.active { color: var(--text); }
 .nav-item.active i { color: var(--accent); text-shadow: 0 0 12px rgba(0, 229, 255, 0.8); transform: scale(1.1); }
 .nav-item span { font-size: 9px; font-weight: 700; text-transform: uppercase; }
 
 /* =========================================
-   BOTTOM SHEETS E MODAIS (CORRIGIDO)
+   BOTTOM SHEETS E MODAIS
 ========================================= */
 .bottom-sheet-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1999; opacity: 0; pointer-events: none; transition: 0.3s ease; }
 .bottom-sheet-overlay.active { opacity: 1; pointer-events: all; }
@@ -163,7 +222,6 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
     box-shadow: 0 -10px 40px rgba(0,0,0,0.7);
 }
 .bottom-sheet.active { transform: translateY(0); }
-
 .sheet-handle { width: 36px; height: 4px; background: rgba(255,255,255,0.15); border-radius: 10px; margin: 0 auto 18px; cursor: pointer; }
 .sheet-btn { width: 100%; background: var(--accent); color: #000; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 15px; display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 20px; text-transform: uppercase; cursor: pointer; }
 
@@ -174,17 +232,14 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
 .menu-avatar { width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #00e5ff, #0055ff); display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; box-shadow: 0 4px 14px rgba(0,229,255,0.3); }
 .menu-user-info h3 { margin: 0; font-size: 16px; color: #fff; }
 .menu-user-info p { margin: 4px 0 0 0; font-size: 11px; color: var(--text-muted); }
-
 .menu-section { margin-bottom: 18px; }
 .menu-section-title { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
 .menu-section-title i { font-size: 10px; }
-
 .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
 .menu-grid-item { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.07); border-radius: 14px; padding: 16px 12px; display: flex; flex-direction: column; align-items: center; gap: 9px; cursor: pointer; transition: 0.2s; }
 .menu-grid-item:active { transform: scale(0.95); background: rgba(255,255,255,0.09); }
 .menu-grid-item span { font-size: 12px; font-weight: 700; color: #fff; }
 .menu-icon-box { width: 46px; height: 46px; border-radius: 13px; display: flex; align-items: center; justify-content: center; font-size: 20px; color: #fff; box-shadow: 0 5px 14px rgba(0,0,0,0.35); }
-
 .menu-list { display: flex; flex-direction: column; gap: 8px; }
 .menu-list-item { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 14px 15px; display: flex; align-items: center; gap: 12px; cursor: pointer; transition: 0.2s; }
 .menu-list-item:active { background: rgba(255,255,255,0.08); }
@@ -192,11 +247,10 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
 .menu-list-text { flex: 1; }
 .menu-list-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
 .menu-list-sub { font-size: 10px; color: var(--text-muted); }
-
 .menu-footer { text-align: center; font-size: 10px; color: rgba(255,255,255,0.2); margin-top: 12px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); letter-spacing: 0.5px; }
 
 /* =========================================
-   SERVIDORES (CORRIGIDO O MESMO BUG)
+   SERVIDORES
 ========================================= */
 .server-modal { 
     position: fixed; bottom: 0; left: 0; width: 100%; 
@@ -209,11 +263,127 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
     overflow-y: auto;
 }
 .server-modal.active { transform: translateY(0); }
-
 .server-title { font-size: 16px; font-weight: 800; color: #fff; margin: 0 0 20px 0; text-align: center;}
 .server-btn { width: 100%; background: rgba(255,255,255,0.05); color: #fff; border: 1px solid rgba(255,255,255,0.1); padding: 15px; border-radius: 12px; font-weight: 700; font-size: 14px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; cursor: pointer; transition: 0.2s;}
 .server-btn:active { background: rgba(255,255,255,0.15); transform: scale(0.98);}
 .server-warn { font-size: 10px; color: var(--text-muted); text-align: center; margin-top: 15px; line-height: 1.4;}
+
+/* =========================================
+   STREAMINGS ABA
+========================================= */
+.streaming-header {
+    padding: 55px 15px 10px;
+    background: linear-gradient(to bottom, var(--bg-top), transparent);
+}
+.streaming-header h2 {
+    font-size: 22px; font-weight: 900; margin: 0 0 4px;
+}
+.streaming-header p { font-size: 11px; color: var(--text-muted); margin: 0 0 15px; }
+
+/* Barra de busca dentro de streaming */
+.streaming-search-wrap {
+    position: relative; margin-bottom: 15px;
+}
+.streaming-search-wrap .search-icon { top: 50%; }
+.streaming-search-bar {
+    width: 100%; padding: 12px 15px 12px 42px;
+    border-radius: 25px;
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff; font-size: 14px; outline: none;
+    box-sizing: border-box; transition: 0.3s;
+}
+.streaming-search-bar:focus {
+    background: rgba(255,255,255,0.11);
+    border-color: var(--accent);
+}
+
+/* Chips dos streamings */
+.streaming-chips {
+    display: flex; gap: 10px; padding: 0 15px 15px;
+    overflow-x: auto; scrollbar-width: none;
+}
+.streaming-chips::-webkit-scrollbar { display: none; }
+
+.streaming-chip {
+    flex: 0 0 auto;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 6px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.05);
+    border: 2px solid rgba(255,255,255,0.08);
+    cursor: pointer; transition: 0.2s;
+    min-width: 70px;
+}
+.streaming-chip:active { transform: scale(0.93); }
+.streaming-chip.active { border-color: var(--accent); background: rgba(0,229,255,0.1); }
+.streaming-chip .s-icon { font-size: 22px; }
+.streaming-chip .s-name { font-size: 9px; font-weight: 800; color: #ccc; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+.streaming-chip.active .s-name { color: var(--accent); }
+
+/* Filtro tipo (filmes/séries) dentro de streaming */
+.streaming-type-toggle {
+    display: flex; background: rgba(255,255,255,0.05);
+    border-radius: 10px; margin: 0 15px 15px; padding: 4px;
+}
+.streaming-type-btn {
+    flex: 1; text-align: center; padding: 8px;
+    border-radius: 8px; font-size: 12px; font-weight: 700;
+    color: #888; cursor: pointer; transition: 0.2s;
+    border: none; background: transparent;
+}
+.streaming-type-btn.active { background: rgba(255,255,255,0.1); color: #fff; }
+
+/* Genre chips dentro de streaming */
+.streaming-genre-chips {
+    display: flex; gap: 8px; padding: 0 15px 15px;
+    overflow-x: auto; scrollbar-width: none;
+}
+.streaming-genre-chips::-webkit-scrollbar { display: none; }
+
+/* Card do streaming com logo badge */
+.stream-badge {
+    position: absolute; bottom: 5px; right: 5px; z-index: 3;
+    font-size: 8px; font-weight: 900; padding: 2px 6px;
+    border-radius: 4px; pointer-events: none;
+}
+
+/* Calendario de estreias */
+.estreia-card {
+    display: flex; gap: 12px; align-items: center;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 12px; padding: 12px 15px;
+    margin: 0 15px 10px; cursor: pointer; transition: 0.2s;
+}
+.estreia-card:active { background: rgba(255,255,255,0.09); transform: scale(0.98); }
+.estreia-poster { width: 50px; height: 75px; border-radius: 6px; object-fit: cover; flex-shrink: 0; background: #2a2d3e; -webkit-user-drag: none; }
+.estreia-info { flex: 1; }
+.estreia-title { font-size: 14px; font-weight: 800; color: #fff; margin-bottom: 4px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.estreia-date { font-size: 11px; color: var(--accent); font-weight: 700; margin-bottom: 4px; }
+.estreia-meta { font-size: 10px; color: var(--text-muted); }
+
+/* =========================================
+   ABA MEUS (FAVORITOS + ASSISTIDOS)
+========================================= */
+.meus-tabs {
+    display: flex; gap: 0; margin: 15px 15px 0;
+    background: rgba(255,255,255,0.05); border-radius: 12px; padding: 4px;
+}
+.meus-tab {
+    flex: 1; text-align: center; padding: 10px;
+    border-radius: 9px; font-size: 12px; font-weight: 800;
+    color: #888; cursor: pointer; transition: 0.2s;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+}
+.meus-tab.active { background: rgba(255,255,255,0.1); color: #fff; }
+.meus-tab i { font-size: 13px; }
+.meus-tab.active i.fa-heart { color: #ff4081; }
+.meus-tab.active i.fa-check-circle { color: #00e676; }
+
+.meus-content { display: none; }
+.meus-content.active { display: block; animation: fadeIn 0.2s ease; }
 
 /* =========================================
    PÁGINA DE DETALHES TMDB
@@ -254,7 +424,6 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
 .cast-img { width: 75px; height: 75px; border-radius: 50%; object-fit: cover; background: #2a2d3e; margin-bottom: 8px; border: 2px solid rgba(255,255,255,0.1); -webkit-user-drag: none; }
 .cast-name { font-size: 11px; color: #fff; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .cast-char { font-size: 10px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
 .season-title { font-size: 18px; font-weight: 800; color: #fff; margin: 30px 0 15px 0; border-left: 3px solid var(--accent); padding-left: 8px;}
 .ep-carousel { display: flex; gap: 15px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-bottom: 10px; }
 .ep-carousel::-webkit-scrollbar { display: none; }
@@ -279,35 +448,23 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
 .actor-info h2 { margin: 0 0 5px 0; font-size: 22px; color: #fff; }
 .actor-meta { font-size: 12px; color: var(--text-muted); margin-bottom: 5px; }
 .actor-bio { font-size: 13px; color: #ccc; line-height: 1.5; padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
-
 .trailer-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 3600; display: none; }
 .trailer-close { position: absolute; top: 15px; right: 15px; color: #fff; font-size: 28px; cursor: pointer; padding: 15px; z-index: 4502; text-shadow: 0 0 10px #000; background: rgba(0,0,0,0.4); border-radius: 50%; width: 50px; height: 50px; display: flex; align-items: center; justify-content: center; }
 .trailer-frame { width: 100%; height: 100%; background: #000; border: none; pointer-events: auto; }
-
-/* EMBED MODAL E PLAYERS (FULL SCREEN WEBVIEW) - BUG FIX: tela cheia real */
 .embed-modal { 
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     width: 100%; height: 100%;
     background: #000; z-index: 3800; display: none; 
     align-items: stretch; justify-content: center; 
-    overflow: hidden; 
-    flex-direction: column;
+    overflow: hidden; flex-direction: column;
 }
 .embed-frame { 
-    width: 100% !important; 
-    height: 100% !important; 
-    min-height: 100vh;
-    flex: 1;
+    width: 100% !important; height: 100% !important; 
+    min-height: 100vh; flex: 1;
     background: #000; border: none; z-index: 3801; pointer-events: auto;
     display: block;
-    /* BUG FIX: sem sandbox - permite autoplay e fullscreen total */
 }
-
-.trailer-frame, .embed-frame {
-    -webkit-user-drag: none;
-    -webkit-touch-callout: none;
-}
-
+.trailer-frame, .embed-frame { -webkit-user-drag: none; -webkit-touch-callout: none; }
 .loading-text { text-align: center; color: var(--text-muted); font-size: 12px; width: 100%; padding: 20px; }
 #toast-msg { position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.92); color: #fff; padding: 12px 20px; border-radius: 8px; z-index: 10000; font-size: 13px; font-weight: 600; opacity: 0; transition: opacity 0.3s; pointer-events: none; border: 1px solid rgba(255,255,255,0.1); max-width: 90%; text-align: center; }
 
@@ -322,7 +479,6 @@ html.no-scroll, body.no-scroll { overflow: hidden !important; height: 100vh !imp
 .type-toggle { display: flex; background: rgba(255,255,255,0.05); border-radius: 10px; margin: 0 15px 15px; padding: 4px; }
 .type-btn { flex: 1; text-align: center; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 700; color: #888; cursor: pointer; transition: 0.2s; border: none; background: transparent; }
 .type-btn.active { background: rgba(255,255,255,0.1); color: #fff; }
-
 .iptv-header { padding: 50px 15px 15px; background: linear-gradient(to bottom, var(--bg-top), transparent); }
 .iptv-tabs { display: flex; gap: 10px; padding: 0 15px 15px; border-bottom: 1px solid rgba(255,255,255,0.05); }
 .iptv-tab { flex: 1; text-align: center; padding: 12px; border-radius: 10px; font-size: 12px; font-weight: 800; color: #888; cursor: pointer; transition: 0.2s; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); }
@@ -381,9 +537,7 @@ a.server-btn { display: flex; width: 100%; box-sizing: border-box; }
 /* =========================================
    PRÓXIMO EPISÓDIO OVERLAY
 ========================================= */
-#nextEpOverlay {
-    animation: slideInRight 0.35s cubic-bezier(0.22,1,0.36,1);
-}
+#nextEpOverlay { animation: slideInRight 0.35s cubic-bezier(0.22,1,0.36,1); }
 @keyframes slideInRight {
     from { opacity: 0; transform: translateX(30px); }
     to   { opacity: 1; transform: translateX(0); }
@@ -396,52 +550,22 @@ a.server-btn { display: flex; width: 100%; box-sizing: border-box; }
 .sec-btn#btnShare i { color: #00e5ff; font-size: 14px; }
 
 /* =========================================
-   BANNER DE TRIAL (v3 — adicionado)
+   BANNER DE TRIAL
 ========================================= */
-#trial-banner {
-    position: fixed;
-    top: 0; left: 0; right: 0;
-    z-index: 3000;
-    animation: slideDown 0.4s ease;
-}
-@keyframes slideDown {
-    from { transform: translateY(-100%); opacity: 0; }
-    to   { transform: translateY(0);    opacity: 1; }
-}
-
-/* Header empurrado quando banner existe */
-body:has(#trial-banner) .header {
-    top: 36px !important;
-}
-body:has(#trial-banner) #view-home {
-    padding-top: 96px !important;
-}
+#trial-banner { position: fixed; top: 0; left: 0; right: 0; z-index: 3000; animation: slideDown 0.4s ease; }
+@keyframes slideDown { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+body:has(#trial-banner) .header { top: 36px !important; }
+body:has(#trial-banner) #view-home { padding-top: 96px !important; }
 
 /* =========================================
-   TELA DE SUCESSO PÓS-PAGAMENTO (v3)
+   TELA SUCESSO PÓS-PAGAMENTO
 ========================================= */
-#step-sucesso {
-    animation: fadeInUp 0.4s ease;
-}
-@keyframes fadeInUp {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
-}
-
-/* Senha highlight pulse */
-#sucesso-senha {
-    animation: senhaPulse 2s ease-in-out infinite;
-}
-@keyframes senhaPulse {
-    0%, 100% { text-shadow: 0 0 8px rgba(0,229,255,0.4); }
-    50%       { text-shadow: 0 0 20px rgba(0,229,255,0.9); }
-}
+#step-sucesso { animation: fadeInUp 0.4s ease; }
+@keyframes fadeInUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+#sucesso-senha { animation: senhaPulse 2s ease-in-out infinite; }
+@keyframes senhaPulse { 0%, 100% { text-shadow: 0 0 8px rgba(0,229,255,0.4); } 50% { text-shadow: 0 0 20px rgba(0,229,255,0.9); } }
 
 /* =========================================
-   LABEL VIP NO MENU (v3)
+   LABEL VIP NO MENU
 ========================================= */
-#menuVipStatus {
-    font-size: 12px;
-    font-weight: 700;
-    transition: color 0.3s;
-}
+#menuVipStatus { font-size: 12px; font-weight: 700; transition: color 0.3s; }
