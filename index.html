@@ -302,44 +302,47 @@
     </div>
 
 
-    <!-- ========== TV AO VIVO (SuperFlixAPI) ========== -->
+    <!-- ========== TV AO VIVO (BetterFlix) ========== -->
     <div id="view-tv" class="view">
-        <div class="tv-header">
+        <!-- Player iframe no topo -->
+        <div class="tv-player-wrap" id="tvPlayerWrap" style="display:none;">
+            <iframe id="tvPlayerFrame" class="tv-player-frame"
+                allow="autoplay; encrypted-media; picture-in-picture; fullscreen"
+                allowfullscreen="true" referrerpolicy="origin-when-cross-origin" src=""></iframe>
+        </div>
+        <!-- Barra canal atual -->
+        <div class="tv-current-bar" id="tvCurrentBar" style="display:none;">
+            <div class="tv-current-logo-wrap"><img id="tvCurrentLogo" src="" onerror="this.style.display='none'"></div>
+            <div class="tv-current-info">
+                <div class="tv-current-name" id="tvCurrentName">Selecione um canal</div>
+                <div class="tv-current-cat" id="tvCurrentCat">AO VIVO</div>
+            </div>
+            <div class="tv-live-badge"><span class="tv-live-dot"></span> AO VIVO</div>
+            <button onclick="entrarModoIPTV()" class="tv-iptv-btn"><i class="fas fa-server"></i> IPTV</button>
+        </div>
+        <!-- Header quando sem player -->
+        <div class="tv-header" id="tvHeaderMain">
             <div style="display:flex;align-items:center;justify-content:space-between;">
                 <div>
                     <h2><i class="fas fa-satellite-dish" style="color:var(--accent)"></i> TV Ao Vivo</h2>
-                    <p>Canais via SuperFlix</p>
+                    <p>Canais via BetterFlix</p>
                 </div>
-                <button onclick="entrarModoIPTV()" style="background:rgba(0,229,255,0.1);border:1.5px solid rgba(0,229,255,0.3);color:var(--accent);border-radius:20px;padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;flex-shrink:0;">
-                    <i class="fas fa-server"></i> Modo IPTV
+                <button onclick="entrarModoIPTV()" style="background:rgba(0,229,255,0.1);border:1.5px solid rgba(0,229,255,0.3);color:var(--accent);border-radius:20px;padding:7px 14px;font-size:11px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;">
+                    <i class="fas fa-server"></i> IPTV
                 </button>
             </div>
         </div>
+        <!-- Busca -->
         <div class="tv-search-wrap">
             <i class="fas fa-search search-icon"></i>
-            <input type="text" class="tv-search-bar" id="inputBuscaTV"
-                placeholder="Buscar canal..." oninput="buscarCanalTV()">
+            <input type="text" class="tv-search-bar" id="inputBuscaTV" placeholder="Buscar canal..." oninput="buscarCanalTV()">
         </div>
-        <!-- Filtros de categoria -->
+        <!-- Categorias -->
         <div class="tv-cats-scroll" id="tvCatsScroll">
-            <div class="tv-cat-pill active" onclick="filtrarTVCategoria(null, this)">Todos</div>
+            <div class="tv-cat-pill active" onclick="filtrarTVCategoria(null,this)">Todos</div>
         </div>
-        <!-- Destaque canal ativo -->
-        <div id="tvDestaque" style="display:none;" class="tv-destaque-bar">
-            <div class="tv-destaque-wrap">
-                <div class="tv-destaque-logo-wrap" id="tvDestaqueLogo"></div>
-                <div class="tv-destaque-info">
-                    <div class="tv-destaque-nome" id="tvDestaqueNome"></div>
-                    <div class="tv-destaque-cat" id="tvDestaqueCat"></div>
-                    <div class="tv-live-badge"><span class="tv-live-dot"></span> AO VIVO</div>
-                </div>
-                <button class="tv-play-btn" id="tvDestaquePlayBtn">
-                    <i class="fas fa-play"></i> Assistir
-                </button>
-            </div>
-        </div>
-        <!-- Grid canais -->
-        <div id="tvCanaisGrid" class="tv-canais-grid"></div>
+        <!-- Lista de canais (novo layout linha) -->
+        <div id="tvCanaisGrid" class="tv-canal-list"></div>
     </div>
 
     <!-- ========== BOTTOM NAV (4 abas) ========== -->
@@ -500,7 +503,7 @@
         <iframe id="embedFrame" class="embed-frame" 
             allow="autoplay; encrypted-media; picture-in-picture; fullscreen; clipboard-write; accelerometer; gyroscope" 
             allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true"
-            referrerpolicy="no-referrer"></iframe>
+            referrerpolicy="origin-when-cross-origin"></iframe>
     </div>
 
     <script>
