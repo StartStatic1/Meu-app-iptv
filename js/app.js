@@ -457,23 +457,25 @@ function gerarHTMLBadges(tagsStr) {
 }
 
 // ===================== TMDB API =====================
-async function tmdbFetchWithKey(endpoint, apiKey) {
-    const connector = endpoint.includes('?') ? '&' : '?';
-    const url = `https://api.themoviedb.org/3${endpoint}${connector}api_key=${apiKey}&language=pt-BR`;
-    const res = await fetch(url, { cache: 'no-store' });
-    if(!res.ok) throw new Error(`HTTP ${res.status}`);
-    return await res.json();
-}
+// Todas as requisições passam pelo proxy /api/tmdb (key segura no servidor)
 async function tmdbFetch(endpoint) {
     try {
-        return await tmdbFetchWithKey(endpoint, TMDB_API_KEY);
+        // Separar endpoint base dos query params existentes
+        const [path, qs] = endpoint.split('?');
+        const params = new URLSearchParams(qs || '');
+        params.set('endpoint', path);
+        params.set('language', 'pt-BR');
+        const url = `/api/tmdb?${params.toString()}`;
+        const res = await fetch(url, { cache: 'no-store' });
+        if(!res.ok) throw new Error(`HTTP ${res.status}`);
+        return await res.json();
     } catch(e) {
-        try {
-            return await tmdbFetchWithKey(endpoint, TMDB_API_KEY_FALLBACK);
-        } catch(e2) {
-            return { results: [] };
-        }
+        return { results: [] };
     }
+}
+// Mantido para compatibilidade com chamadas diretas em abrirAtor
+async function tmdbFetchWithKey(endpoint, _apiKey) {
+    return tmdbFetch(endpoint);
 }
 function getTrending(type='movie', page=1) { return tmdbFetch(`/trending/${type}/week?page=${page}`); }
 function getDetails(id, type='movie') { return tmdbFetch(`/${type}/${id}?append_to_response=credits,videos,recommendations`); }
@@ -953,7 +955,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
         let synopsis = details.overview;
         if(!synopsis || synopsis.length < 20) {
             try {
-                const enData = await tmdbFetchWithKey(`/${type}/${tmdbId}`, TMDB_API_KEY);
+                const enData = await tmdbFetchWithKey(`/${type}/${tmdbId}`, null);
                 synopsis = enData.overview || synopsis;
             } catch(e) {}
         }
@@ -1156,7 +1158,7 @@ async function abrirAtor(atorId) {
     addNoScroll();
     history.pushState({ view: 'actor', modal: true }, null, "");
     try {
-        const pRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}?api_key=${TMDB_API_KEY}&language=pt-BR`);
+        const pRes = await fetch(`/api/tmdb?endpoint=/person/${atorId}&language=pt-BR`);
         const pData = await pRes.json();
         document.getElementById('actorName').innerText = pData.name;
         document.getElementById('actorImg').src = pData.profile_path ? `${TMDB_IMG}/w300${pData.profile_path}` : 'https://placehold.co/150x150/333333/888888?text=Ator';
@@ -1175,7 +1177,7 @@ async function abrirAtor(atorId) {
         let bio = pData.biography;
         if(!bio || bio.length < 50) {
             try {
-                const enRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}?api_key=${TMDB_API_KEY}`);
+                const enRes = await fetch(`/api/tmdb?endpoint=/person/${atorId}`);
                 const enData = await enRes.json();
                 if(enData.biography && enData.biography.length > (bio||'').length) bio = enData.biography + ' [EN]';
             } catch(e) {}
@@ -1191,7 +1193,7 @@ async function abrirAtor(atorId) {
         }
         document.getElementById('actorBio').innerText = bio || "Biografia indisponível.";
 
-        const cRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}/combined_credits?api_key=${TMDB_API_KEY}&language=pt-BR`);
+        const cRes = await fetch(`/api/tmdb?endpoint=/person/${atorId}/combined_credits&language=pt-BR`);
         const cData = await cRes.json();
         if(cData.cast&&cData.cast.length>0) {
             const obras = cData.cast.sort((a,b)=>b.popularity-a.popularity).slice(0,20);
