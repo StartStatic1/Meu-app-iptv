@@ -1,5 +1,6 @@
-// ===================== TV AO VIVO - SuperFlixAPI (via proxy /api/tv) =====================
+// ===================== TV AO VIVO - BetterFlix API =====================
 const TV_PROXY = '/api/tv';
+const BF_PLAYER = 'https://betterflix.click/api/player';
 
 let tvCanaisAll = [];
 let tvCanaisFiltrados = [];
@@ -22,7 +23,6 @@ async function iniciarTVAoVivo() {
     grid.innerHTML = `<div class="tv-loading"><i class="fas fa-spinner fa-spin fa-2x"></i><br><br>Carregando canais...</div>`;
 
     try {
-        // Busca categorias e canais em paralelo
         const [resCats, resCanais] = await Promise.all([
             fetch(`${TV_PROXY}?action=categories`),
             fetch(`${TV_PROXY}?action=all`)
@@ -31,13 +31,21 @@ async function iniciarTVAoVivo() {
         const dataCats = await resCats.json();
         const dataCanais = await resCanais.json();
 
-        const cats = Array.isArray(dataCats) ? dataCats : (dataCats.categories || dataCats.data || []);
+        const cats = Array.isArray(dataCats) ? dataCats : (dataCats.categories || []);
         tvCanaisAll = Array.isArray(dataCanais) ? dataCanais : (dataCanais.channels || dataCanais.data || []);
-        tvCanaisFiltrados = [...tvCanaisAll];
 
+        // Normaliza campos BetterFlix -> padrão interno
+        tvCanaisAll = tvCanaisAll.map(c => ({
+            ...c,
+            name: c.nome || c.name || c.title || 'Canal',
+            logo: c.imagem || c.logo || c.stream_icon || '',
+            category_name: c.categoria || c.category || c.category_name || '',
+            id: c.id || c.stream_id || ''
+        }));
+
+        tvCanaisFiltrados = [...tvCanaisAll];
         renderTVCategoryPills(cats);
         renderTVGrid(tvCanaisAll);
-
         if (tvCanaisAll.length > 0) mostrarTVDestaque(tvCanaisAll[0]);
 
     } catch(e) {
@@ -56,8 +64,8 @@ function renderTVCategoryPills(cats) {
     const scroll = document.getElementById('tvCatsScroll');
     let html = `<div class="tv-cat-pill active" onclick="filtrarTVCategoria(null, this)">Todos</div>`;
     cats.forEach(cat => {
-        const nome = cat.category_name || cat.name || String(cat);
-        const id = cat.category_id || cat.id || nome;
+        const nome = cat.name || cat.category_name || String(cat);
+        const id = cat.id || cat.category_id || nome;
         html += `<div class="tv-cat-pill" onclick="filtrarTVCategoria('${escTV(String(id))}','${escTV(nome)}',this)">${escTV(nome)}</div>`;
     });
     scroll.innerHTML = html;
@@ -66,9 +74,7 @@ function renderTVCategoryPills(cats) {
 async function filtrarTVCategoria(catId, catNome, el) {
     document.querySelectorAll('.tv-cat-pill').forEach(p => p.classList.remove('active'));
     if (el && el.classList) el.classList.add('active');
-
     tvCatAtiva = catId;
-    const grid = document.getElementById('tvCanaisGrid');
 
     if (!catId) {
         tvCanaisFiltrados = [...tvCanaisAll];
@@ -77,27 +83,12 @@ async function filtrarTVCategoria(catId, catNome, el) {
         return;
     }
 
-    grid.innerHTML = `<div class="tv-loading"><i class="fas fa-spinner fa-spin"></i> Carregando ${escTV(catNome)}...</div>`;
-
-    try {
-        const res = await fetch(`${TV_PROXY}?action=by_genre&genre=${encodeURIComponent(catId)}`);
-        const data = await res.json();
-        tvCanaisFiltrados = Array.isArray(data) ? data : (data.channels || data.data || []);
-
-        // fallback local se API não filtrar por genre
-        if (!tvCanaisFiltrados.length && tvCanaisAll.length) {
-            const q = (catNome || '').toLowerCase();
-            tvCanaisFiltrados = tvCanaisAll.filter(c => {
-                const cat = (c.category_name || c.genre || c.category || '').toLowerCase();
-                return cat.includes(q);
-            });
-        }
-
-        renderTVGrid(tvCanaisFiltrados);
-        if (tvCanaisFiltrados[0]) mostrarTVDestaque(tvCanaisFiltrados[0]);
-    } catch(e) {
-        renderTVGrid([]);
-    }
+    const gl = (catId || '').toLowerCase();
+    tvCanaisFiltrados = tvCanaisAll.filter(c =>
+        (c.category_name || '').toLowerCase().includes(gl)
+    );
+    renderTVGrid(tvCanaisFiltrados);
+    if (tvCanaisFiltrados[0]) mostrarTVDestaque(tvCanaisFiltrados[0]);
 }
 
 function buscarCanalTV() {
@@ -109,24 +100,11 @@ function buscarCanalTV() {
         return;
     }
 
-    timeoutBuscaTV = setTimeout(async () => {
-        try {
-            const res = await fetch(`${TV_PROXY}?action=search&q=${encodeURIComponent(q)}`);
-            const data = await res.json();
-            const resultado = Array.isArray(data) ? data : (data.channels || data.data || []);
-
-            // fallback local
-            if (!resultado.length && tvCanaisAll.length) {
-                const ql = q.toLowerCase();
-                renderTVGrid(tvCanaisAll.filter(c => (c.name || c.title || '').toLowerCase().includes(ql)));
-                return;
-            }
-            renderTVGrid(resultado);
-        } catch(e) {
-            const ql = q.toLowerCase();
-            renderTVGrid(tvCanaisAll.filter(c => (c.name || c.title || '').toLowerCase().includes(ql)));
-        }
-    }, 350);
+    timeoutBuscaTV = setTimeout(() => {
+        const ql = q.toLowerCase();
+        const resultado = tvCanaisAll.filter(c => (c.name || '').toLowerCase().includes(ql));
+        renderTVGrid(resultado);
+    }, 300);
 }
 
 function renderTVGrid(canais) {
@@ -137,12 +115,11 @@ function renderTVGrid(canais) {
     }
 
     let html = '';
-    canais.forEach((canal, idx) => {
-        const nome = canal.name || canal.title || canal.channel_name || 'Canal';
-        const logo = canal.logo || canal.stream_icon || canal.icon || '';
-        const cat = canal.category_name || canal.genre || canal.category || '';
-        const streamUrl = canal.url || canal.stream_url || canal.hls_url || '';
-        const id = canal.stream_id || canal.id || '';
+    canais.forEach((canal) => {
+        const nome = canal.name || 'Canal';
+        const logo = canal.logo || '';
+        const cat = canal.category_name || '';
+        const id = canal.id || '';
 
         const logoHtml = logo
             ? `<img class="tv-canal-logo" src="${escTV(logo)}" loading="lazy"
@@ -150,8 +127,7 @@ function renderTVGrid(canais) {
                <div class="tv-canal-logo-fallback" style="display:none;"><i class="fas fa-tv"></i></div>`
             : `<div class="tv-canal-logo-fallback"><i class="fas fa-tv"></i></div>`;
 
-        html += `<div class="tv-canal-card"
-            onclick="selecionarCanalTV('${escTV(streamUrl)}','${escTV(nome)}','${escTV(logo)}','${id}','${escTV(cat)}',this)">
+        html += `<div class="tv-canal-card" onclick="selecionarCanalTV('${escTV(id)}','${escTV(nome)}','${escTV(logo)}','${escTV(cat)}',this)">
             ${logoHtml}
             <div class="tv-canal-nome">${escTV(nome)}</div>
             ${cat ? `<div class="tv-canal-cat-tag">${escTV(cat)}</div>` : ''}
@@ -160,14 +136,11 @@ function renderTVGrid(canais) {
     grid.innerHTML = html;
 }
 
-function selecionarCanalTV(url, nome, logo, id, cat, el) {
+function selecionarCanalTV(id, nome, logo, cat, el) {
     document.querySelectorAll('.tv-canal-card').forEach(c => c.classList.remove('selected'));
     if (el) el.classList.add('selected');
-
-    const canal = { name: nome, logo, url, stream_id: id, category_name: cat };
+    const canal = { id, name: nome, logo, category_name: cat };
     mostrarTVDestaque(canal);
-
-    // scroll destaque para o topo
     document.getElementById('tvDestaque')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
@@ -179,11 +152,10 @@ function mostrarTVDestaque(canal) {
     const catEl = document.getElementById('tvDestaqueCat');
     const playBtn = document.getElementById('tvDestaquePlayBtn');
 
-    const nome = canal.name || canal.title || 'Canal';
-    const logo = canal.logo || canal.stream_icon || '';
-    const cat = canal.category_name || canal.genre || '';
-    const url = canal.url || canal.stream_url || canal.hls_url || '';
-    const id = canal.stream_id || canal.id || '';
+    const nome = canal.name || 'Canal';
+    const logo = canal.logo || '';
+    const cat = canal.category_name || '';
+    const id = canal.id || '';
 
     logoWrap.innerHTML = logo
         ? `<img src="${escTV(logo)}" style="width:100%;height:100%;object-fit:contain;border-radius:8px;"
@@ -192,39 +164,25 @@ function mostrarTVDestaque(canal) {
 
     nomeEl.textContent = nome;
     catEl.textContent = cat ? cat.toUpperCase() : '';
-    playBtn.onclick = () => abrirPlayerTVAoVivo(url, nome, logo, id);
-
+    playBtn.onclick = () => abrirPlayerTVAoVivo(id, nome, logo);
     destaque.style.display = 'block';
 }
 
-function abrirPlayerTVAoVivo(url, nome, logo, id) {
-    if (!url && id) url = `/api/tv?action=stream&id=${id}`;
-    if (!url) { if (typeof mostrarToast === 'function') mostrarToast('URL do canal não disponível.'); return; }
+function abrirPlayerTVAoVivo(id, nome, logo) {
+    if (!id) {
+        if (typeof mostrarToast === 'function') mostrarToast('Canal não disponível.');
+        return;
+    }
+
+    const playerUrl = `${BF_PLAYER}?id=${encodeURIComponent(id)}&type=channel`;
 
     const iframe = document.getElementById('embedFrame');
     const modal = document.getElementById('embedModal');
 
-    const playerHTML = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${nome}</title>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#000;display:flex;align-items:center;justify-content:center;height:100vh;}video{width:100%;height:100%;object-fit:contain;}</style>
-</head><body>
-<video id="v" controls autoplay playsinline></video>
-<script>
-const v=document.getElementById('v');
-const src="${url.replace(/"/g, '&quot;')}";
-if(Hls.isSupported()){
-  const h=new Hls({enableWorker:false,debug:false});
-  h.loadSource(src);h.attachMedia(v);
-  h.on(Hls.Events.MANIFEST_PARSED,()=>v.play().catch(()=>{}));
-  h.on(Hls.Events.ERROR,(_,d)=>{ if(d.fatal) v.src=src; });
-}else if(v.canPlayType('application/vnd.apple.mpegurl')){
-  v.src=src;v.play().catch(()=>{});
-}else{ v.src=src;v.play().catch(()=>{}); }
-<\/script></body></html>`;
-
-    iframe.srcdoc = playerHTML;
+    // Usa iframe direto do BetterFlix - já tem player integrado, sem bloqueios
+    iframe.src = '';
+    iframe.removeAttribute('srcdoc');
+    iframe.src = playerUrl;
     modal.style.display = 'flex';
     if (typeof addNoScroll === 'function') addNoScroll();
     history.pushState({ view: 'embed', modal: true }, null, '');

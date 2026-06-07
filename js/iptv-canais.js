@@ -1,5 +1,5 @@
 // ===================== IPTV CANAIS - SuperFlixAPI =====================
-const SUPERFLIX_BASE = 'https://superflixapi.fit';
+const IPTV_CANAIS_PROXY = '/api/tv';
 let canalCategorias = [];
 let todosCanais = [];
 let canaisCarregado = false;
@@ -20,7 +20,7 @@ async function carregarCategoriasCanais() {
     divCats.innerHTML = `<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Carregando categorias...</p>`;
     
     try {
-        const res = await fetch(`${SUPERFLIX_BASE}/lista?category=channel_categories&format=json`);
+        const res = await fetch(`${IPTV_CANAIS_PROXY}?action=categories`);
         const data = await res.json();
         const cats = Array.isArray(data) ? data : (data.categories || data.data || []);
         canalCategorias = cats;
@@ -68,7 +68,7 @@ async function carregarCategoriasCanais() {
 
 async function carregarTodosCanaisBackground() {
     try {
-        const res = await fetch(`${SUPERFLIX_BASE}/lista?category=canais&format=json`);
+        const res = await fetch(`${IPTV_CANAIS_PROXY}?action=all`);
         const data = await res.json();
         todosCanais = Array.isArray(data) ? data : (data.channels || data.data || []);
     } catch(e) {}
@@ -88,7 +88,7 @@ async function carregarCanaisCategoria(catId, catNome) {
     divCanais.innerHTML = `<p class="loading-text"><i class="fas fa-spinner fa-spin"></i> Carregando ${catNome}...</p>`;
     
     try {
-        const res = await fetch(`${SUPERFLIX_BASE}/lista?category=canais&genre=${encodeURIComponent(catId)}&format=json`);
+        const res = await fetch(`${IPTV_CANAIS_PROXY}?action=by_genre&genre=${encodeURIComponent(catId)}`);
         const data = await res.json();
         const canais = Array.isArray(data) ? data : (data.channels || data.data || []);
         
@@ -117,12 +117,11 @@ function voltarCategorias() {
 function renderCanaisGrid(canais, container) {
     let html = `<div class="canais-grid">`;
     canais.forEach(canal => {
-        const nome = canal.name || canal.title || canal.channel_name || 'Canal';
-        const logo = canal.logo || canal.stream_icon || canal.icon || '';
-        const streamUrl = canal.url || canal.stream_url || canal.hls_url || '';
-        const id = canal.stream_id || canal.id || '';
+        const nome = canal.nome || canal.name || canal.title || canal.channel_name || 'Canal';
+        const logo = canal.imagem || canal.logo || canal.stream_icon || canal.icon || '';
+        const id = canal.id || canal.stream_id || '';
         
-        html += `<div class="canal-card" onclick="abrirPlayerCanal('${esc(streamUrl)}','${esc(nome)}','${esc(logo)}','${id}')">
+        html += `<div class="canal-card" onclick="abrirPlayerCanal('','${esc(nome)}','${esc(logo)}','${id}')">
             <div class="canal-logo-wrap">
                 ${logo ? `<img src="${esc(logo)}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">` : ''}
                 <div class="canal-logo-fallback" style="${logo?'display:none':'display:flex'}">
@@ -159,7 +158,7 @@ function buscarCanalIPTV() {
     
     timeoutBuscaCanais = setTimeout(async () => {
         try {
-            const res = await fetch(`${SUPERFLIX_BASE}/lista?category=canais&q=${encodeURIComponent(q)}&format=json`);
+            const res = await fetch(`${IPTV_CANAIS_PROXY}?action=search&q=${encodeURIComponent(q)}`);
             const data = await res.json();
             const canais = Array.isArray(data) ? data : (data.channels || data.data || []);
             
@@ -182,34 +181,18 @@ function buscarCanalIPTV() {
 let playerCanalAtivo = null;
 
 function abrirPlayerCanal(url, nome, logo, id) {
-    if (!url && id) {
-        url = `${SUPERFLIX_BASE}/play?id=${id}`;
-    }
-    if (!url) { mostrarToast('URL do canal não disponível.'); return; }
-    
-    // Usa o embed modal existente com HLS.js via srcDoc
+    if (!id) { mostrarToast('Canal não disponível.'); return; }
+
+    // BetterFlix player integrado — sem bloqueios de CORS/HLS
+    const playerUrl = `https://betterflix.click/api/player?id=${encodeURIComponent(id)}&type=channel`;
+
     const iframe = document.getElementById('embedFrame');
     const modal = document.getElementById('embedModal');
-    
-    // Página HTML com HLS player
-    const playerHTML = `<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${nome}</title>
-<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"><\/script>
-<style>*{margin:0;padding:0;box-sizing:border-box}body{background:#000}video{width:100vw;height:100vh;object-fit:contain}</style>
-</head><body>
-<video id="v" controls autoplay playsinline></video>
-<script>
-const v=document.getElementById('v');
-const src="${url.replace(/"/g,'&quot;')}";
-if(Hls.isSupported()){const h=new Hls({enableWorker:false});h.loadSource(src);h.attachMedia(v);h.on(Hls.Events.MANIFEST_PARSED,()=>v.play());}
-else if(v.canPlayType('application/vnd.apple.mpegurl')){v.src=src;v.play();}
-else{v.src=src;v.play();}
-<\/script></body></html>`;
-    
-    iframe.srcdoc = playerHTML;
+
+    iframe.removeAttribute('srcdoc');
+    iframe.src = '';
+    iframe.src = playerUrl;
     modal.style.display = 'flex';
-    addNoScroll();
+    if (typeof addNoScroll === 'function') addNoScroll();
     history.pushState({ view: 'embed', modal: true }, null, '');
-    dispararDirectLink();
 }

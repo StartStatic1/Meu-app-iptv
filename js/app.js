@@ -490,7 +490,7 @@ function renderTop10Carousel(title, items, type) {
     const cards = items.slice(0,10).map((item,idx) => {
         const tmdbType = item.media_type||type;
         const realType = tmdbType==='tv'?'tv':'movie';
-        const img = item.poster_path ? TMDB_IMG+'/w300'+item.poster_path : 'https://via.placeholder.com/220x330/111/fff';
+        const img = item.poster_path ? TMDB_IMG+'/w300'+item.poster_path : 'https://placehold.co/220x330/111111/444444?text=Sem+Capa';
         return `<div class="card-movie top10-card" onclick="abrirDetalhesTMDB(${item.id},'${realType}')"><span class="top10-number">${idx+1}</span><img src="${img}" loading="lazy" onerror="this.style.display='none';"></div>`;
     }).join('');
     return `<div class="section-header"><div class="section-title"><i class="fas fa-fire" style="color:#ff4500;"></i> ${esc(title)}</div></div><div class="carousel top10-carousel">${cards}</div>`;
@@ -711,7 +711,7 @@ async function carregarEstreias() {
 
         let html = '';
         items.forEach(movie => {
-            const poster = movie.poster_path ? `${TMDB_IMG}/w200${movie.poster_path}` : 'https://via.placeholder.com/100x150/111/fff';
+            const poster = movie.poster_path ? `${TMDB_IMG}/w200${movie.poster_path}` : 'https://placehold.co/100x150/111111/444444?text=?';
             const date = new Date(movie.release_date + 'T00:00:00');
             const dateStr = date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long', year: 'numeric' });
             const nota = movie.vote_average ? `⭐ ${movie.vote_average.toFixed(1)}` : '';
@@ -720,7 +720,7 @@ async function carregarEstreias() {
                 return g ? g.name : '';
             }).filter(Boolean).join(' · ');
             html += `<div class="estreia-card" onclick="abrirDetalhesTMDB(${movie.id},'movie')">
-                <img class="estreia-poster" src="${poster}" loading="lazy" onerror="this.src='https://via.placeholder.com/50x75/111/fff'">
+                <img class="estreia-poster" src="${poster}" loading="lazy" onerror="this.src='https://placehold.co/50x75/111111/444444?text=?'">
                 <div class="estreia-info">
                     <div class="estreia-title">${esc(movie.title)}</div>
                     <div class="estreia-date"><i class="fas fa-calendar"></i> ${dateStr}</div>
@@ -760,7 +760,7 @@ function renderAbaFavs() {
         return;
     }
     container.innerHTML = items.map(item => {
-        const img = item.img || 'https://via.placeholder.com/220x330/111/fff';
+        const img = item.img || 'https://placehold.co/220x330/111111/444444?text=Sem+Capa';
         return `<div class="card-movie" onclick="abrirDetalhesTMDB(${item.id},'${item.type||'movie'}')">
             <div class="card-fav-btn active" onclick="event.stopPropagation();toggleFavCard(${item.id},'${item.type||'movie'}','${esc(item.title)}','${esc(img)}')"><i class="fas fa-heart"></i></div>
             <img src="${img}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
@@ -779,7 +779,7 @@ function renderAbaVistos() {
         return;
     }
     container.innerHTML = items.map(item => {
-        const img = item.img || 'https://via.placeholder.com/220x330/111/fff';
+        const img = item.img || 'https://placehold.co/220x330/111111/444444?text=Sem+Capa';
         return `<div class="card-movie" onclick="abrirDetalhesTMDB(${item.id},'${item.type||'movie'}')">
             <div class="continue-remove" onclick="event.stopPropagation();removerDoHistorico(event,'${item.id}')"><i class="fas fa-times"></i></div>
             <img src="${img}" loading="lazy" onerror="this.style.display='none';this.nextElementSibling.style.display='block';">
@@ -869,8 +869,8 @@ async function abrirDetalhesTMDB(tmdbId, type) {
     try {
         const details = await getDetails(tmdbId, type);
         const title = details.title||details.name||'Sem Título';
-        const backdrop = details.backdrop_path ? `${TMDB_IMG}/original${details.backdrop_path}` : (details.poster_path ? `${TMDB_IMG}/w780${details.poster_path}` : 'https://via.placeholder.com/800x600/111/fff');
-        const poster = details.poster_path ? `${TMDB_IMG}/w300${details.poster_path}` : 'https://via.placeholder.com/300x450/111/fff';
+        const backdrop = details.backdrop_path ? `${TMDB_IMG}/original${details.backdrop_path}` : (details.poster_path ? `${TMDB_IMG}/w780${details.poster_path}` : 'https://placehold.co/800x600/111111/444444?text=Sem+Imagem');
+        const poster = details.poster_path ? `${TMDB_IMG}/w300${details.poster_path}` : 'https://placehold.co/300x450/111111/444444?text=Sem+Capa';
 
         document.getElementById('dpTitle').innerText = title;
         document.getElementById('dpPoster').style.backgroundImage = `url('${backdrop}')`;
@@ -903,7 +903,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
         if(details.credits&&details.credits.cast&&details.credits.cast.length>0) {
             let htmlCast = '';
             details.credits.cast.slice(0,15).forEach(ator => {
-                const foto = ator.profile_path ? `${TMDB_IMG}/w200${ator.profile_path}` : 'https://via.placeholder.com/150x150/333/fff?text=Ator';
+                const foto = ator.profile_path ? `${TMDB_IMG}/w200${ator.profile_path}` : 'https://placehold.co/150x150/333333/888888?text=Ator';
                 htmlCast += `<div class="cast-item" onclick="abrirAtor(${ator.id})"><img src="${foto}" class="cast-img" loading="lazy"><div class="cast-name">${esc(ator.name)}</div><div class="cast-char">${esc(ator.character)}</div></div>`;
             });
             document.getElementById('dpCast').innerHTML = htmlCast;
@@ -1095,7 +1095,7 @@ async function abrirAtor(atorId) {
         const pRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}?api_key=${TMDB_API_KEY}&language=pt-BR`);
         const pData = await pRes.json();
         document.getElementById('actorName').innerText = pData.name;
-        document.getElementById('actorImg').src = pData.profile_path ? `${TMDB_IMG}/w300${pData.profile_path}` : 'https://via.placeholder.com/150';
+        document.getElementById('actorImg').src = pData.profile_path ? `${TMDB_IMG}/w300${pData.profile_path}` : 'https://placehold.co/150x150/333333/888888?text=Ator';
         let idade = "";
         if(pData.birthday) {
             const nasc = new Date(pData.birthday);
@@ -1369,11 +1369,11 @@ async function abrirGradeIPTV(tipo, catId, nomePasta) {
             if(tipo==='live') {
                 const fmtd = processarTV(item.name);
                 const capa = item.stream_icon;
-                html += `<div class="card-movie card-tv" style="height:110px;" onclick="abrirSheetTV('${esc(fmtd.limpo)}','${item.stream_id}','${esc(fmtd.tagsStr)}')"><div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>${capa?`<img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/100x50/333/fff?text=TV'">`:``}<div class="titulo-tv">${fmtd.limpo}</div></div>`;
+                html += `<div class="card-movie card-tv" style="height:110px;" onclick="abrirSheetTV('${esc(fmtd.limpo)}','${item.stream_id}','${esc(fmtd.tagsStr)}')"><div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>${capa?`<img src="${capa}" loading="lazy" onerror="this.src='https://placehold.co/100x50/333333/666666?text=TV'">`:``}<div class="titulo-tv">${fmtd.limpo}</div></div>`;
             } else {
                 const fmtd = processarTitulo(item.name, nomePasta);
                 const capa = item.stream_icon||item.cover;
-                html += `<div class="card-movie" onclick="abrirDetalhesIPTV('${esc(fmtd.limpo)}','${esc(nomePasta)}','${esc(capa)}','${tipo==='vod'?item.stream_id:item.series_id}','${tipo}','${item.container_extension||'mp4'}','${esc(fmtd.tagsStr)}')"><div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>${capa?`<img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/220x330/111/fff';">`:`<img src="https://via.placeholder.com/220x330/111/fff"><div class="titulo-fallback">${fmtd.limpo}</div>`}</div>`;
+                html += `<div class="card-movie" onclick="abrirDetalhesIPTV('${esc(fmtd.limpo)}','${esc(nomePasta)}','${esc(capa)}','${tipo==='vod'?item.stream_id:item.series_id}','${tipo}','${item.container_extension||'mp4'}','${esc(fmtd.tagsStr)}')"><div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>${capa?`<img src="${capa}" loading="lazy" onerror="this.src='https://placehold.co/220x330/111111/444444?text=Sem+Capa';">`:`<img src="https://placehold.co/220x330/111111/444444?text=Sem+Capa"><div class="titulo-fallback">${fmtd.limpo}</div>`}</div>`;
             }
         });
         container.innerHTML = html||`<p class="loading-text" style="grid-column:span 3;">Pasta vazia.</p>`;
@@ -1391,7 +1391,7 @@ async function abrirDetalhesIPTV(titulo, cat, urlCapa, id, tipo, ext, tagsStr) {
     }
     document.getElementById('dpTitle').innerText = titulo;
     document.getElementById('dpMeta').innerHTML = gerarHTMLBadges(tagsStr)+`<span style="color:var(--text-muted);margin-left:5px;">${cat}</span>`;
-    const capa = urlCapa||'https://via.placeholder.com/800x600/111/fff';
+    const capa = urlCapa||'https://placehold.co/800x600/111111/444444?text=Sem+Imagem';
     document.getElementById('dpPoster').style.backgroundImage = `url('${capa}')`;
     document.getElementById('dpTmdbMeta').innerHTML=''; document.getElementById('dpDirector').innerText='';
     document.getElementById('dpSynopsis').innerText='Conteúdo do catálogo IPTV direto.';
@@ -1422,7 +1422,7 @@ async function pesquisarTV() {
         let html="";
         resultados.forEach(item => {
             const fmtd=processarTV(item.name); const capa=item.stream_icon;
-            html+=`<div class="card-movie card-tv" style="height:110px;" onclick="abrirSheetTV('${esc(fmtd.limpo)}','${item.stream_id}','${esc(fmtd.tagsStr)}')"><div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>${capa?`<img src="${capa}" loading="lazy" onerror="this.src='https://via.placeholder.com/100x50/333/fff?text=TV'">`:``}<div class="titulo-tv">${fmtd.limpo}</div></div>`;
+            html+=`<div class="card-movie card-tv" style="height:110px;" onclick="abrirSheetTV('${esc(fmtd.limpo)}','${item.stream_id}','${esc(fmtd.tagsStr)}')"><div class="card-badges">${gerarHTMLBadges(fmtd.tagsStr)}</div>${capa?`<img src="${capa}" loading="lazy" onerror="this.src='https://placehold.co/100x50/333333/666666?text=TV'">`:``}<div class="titulo-tv">${fmtd.limpo}</div></div>`;
         });
         divResultados.innerHTML=html;
     }, 800);
