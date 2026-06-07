@@ -65,53 +65,213 @@ function isVip() {
     if (typeof isVipLocal === 'function') return isVipLocal();
     return localStorage.getItem('streamflix_vip') === 'true';
 }
-function abrirModalVip() { 
-    document.getElementById('vipModal').style.display = 'flex'; 
+// ─── AVATARES DISPONÍVEIS ────────────────────────────────────────────────────
+const AVATARES = ['🎬','🍿','🎭','🦁','🐺','🦊','🐸','🐼','🎃','⚡','🔥','🌊','🌙','🌟','💎','🎮','🎯','🚀','🎧','🎵','🏆','👾','🤖','🦸','🧙'];
+const AVATAR_KEY = 'sf_avatar';
+
+function getAvatarAtual() { return localStorage.getItem(AVATAR_KEY) || '👤'; }
+function salvarAvatar(emoji) { localStorage.setItem(AVATAR_KEY, emoji); }
+
+// ─── ABRIR MODAL VIP/PERFIL ───────────────────────────────────────────────────
+function abrirModalVip() {
+    const modal = document.getElementById('vipModal');
+    modal.style.display = 'flex';
     addNoScroll();
-    history.pushState({ view: 'vip', modal: true }, null, "");
+    history.pushState({ view: 'vip', modal: true }, null, '');
+    if (isVip()) {
+        mostrarStepPerfil();
+    } else {
+        mostrarStepLogin();
+    }
 }
-function fecharModalVip(fromPS = false) { 
-    document.getElementById('vipModal').style.display = 'none'; 
+
+function fecharModalVip(fromPS = false) {
+    document.getElementById('vipModal').style.display = 'none';
     removeNoScroll();
     if(!fromPS && history.state && history.state.view === 'vip') { fromPopState = true; history.back(); }
 }
+
+function mostrarStepLogin() {
+    document.getElementById('vip-step-login').style.display = 'block';
+    document.getElementById('vip-step-perfil').style.display = 'none';
+}
+
+function mostrarStepPerfil() {
+    document.getElementById('vip-step-login').style.display = 'none';
+    document.getElementById('vip-step-perfil').style.display = 'block';
+    renderPerfilVip();
+}
+
+function renderPerfilVip() {
+    const cache = (typeof getVipCache === 'function') ? getVipCache() : null;
+    const avatar = getAvatarAtual();
+
+    // Avatar
+    const avatarEl = document.getElementById('perfilAvatarEmoji');
+    if (avatarEl) avatarEl.textContent = avatar;
+
+    // Nome (email sem domínio)
+    const nomeEl = document.getElementById('perfilNome');
+    if (nomeEl && cache?.email) {
+        nomeEl.textContent = cache.email.split('@')[0];
+    }
+
+    // Tag de plano
+    const tagEl = document.getElementById('perfilPlanoTag');
+    if (tagEl && cache) {
+        const isVit = cache.plano === 'vitalicio' || !cache.expira_em;
+        tagEl.innerHTML = isVit
+            ? `<span style="background:rgba(255,215,0,0.15);color:gold;font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;border:1px solid rgba(255,215,0,0.3);">♾️ Vitalício</span>`
+            : `<span style="background:rgba(0,229,255,0.1);color:var(--accent);font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;border:1px solid rgba(0,229,255,0.25);">👑 Mensal</span>`;
+    }
+
+    // Card de status/dias
+    const statusValor = document.getElementById('perfilStatusValor');
+    const statusSub = document.getElementById('perfilStatusSub');
+    const statusIcon = document.getElementById('perfilStatusIcon');
+    const statusLabel = document.getElementById('perfilStatusLabel');
+
+    if (cache) {
+        if (!cache.expira_em || cache.plano === 'vitalicio') {
+            if (statusIcon) statusIcon.textContent = '♾️';
+            if (statusLabel) statusLabel.textContent = 'Plano';
+            if (statusValor) statusValor.textContent = 'Vitalício';
+            if (statusSub) statusSub.textContent = 'Acesso para sempre • sem renovação';
+        } else {
+            const expira = new Date(cache.expira_em);
+            const hoje = new Date();
+            const dias = Math.max(0, Math.ceil((expira - hoje) / 86400000));
+            if (statusIcon) statusIcon.textContent = dias > 7 ? '✅' : dias > 0 ? '⚠️' : '❌';
+            if (statusLabel) statusLabel.textContent = 'Dias restantes';
+            if (statusValor) {
+                statusValor.textContent = dias > 0 ? `${dias} dias` : 'Expirado';
+                statusValor.style.color = dias > 7 ? '#fff' : dias > 0 ? '#fbbf24' : '#ff5252';
+            }
+            if (statusSub) {
+                const d = expira.toLocaleDateString('pt-BR');
+                statusSub.textContent = dias > 0 ? `Renova em ${d}` : `Expirou em ${d}`;
+            }
+        }
+    }
+
+    // Atualiza avatar no menu
+    atualizarMenuAvatar();
+}
+
+// ─── AVATAR ───────────────────────────────────────────────────────────────────
+function abrirEscolhaAvatar() {
+    const modal = document.getElementById('avatarModal');
+    if (!modal) return;
+    const grid = document.getElementById('avatarGrid');
+    const atual = getAvatarAtual();
+    grid.innerHTML = AVATARES.map(emoji =>
+        `<div onclick="escolherAvatar('${emoji}')" style="width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:26px;cursor:pointer;background:${emoji===atual?'rgba(0,229,255,0.15)':'rgba(255,255,255,0.05)'};border:${emoji===atual?'2px solid var(--accent)':'2px solid transparent'};transition:0.15s;">${emoji}</div>`
+    ).join('');
+    modal.style.display = 'flex';
+}
+
+function fecharAvatarModal() {
+    const modal = document.getElementById('avatarModal');
+    if (modal) modal.style.display = 'none';
+}
+
+function escolherAvatar(emoji) {
+    salvarAvatar(emoji);
+    const el = document.getElementById('perfilAvatarEmoji');
+    if (el) el.textContent = emoji;
+    atualizarMenuAvatar();
+    fecharAvatarModal();
+    if (typeof mostrarToast === 'function') mostrarToast('Avatar atualizado! ' + emoji);
+}
+
+function atualizarMenuAvatar() {
+    const avatar = getAvatarAtual();
+    const menuAv = document.getElementById('menu-avatar-emoji');
+    if (menuAv) menuAv.textContent = avatar;
+}
+
+// ─── SAIR ─────────────────────────────────────────────────────────────────────
+function sairContaVip() {
+    if (!confirm('Deseja sair da sua conta VIP?')) return;
+    if (typeof limparVipCache === 'function') limparVipCache();
+    localStorage.removeItem('streamflix_vip');
+    fecharModalVip();
+    verificarStatusVip();
+    if (typeof mostrarBannerTrialOuVip === 'function') mostrarBannerTrialOuVip();
+    if (typeof mostrarToast === 'function') mostrarToast('Você saiu da conta VIP.');
+}
+
+// ─── TOGGLE SENHA ─────────────────────────────────────────────────────────────
+function toggleSenhaVip() {
+    const input = document.getElementById('vipSenha');
+    const icon = document.getElementById('iconSenhaVip');
+    if (!input) return;
+    if (input.type === 'password') {
+        input.type = 'text';
+        if (icon) { icon.classList.remove('fa-eye'); icon.classList.add('fa-eye-slash'); }
+    } else {
+        input.type = 'password';
+        if (icon) { icon.classList.remove('fa-eye-slash'); icon.classList.add('fa-eye'); }
+    }
+}
+
+// ─── LOGIN ────────────────────────────────────────────────────────────────────
 async function fazerLoginVip() {
     const email = document.getElementById('vipEmail').value.trim();
     const senha = document.getElementById('vipSenha').value.trim();
     const btn = document.getElementById('btnLoginBtn');
     const msg = document.getElementById('vipMsg');
-    if(!email || !senha) { msg.innerText = "Preencha os campos."; msg.style.display = 'block'; return; }
-    btn.innerText = "Verificando..."; btn.disabled = true; msg.style.display = 'none';
+    if(!email || !senha) { msg.innerText = 'Preencha os campos.'; msg.style.display = 'block'; return; }
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...'; btn.disabled = true; msg.style.display = 'none';
     try {
-        const supa = getSupabase(); 
+        const supa = getSupabase();
         const { data, error } = await supa.from('streamflix_users').select('*').eq('email', email).eq('senha', senha);
         if(error) throw error;
         if(data && data.length > 0) {
             const user = data[0];
             if(user.status === 'VIP') {
                 if(user.expira_em && new Date(user.expira_em) < new Date()) {
-                    msg.innerText = "Seu plano expirou. Renove para continuar.";
-                    msg.style.display = 'block';
-                    return;
+                    msg.innerText = 'Seu plano expirou. Renove para continuar.';
+                    msg.style.display = 'block'; return;
                 }
                 if(typeof salvarVipCache === 'function') {
-                    salvarVipCache({ email, senha, plano: user.plano || 'manual', expira_em: user.expira_em || null });
+                    salvarVipCache({ email, senha, plano: user.plano || 'mensal', expira_em: user.expira_em || null });
                 }
                 desativarTodosAds();
-            } else { msg.innerText = "Sua conta não tem status VIP."; msg.style.display = 'block'; }
-        } else { msg.innerText = "E-mail ou senha incorretos."; msg.style.display = 'block'; }
+                verificarStatusVip();
+                mostrarStepPerfil();
+                if (typeof mostrarToast === 'function') mostrarToast('✅ Bem-vindo VIP!');
+            } else { msg.innerText = 'Sua conta não tem status VIP.'; msg.style.display = 'block'; }
+        } else { msg.innerText = 'E-mail ou senha incorretos.'; msg.style.display = 'block'; }
     } catch(e) { msg.innerText = e.message; msg.style.display = 'block'; }
-    finally { btn.innerText = "Entrar na Conta VIP"; btn.disabled = false; }
+    finally { btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Entrar na Conta VIP'; btn.disabled = false; }
 }
+
+// ─── STATUS VIP (header + menu) ───────────────────────────────────────────────
 function verificarStatusVip() {
     const menuVipStatus = document.getElementById('menuVipStatus');
-    if(menuVipStatus) {
-        menuVipStatus.innerHTML = isVip()
-            ? '<i class="fas fa-crown" style="color:gold"></i> VIP Ativo'
-            : '<i class="fas fa-gem" style="color:var(--accent)"></i> Gratuito';
+    const cache = (typeof getVipCache === 'function') ? getVipCache() : null;
+
+    if (menuVipStatus) {
+        if (isVip() && cache) {
+            const isVit = cache.plano === 'vitalicio' || !cache.expira_em;
+            if (isVit) {
+                menuVipStatus.innerHTML = '<i class="fas fa-crown" style="color:gold"></i> VIP Vitalício ♾️';
+            } else {
+                const dias = cache.expira_em
+                    ? Math.max(0, Math.ceil((new Date(cache.expira_em) - new Date()) / 86400000))
+                    : null;
+                menuVipStatus.innerHTML = `<i class="fas fa-crown" style="color:gold"></i> VIP — ${dias !== null ? dias + ' dias restantes' : 'Ativo'}`;
+            }
+        } else {
+            menuVipStatus.innerHTML = '<i class="fas fa-gem" style="color:var(--accent)"></i> Gratuito';
+        }
     }
-    const btnVip = document.getElementById('btnOpenVip');
-    if(btnVip) btnVip.style.display = 'none';
+
+    // Avatar no menu
+    atualizarMenuAvatar();
+
+    // Botão header
     let btnHeader = document.getElementById('btnHeaderAssinar');
     if (!btnHeader) {
         btnHeader = document.createElement('button');
