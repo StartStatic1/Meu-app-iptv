@@ -1,6 +1,6 @@
 // ===================== CONFIGURACOES =====================
-const TMDB_API_KEY = '46230929e061f1d2f3df518aed983e08';
-const TMDB_API_KEY_FALLBACK = '072730d77b46330bda51e5fcaac85d75';
+// Keys TMDB removidas do client — ficam seguras nas env vars do Vercel
+// Todas as requisições TMDB passam pelo proxy /api/tmdb
 const TMDB_IMG = 'https://image.tmdb.org/t/p';
 const WATCHMODE_API_KEY = 'gwOmzXcaSHNcNTFVo6pDCEogdkkwgSyumajryJV8';
 
