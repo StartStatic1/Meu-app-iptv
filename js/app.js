@@ -67,39 +67,39 @@ function isVip() {
     return localStorage.getItem('streamflix_vip') === 'true';
 }
 // ─── AVATARES DISPONÍVEIS ────────────────────────────────────────────────────
-// Avatares — personagens icônicos de anime e filmes
+// Avatares estilo personagem usando DiceBear API (gratuito, sem bloqueio)
 const AVATAR_ESTILOS = [
-    // Anime
-    { id: 'av1',  label: 'Naruto',        url: 'https://image.tmdb.org/t/p/w185/xozAWwWbGVKBXV73qmMWxGGgqBc.jpg' },
-    { id: 'av2',  label: 'Goku',          url: 'https://image.tmdb.org/t/p/w185/unMMIT60To8d0lFdJMKf8WnE7iK.jpg' },
-    { id: 'av3',  label: 'Luffy',         url: 'https://image.tmdb.org/t/p/w185/e3NBGiAifW9Xt8xD5tpARskjccO.jpg' },
-    { id: 'av4',  label: 'Eren',          url: 'https://image.tmdb.org/t/p/w185/hTP1DtLGFamjfu8WqjnuScW0Abt.jpg' },
-    { id: 'av5',  label: 'Tanjiro',       url: 'https://image.tmdb.org/t/p/w185/spCAxD99U1A6jsiePFl3GkPpW5a.jpg' },
-    { id: 'av6',  label: 'Itachi',        url: 'https://image.tmdb.org/t/p/w185/xBHvZcjRiWyobQ9kxBhO6B2dtRI.jpg' },
-    // Filmes trash / cult
-    { id: 'av7',  label: 'Coringa',       url: 'https://image.tmdb.org/t/p/w185/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg' },
-    { id: 'av8',  label: 'John Wick',     url: 'https://image.tmdb.org/t/p/w185/fZPSd91yGE9fCcCe6OoQr6E3Bev.jpg' },
-    { id: 'av9',  label: 'Deadpool',      url: 'https://image.tmdb.org/t/p/w185/Or8R15PJPJRG6nfmIGJGF7z9dCk.jpg' },
-    { id: 'av10', label: 'Mad Max',       url: 'https://image.tmdb.org/t/p/w185/8tZYtuWezp8JbcsvHYO0O46tFbo.jpg' },
-    { id: 'av11', label: 'Freddy',        url: 'https://image.tmdb.org/t/p/w185/xVzvD4lQzgIGNxVonBGjHVlGJYA.jpg' },
-    { id: 'av12', label: 'Jason',         url: 'https://image.tmdb.org/t/p/w185/rFnMnzCFrx5R5CzBU5VBjPOJzcc.jpg' },
-    // Personagens cultuados
-    { id: 'av13', label: 'Walter White',  url: 'https://image.tmdb.org/t/p/w185/rWeRBFFMFOGV0VpMCjB9pYJJ84L.jpg' },
-    { id: 'av14', label: 'Darth Vader',   url: 'https://image.tmdb.org/t/p/w185/2MB14hUAFV5iMFRGYmZ5Pn2e4rw.jpg' },
-    { id: 'av15', label: 'Tony Stark',    url: 'https://image.tmdb.org/t/p/w185/cvF0VvJDfCiGJz6IHpBcUNUv5MH.jpg' },
-    { id: 'av16', label: 'Thanos',        url: 'https://image.tmdb.org/t/p/w185/giCRQJCMsIkbHOlO0FpWcuD4X0A.jpg' },
-    // Popcorn / diversão
-    { id: 'av17', label: 'Jack Sparrow',  url: 'https://image.tmdb.org/t/p/w185/yNa18Qe7FmYfUpqKyZJf9EiqKFy.jpg' },
-    { id: 'av18', label: 'Shrek',         url: 'https://image.tmdb.org/t/p/w185/iB64vpL3dIObOtMZgX3RqdVdQDc.jpg' },
-    { id: 'av19', label: 'Pennywise',     url: 'https://image.tmdb.org/t/p/w185/wzJRB4MKi1wuBg7QKIBC5sOYNj5.jpg' },
-    { id: 'av20', label: 'Alien',         url: 'https://image.tmdb.org/t/p/w185/vfrQk5IPloGg1v9Rzbh2Eg3VGyM.jpg' },
-    // Robôs / Sci-fi
-    { id: 'av21', label: 'Terminator',    url: 'https://image.tmdb.org/t/p/w185/qvktm0BHcnmDpul4Hz01GIazWPr.jpg' },
-    { id: 'av22', label: 'Neo',           url: 'https://image.tmdb.org/t/p/w185/6ajnCLmsTHFuGfBb3qNIzW1LJRQ.jpg' },
-    { id: 'av23', label: 'Optimus',       url: 'https://image.tmdb.org/t/p/w185/nOEfzBJIQbCFKFkUiTaBzBBg47f.jpg' },
-    // Doramas / K-pop
-    { id: 'av24', label: 'Gi-hun',        url: 'https://image.tmdb.org/t/p/w185/dIWwZW7dJJtqC6CgWzYkNVKIUm8.jpg' },
-    { id: 'av25', label: 'Takeshi',       url: 'https://image.tmdb.org/t/p/w185/jPIzQT1MLTV1rJVBq8Y9lMV97VN.jpg' },
+    // Anime / Cartoon
+    { id: 'av1',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix1&backgroundColor=b6e3f4&clothingColor=3c4f5c&eyebrowType=raisedExcited&eyeType=happy&mouthType=smile' },
+    { id: 'av2',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix2&backgroundColor=d1d4f9&hairColor=2c1b18&eyeType=wink&mouthType=twinkle' },
+    { id: 'av3',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix3&backgroundColor=ffd5dc&accessoriesType=kurt&eyebrowType=raised&mouthType=smile' },
+    { id: 'av4',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix4&backgroundColor=c0aede&eyeType=hearts&mouthType=tongue' },
+    { id: 'av5',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix5&backgroundColor=b6e3f4&topType=longHairStraight&hairColor=4a312c' },
+    { id: 'av6',  url: 'https://api.dicebear.com/9.x/avataaars/svg?seed=StreamFlix6&backgroundColor=ffdbb4&topType=shortHairShortFlat&eyeType=side' },
+    // Pixel Art
+    { id: 'av7',  url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=hero1&backgroundColor=1a1a2e&clothing=shirt1' },
+    { id: 'av8',  url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=hero2&backgroundColor=16213e&hair=short01' },
+    { id: 'av9',  url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=hero3&backgroundColor=0f3460' },
+    { id: 'av10', url: 'https://api.dicebear.com/9.x/pixel-art/svg?seed=hero4&backgroundColor=533483' },
+    // Lorelei (ilustração)
+    { id: 'av11', url: 'https://api.dicebear.com/9.x/lorelei/svg?seed=cat1&backgroundColor=0d0d0d&freckles=true' },
+    { id: 'av12', url: 'https://api.dicebear.com/9.x/lorelei/svg?seed=wolf1&backgroundColor=111111' },
+    { id: 'av13', url: 'https://api.dicebear.com/9.x/lorelei/svg?seed=dragon1&backgroundColor=0a0a0a' },
+    { id: 'av14', url: 'https://api.dicebear.com/9.x/lorelei/svg?seed=ninja1&backgroundColor=0d0d0d' },
+    // Fun characters
+    { id: 'av15', url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=ghost&backgroundColor=1a1a2e' },
+    { id: 'av16', url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=robot&backgroundColor=16213e' },
+    { id: 'av17', url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=alien&backgroundColor=0f3460' },
+    { id: 'av18', url: 'https://api.dicebear.com/9.x/fun-emoji/svg?seed=wizard&backgroundColor=1a0a2e' },
+    // Bottts (robôs)
+    { id: 'av19', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=r2d2&backgroundColor=1e1e2e' },
+    { id: 'av20', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=hal9000&backgroundColor=0d1117' },
+    { id: 'av21', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=wall-e&backgroundColor=1a1a1a' },
+    { id: 'av22', url: 'https://api.dicebear.com/9.x/bottts/svg?seed=terminator&backgroundColor=0a0a0a' },
+    // Anime style (Adventurer)
+    { id: 'av23', url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=sasuke&backgroundColor=16213e&eyes=variant08' },
+    { id: 'av24', url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=naruto&backgroundColor=1a0a00&hair=long01' },
+    { id: 'av25', url: 'https://api.dicebear.com/9.x/adventurer/svg?seed=zoro&backgroundColor=001a0a' },
 ];
 const AVATAR_KEY = 'sf_avatar_v2';
 const AVATAR_DEFAULT = AVATAR_ESTILOS[0].url;
@@ -199,25 +199,23 @@ function abrirEscolhaAvatar() {
     if (!modal) return;
     const grid = document.getElementById('avatarGrid');
     const atual = getAvatarAtual();
+    // Categorias de avatares
     const categorias = [
-        { nome: '⚔️ Anime',          range: [0, 5] },
-        { nome: '🎬 Filmes Trash',    range: [6, 11] },
-        { nome: '🦸 Personagens',     range: [12, 16] },
-        { nome: '🍿 Diversão',        range: [17, 20] },
-        { nome: '🤖 Sci-fi',          range: [21, 24] },
+        { nome: '😄 Cartoon', range: [0,5] },
+        { nome: '🎮 Pixel', range: [6,9] },
+        { nome: '🎨 Ilustração', range: [10,13] },
+        { nome: '😜 Fun', range: [14,17] },
+        { nome: '🤖 Robô', range: [18,21] },
+        { nome: '⚔️ Anime', range: [22,24] },
     ];
     let html = '';
     categorias.forEach(cat => {
-        html += `<div style="grid-column:span 4;font-size:11px;font-weight:700;color:#888;padding:6px 0 2px;letter-spacing:1px;">${cat.nome}</div>`;
-        for (let i = cat.range[0]; i <= cat.range[1]; i++) {
+        html += `<div style="grid-column:span 4;font-size:11px;font-weight:700;color:#888;padding:4px 0 2px;letter-spacing:1px;">${cat.nome}</div>`;
+        for(let i = cat.range[0]; i <= cat.range[1]; i++) {
             const av = AVATAR_ESTILOS[i];
-            if (!av) continue;
             const ativo = av.url === atual;
-            html += `<div onclick="escolherAvatar('${av.url}')" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;">
-                <div style="width:58px;height:58px;border-radius:50%;overflow:hidden;border:2.5px solid ${ativo?'var(--accent)':'transparent'};background:#111;transition:0.15s;">
-                    <img src="${av.url}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" onerror="this.parentElement.innerHTML='<div style=width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:#555;font-size:20px;><i class=fas fa-user></i></div>'">
-                </div>
-                <span style="font-size:9px;color:#888;text-align:center;line-height:1.2;max-width:62px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;">${av.label||''}</span>
+            html += `<div onclick="escolherAvatar('${av.url}')" style="width:60px;height:60px;border-radius:14px;overflow:hidden;cursor:pointer;border:2px solid ${ativo?'var(--accent)':'transparent'};background:rgba(255,255,255,0.04);transition:0.15s;display:flex;align-items:center;justify-content:center;">
+                <img src="${av.url}" style="width:54px;height:54px;border-radius:10px;" loading="lazy">
             </div>`;
         }
     });
@@ -241,12 +239,8 @@ function escolherAvatar(url) {
 
 function atualizarMenuAvatar() {
     const avatar = getAvatarAtual();
-    // Menu lateral
     const menuAv = document.getElementById('menu-avatar-emoji');
     if (menuAv) menuAv.innerHTML = `<img src="${avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
-    // Header principal
-    const headerImg = document.getElementById('headerAvatarImg');
-    if (headerImg) { headerImg.src = avatar; headerImg.style.display = 'block'; }
 }
 
 // ─── SAIR ─────────────────────────────────────────────────────────────────────
@@ -457,25 +451,23 @@ function gerarHTMLBadges(tagsStr) {
 }
 
 // ===================== TMDB API =====================
-// Todas as requisições passam pelo proxy /api/tmdb (key segura no servidor)
+async function tmdbFetchWithKey(endpoint, apiKey) {
+    const connector = endpoint.includes('?') ? '&' : '?';
+    const url = `https://api.themoviedb.org/3${endpoint}${connector}api_key=${apiKey}&language=pt-BR`;
+    const res = await fetch(url, { cache: 'no-store' });
+    if(!res.ok) throw new Error(`HTTP ${res.status}`);
+    return await res.json();
+}
 async function tmdbFetch(endpoint) {
     try {
-        // Separar endpoint base dos query params existentes
-        const [path, qs] = endpoint.split('?');
-        const params = new URLSearchParams(qs || '');
-        params.set('endpoint', path);
-        params.set('language', 'pt-BR');
-        const url = `/api/tmdb?${params.toString()}`;
-        const res = await fetch(url, { cache: 'no-store' });
-        if(!res.ok) throw new Error(`HTTP ${res.status}`);
-        return await res.json();
+        return await tmdbFetchWithKey(endpoint, TMDB_API_KEY);
     } catch(e) {
-        return { results: [] };
+        try {
+            return await tmdbFetchWithKey(endpoint, TMDB_API_KEY_FALLBACK);
+        } catch(e2) {
+            return { results: [] };
+        }
     }
-}
-// Mantido para compatibilidade com chamadas diretas em abrirAtor
-async function tmdbFetchWithKey(endpoint, _apiKey) {
-    return tmdbFetch(endpoint);
 }
 function getTrending(type='movie', page=1) { return tmdbFetch(`/trending/${type}/week?page=${page}`); }
 function getDetails(id, type='movie') { return tmdbFetch(`/${type}/${id}?append_to_response=credits,videos,recommendations`); }
@@ -571,14 +563,13 @@ function esconderSplash() {
 async function initApp() {
     esconderSplash();
 
-    // Funções auxiliares protegidas — erro aqui nunca pode travar o app
+    // Protegidos: erro aqui nunca trava o app
     try { verificarStatusVip(); } catch(e) { console.warn('verificarStatusVip:', e); }
     try { verificarPagamentoOuTrial(); } catch(e) { console.warn('verificarPagamentoOuTrial:', e); }
-    try { injetarAnuncios(); } catch(e) { console.warn('injetarAnuncios:', e); }
+    try { injetarAnuncios(); } catch(e) {}
     try { renderGenreChips(); } catch(e) {}
     try { renderStreamingGenreChips(); } catch(e) {}
     try { iniciarAbaMeus(); } catch(e) {}
-    try { atualizarMenuAvatar(); } catch(e) {}
     try {
         const continueHtml = renderContinueWatching();
         const continueSection = document.getElementById('section-continuar');
@@ -955,7 +946,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
         let synopsis = details.overview;
         if(!synopsis || synopsis.length < 20) {
             try {
-                const enData = await tmdbFetchWithKey(`/${type}/${tmdbId}`, null);
+                const enData = await tmdbFetchWithKey(`/${type}/${tmdbId}`, TMDB_API_KEY);
                 synopsis = enData.overview || synopsis;
             } catch(e) {}
         }
@@ -1158,7 +1149,7 @@ async function abrirAtor(atorId) {
     addNoScroll();
     history.pushState({ view: 'actor', modal: true }, null, "");
     try {
-        const pRes = await fetch(`/api/tmdb?endpoint=/person/${atorId}&language=pt-BR`);
+        const pRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}?api_key=${TMDB_API_KEY}&language=pt-BR`);
         const pData = await pRes.json();
         document.getElementById('actorName').innerText = pData.name;
         document.getElementById('actorImg').src = pData.profile_path ? `${TMDB_IMG}/w300${pData.profile_path}` : 'https://placehold.co/150x150/333333/888888?text=Ator';
@@ -1177,7 +1168,7 @@ async function abrirAtor(atorId) {
         let bio = pData.biography;
         if(!bio || bio.length < 50) {
             try {
-                const enRes = await fetch(`/api/tmdb?endpoint=/person/${atorId}`);
+                const enRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}?api_key=${TMDB_API_KEY}`);
                 const enData = await enRes.json();
                 if(enData.biography && enData.biography.length > (bio||'').length) bio = enData.biography + ' [EN]';
             } catch(e) {}
@@ -1193,7 +1184,7 @@ async function abrirAtor(atorId) {
         }
         document.getElementById('actorBio').innerText = bio || "Biografia indisponível.";
 
-        const cRes = await fetch(`/api/tmdb?endpoint=/person/${atorId}/combined_credits&language=pt-BR`);
+        const cRes = await fetch(`https://api.themoviedb.org/3/person/${atorId}/combined_credits?api_key=${TMDB_API_KEY}&language=pt-BR`);
         const cData = await cRes.json();
         if(cData.cast&&cData.cast.length>0) {
             const obras = cData.cast.sort((a,b)=>b.popularity-a.popularity).slice(0,20);
@@ -1382,7 +1373,7 @@ function mudarAbaIPTV(contentId, tabEl) {
     document.getElementById(contentId).classList.add('active');
     if(contentId==='iptv-filmes'&&!iptvCarregado.filmes) carregarIPTFilmes();
     if(contentId==='iptv-series'&&!iptvCarregado.series) carregarIPTSeries();
-    if(contentId==='iptv-tv'&&!iptvCarregado.tv) carregarIPTTV();
+    if(contentId==='iptv-tv') iniciarIPTVCanais();
 }
 
 async function carregarIPTFilmes() {
