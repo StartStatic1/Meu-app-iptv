@@ -1350,16 +1350,18 @@ async function dispararPlayer(id, tipo, ext, titulo) {
     const btn = (tipo==='live') ? document.getElementById('btnPlayTV') : document.getElementById('btnPlayFilme');
     if(btn) { btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Conectando...`; btn.disabled = true; }
     try {
-        // Canais ao vivo IPTV: usa BetterFlix player integrado (sem bloqueio CORS/HLS)
+        // Canais ao vivo IPTV: pega URL .ts do Xtream e abre no player nativo
         if(tipo==='live') {
-            const iframe = document.getElementById('embedFrame');
-            const modal = document.getElementById('embedModal');
-            iframe.removeAttribute('srcdoc');
-            iframe.src = '';
-            iframe.src = `https://betterflix.click/api/player?id=${encodeURIComponent(id)}&type=channel`;
-            modal.style.display = 'flex';
-            addNoScroll();
-            history.pushState({ view: 'embed', modal: true }, null, '');
+            const res = await fetch(`/api/iptv?action=get_live_url&stream_id=${id}`);
+            const data = await res.json();
+            const urlFinal = data.url;
+            if(!urlFinal) throw new Error('Link ao vivo não retornado.');
+            if(window.AndroidApp && window.AndroidApp.abrirVideoNativo) {
+                window.AndroidApp.abrirVideoNativo(urlFinal);
+            } else {
+                const urlLimpa = urlFinal.replace(/^https?:\/\//, '');
+                window.location.href = `intent://${urlLimpa}#Intent;scheme=http;type=video/*;action=android.intent.action.VIEW;end;`;
+            }
             return;
         }
 
