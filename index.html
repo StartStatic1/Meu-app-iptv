@@ -350,16 +350,16 @@
         <div class="nav-item active" id="nav-home" onclick="mudarAba('view-home', this)">
             <i class="fas fa-home"></i><span>Início</span>
         </div>
-        <div class="nav-item" id="nav-streaming" onclick="mudarAba('view-streaming', this)">
+        <div class="nav-item" id="nav-streaming" tabindex="0" onclick="mudarAba('view-streaming', this)">
             <i class="fas fa-play-circle"></i><span>Streaming</span>
         </div>
-        <div class="nav-item" id="nav-tv" onclick="mudarAba('view-tv', this)">
+        <div class="nav-item" id="nav-tv" tabindex="0" onclick="mudarAba('view-tv', this)">
             <i class="fas fa-satellite-dish"></i><span>TV</span>
         </div>
-        <div class="nav-item" id="nav-buscar" onclick="mudarAba('view-buscar', this)">
+        <div class="nav-item" id="nav-buscar" tabindex="0" onclick="mudarAba('view-buscar', this)">
             <i class="fas fa-search"></i><span>Buscar</span>
         </div>
-        <div class="nav-item" id="nav-meus" onclick="mudarAba('view-meus', this)">
+        <div class="nav-item" id="nav-meus" tabindex="0" onclick="mudarAba('view-meus', this)">
             <i class="fas fa-heart"></i><span>Meus</span>
         </div>
     </div>
@@ -417,16 +417,16 @@
     <div class="server-modal" id="serverModal">
         <div class="sheet-handle" onclick="fecharMenuServidores()"></div>
         <div class="server-title">Escolha um Servidor</div>
-        <div class="server-btn" id="btnServerNativo" style="border-left: 4px solid #00e5ff; background: rgba(0, 229, 255, 0.05);">
+        <div class="server-btn" id="btnServerNativo" tabindex="0" style="border-left: 4px solid #00e5ff; background: rgba(0, 229, 255, 0.05);">
             <div><i class="fas fa-bolt" style="color:#00e5ff;"></i> &nbsp; Servidor App (CDN Premium)</div>
             <i class="fas fa-play" style="font-size:10px; color:#fff;"></i>
         </div>
-        <div class="server-btn" onclick="abrirPlayerWeb('superflix')"><div><i class="fas fa-play-circle" style="color:#b388ff;"></i> &nbsp; SuperFlix <span style="font-size:10px;color:#888;">(Qualidade HD)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
-        <div class="server-btn" onclick="abrirPlayerWeb('embedmovies')"><div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; EmbedMovies <span style="font-size:10px;color:#888;">(Leg/Dub)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
-        <div class="server-btn" onclick="abrirPlayerWeb('embedplayapi')"><div><i class="fas fa-play-circle" style="color:#00e676;"></i> &nbsp; EmbedPlay <span style="font-size:10px;color:#888;">(Dublado)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
-        <div class="server-btn" onclick="abrirPlayerWeb('betterflix')"><div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; BetterFlix <span style="font-size:10px;color:#888;">(Rápido)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
-        <div class="server-btn" onclick="abrirPlayerWeb('vidsrc')"><div><i class="fas fa-play-circle" style="color:#00e5ff;"></i> &nbsp; VidSrc <span style="font-size:10px;color:#888;">(Legendado)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
-        <div class="server-btn" onclick="abrirPlayerWeb('videasy')"><div><i class="fas fa-play-circle" style="color:#a855f7;"></i> &nbsp; Videasy <span style="font-size:10px;color:#888;">(Próx. Ep ✓)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-btn" tabindex="0" onclick="abrirPlayerWeb('superflix')"><div><i class="fas fa-play-circle" style="color:#b388ff;"></i> &nbsp; SuperFlix <span style="font-size:10px;color:#888;">(Qualidade HD)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-btn" tabindex="0" onclick="abrirPlayerWeb('embedmovies')"><div><i class="fas fa-play-circle" style="color:var(--accent);"></i> &nbsp; EmbedMovies <span style="font-size:10px;color:#888;">(Leg/Dub)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-btn" tabindex="0" onclick="abrirPlayerWeb('embedplayapi')"><div><i class="fas fa-play-circle" style="color:#00e676;"></i> &nbsp; EmbedPlay <span style="font-size:10px;color:#888;">(Dublado)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-btn" tabindex="0" onclick="abrirPlayerWeb('betterflix')"><div><i class="fas fa-play-circle" style="color:#ff0055;"></i> &nbsp; BetterFlix <span style="font-size:10px;color:#888;">(Rápido)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-btn" tabindex="0" onclick="abrirPlayerWeb('vidsrc')"><div><i class="fas fa-play-circle" style="color:#00e5ff;"></i> &nbsp; VidSrc <span style="font-size:10px;color:#888;">(Legendado)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
+        <div class="server-btn" tabindex="0" onclick="abrirPlayerWeb('videasy')"><div><i class="fas fa-play-circle" style="color:#a855f7;"></i> &nbsp; Videasy <span style="font-size:10px;color:#888;">(Próx. Ep ✓)</span></div><i class="fas fa-chevron-right" style="font-size:10px; color:#666;"></i></div>
         <p style="text-align:center;color:#555;font-size:10px;margin:10px 0 5px;">Se um servidor não carregar, tente o próximo.</p>
     </div>
 
@@ -452,10 +452,10 @@
                     <i class="fas fa-play"></i> <span>Assistir</span>
                 </button>
                 <div class="secondary-actions" id="boxSecundario">
-                    <div class="sec-btn watched" id="btnWatched" onclick="toggleWatchedGlobal()"><i class="fas fa-check"></i> Visto</div>
-                    <div class="sec-btn fav" id="btnFav" onclick="toggleFavGlobal()"><i class="fas fa-heart"></i> Favorito</div>
-                    <div class="sec-btn trailer" id="btnTrailer" onclick="abrirTrailer()" style="display:none;"><i class="fas fa-film"></i> Trailer</div>
-                    <div class="sec-btn" id="btnShare" onclick="compartilharConteudo(document.getElementById('dpTitle').innerText, document.getElementById('dpSynopsis').innerText, currentTmdbId, currentItemType)"><i class="fas fa-share-alt"></i></div>
+                    <div class="sec-btn watched" id="btnWatched" tabindex="0" onclick="toggleWatchedGlobal()"><i class="fas fa-check"></i> Visto</div>
+                    <div class="sec-btn fav" id="btnFav" tabindex="0" onclick="toggleFavGlobal()"><i class="fas fa-heart"></i> Favorito</div>
+                    <div class="sec-btn trailer" id="btnTrailer" tabindex="0" onclick="abrirTrailer()" style="display:none;"><i class="fas fa-film"></i> Trailer</div>
+                    <div class="sec-btn" id="btnShare" tabindex="0" onclick="compartilharConteudo(document.getElementById('dpTitle').innerText, document.getElementById('dpSynopsis').innerText, currentTmdbId, currentItemType)"><i class="fas fa-share-alt"></i></div>
                 </div>
             </div>
             <p class="dp-synopsis" id="dpSynopsis">Aguardando TMDB...</p>
