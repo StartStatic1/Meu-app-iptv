@@ -132,3 +132,20 @@ html.tv-mode input {
   font-size: 16px !important;
 }
 
+/* ── Hint visual no canto quando TV mode ativo ────────────── */
+html.tv-mode::before {
+  content: '📺 TV';
+  position: fixed;
+  top: 8px;
+  right: 8px;
+  background: rgba(0, 229, 255, 0.15);
+  color: #00e5ff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 229, 255, 0.3);
+  z-index: 9999;
+  pointer-events: none;
+  letter-spacing: 0.5px;
+}
