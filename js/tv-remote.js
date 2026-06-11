@@ -14,9 +14,8 @@
 
   // ─── DETECÇÃO DE TV ──────────────────────────────────────────────────────────
   // Só ativa navegação por controle se for TV/Fire TV/Android TV
-  const isTV = /Android.*TV|FireTV|AFTM|AFTN|AFTS|AFTB|AFTR|AFT|Silk|TV/i.test(navigator.userAgent)
-    || window.matchMedia('(pointer: coarse) and (hover: none)').matches
-    || window.innerWidth >= 1280;
+  const isTV = /Android.*TV|FireTV|AFTM|AFTN|AFTS|AFTB|AFTR|AFT|Silk/i.test(navigator.userAgent)
+    || window.innerWidth >= 1920;
 
   // Para forçar modo TV manualmente (debug no celular): localStorage.setItem('forceTV','1')
   const FORCE_TV = localStorage.getItem('forceTV') === '1';
