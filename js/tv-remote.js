@@ -14,8 +14,9 @@
 
   // ─── DETECÇÃO DE TV ──────────────────────────────────────────────────────────
   // Só ativa navegação por controle se for TV/Fire TV/Android TV
-  const isTV = /Android.*TV|FireTV|AFTM|AFTN|AFTS|AFTB|AFTR|AFT|Silk/i.test(navigator.userAgent)
-    || window.innerWidth >= 1920;
+  const isTV = /Android.*TV|FireTV|AFTM|AFTN|AFTS|AFTB|AFTR|AFT|Silk|TV/i.test(navigator.userAgent)
+    || window.matchMedia('(pointer: coarse) and (hover: none)').matches
+    || window.innerWidth >= 1280;
 
   // Para forçar modo TV manualmente (debug no celular): localStorage.setItem('forceTV','1')
   const FORCE_TV = localStorage.getItem('forceTV') === '1';
@@ -328,6 +329,28 @@
   }
 
   ['serverModal', 'vipModal', 'pagamentoModal', 'embedModal', 'avatarModal', 'menuPrincipal', 'bottomSheet'].forEach(id => watchModal(id));
+
+  // Foco especial ao abrir detailsPage: vai direto pro btnPlayFilme
+  (function watchDetailsPage() {
+    const dp = document.getElementById('detailsPage');
+    if (!dp) return;
+    const mo = new MutationObserver(() => {
+      if (dp.classList.contains('active')) {
+        setTimeout(() => {
+          const btn = document.getElementById('btnPlayFilme');
+          if (btn && btn.style.display !== 'none') { setFocus(btn); return; }
+          // fallback: primeiro focável da página
+          const first = Array.from(dp.querySelectorAll(FOCUSABLE)).find(el => {
+            if (el.offsetParent === null) return false;
+            const r = el.getBoundingClientRect();
+            return r.width > 0 && r.height > 0;
+          });
+          if (first) setFocus(first);
+        }, 400);
+      }
+    });
+    mo.observe(dp, { attributes: true, attributeFilter: ['class'] });
+  })();
 
   // ─── INICIALIZAR FOCO NA CARGA ────────────────────────────────────────────────
   window.addEventListener('load', () => {

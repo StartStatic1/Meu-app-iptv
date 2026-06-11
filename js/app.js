@@ -980,7 +980,7 @@ async function abrirDetalhesTMDB(tmdbId, type) {
             let htmlCast = '';
             details.credits.cast.slice(0,15).forEach(ator => {
                 const foto = ator.profile_path ? `${TMDB_IMG}/w200${ator.profile_path}` : 'https://placehold.co/150x150/333333/888888?text=Ator';
-                htmlCast += `<div class="cast-item" onclick="abrirAtor(${ator.id})"><img src="${foto}" class="cast-img" loading="lazy"><div class="cast-name">${esc(ator.name)}</div><div class="cast-char">${esc(ator.character)}</div></div>`;
+                htmlCast += `<div class="cast-item" tabindex="0" onclick="abrirAtor(${ator.id})"><img src="${foto}" class="cast-img" loading="lazy"><div class="cast-name">${esc(ator.name)}</div><div class="cast-char">${esc(ator.character)}</div></div>`;
             });
             document.getElementById('dpCast').innerHTML = htmlCast;
             document.getElementById('dpCastContainer').style.display = 'block';
