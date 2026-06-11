@@ -1,14 +1,15 @@
 {
   "name": "StreamFlix",
   "short_name": "StreamFlix",
-  "description": "O melhor aplicativo de streaming de filmes, séries e TV.",
+  "description": "O melhor aplicativo de streaming de filmes, séries e TV ao vivo.",
   "start_url": "/?source=pwa",
-  "display": "standalone",
+  "display": "fullscreen",
   "background_color": "#040714",
   "theme_color": "#1a1d29",
   "orientation": "any",
   "scope": "/",
   "lang": "pt-BR",
+  "categories": ["entertainment"],
   "icons": [
     {
       "src": "/icon-192.png",
@@ -23,6 +24,22 @@
       "purpose": "any maskable"
     }
   ],
+  "screenshots": [
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "StreamFlix TV"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "StreamFlix Mobile"
+    }
+  ],
   "shortcuts": [
     {
       "name": "Filmes em Alta",
@@ -30,6 +47,15 @@
       "description": "Veja os últimos lançamentos",
       "url": "/?view=view-filmes",
       "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "TV Ao Vivo",
+      "short_name": "TV",
+      "description": "Canais ao vivo",
+      "url": "/?view=view-tv",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
-  ]
+  ],
+  "prefer_related_applications": false,
+  "related_applications": []
 }

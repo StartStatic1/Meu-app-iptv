@@ -1,23 +1,29 @@
 {
   "functions": {
-    "api/pagamento.js": {
-      "maxDuration": 15
-    },
-    "api/iptv.js": {
-      "maxDuration": 15
-    },
-    "api/tv.js": {
-      "maxDuration": 15
-    }
+    "api/pagamento.js": { "maxDuration": 15 },
+    "api/iptv.js":      { "maxDuration": 15 },
+    "api/tv.js":        { "maxDuration": 15 }
   },
   "headers": [
     {
+      "source": "/sw.js",
+      "headers": [
+        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
+        { "key": "Service-Worker-Allowed", "value": "/" }
+      ]
+    },
+    {
+      "source": "/manifest.json",
+      "headers": [
+        { "key": "Content-Type", "value": "application/manifest+json" },
+        { "key": "Cache-Control", "value": "no-cache" }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-store, no-cache, must-revalidate, max-age=0"
-        }
+        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" },
+        { "key": "X-Content-Type-Options", "value": "nosniff" }
       ]
     }
   ]
