@@ -1,44 +1,48 @@
 /* ============================================================
    StreamFlix — Estilos TV Box / Fire TV Stick
-   Adicionar no FINAL do style.css (ou importar separado)
+   Aplicados apenas quando html.tv-mode está ativo.
+   html.tv-mode é adicionado SOMENTE por tv-remote.js
+   quando o User-Agent é Fire TV / Android TV (ou forceTV=1).
    ============================================================ */
 
-/* ── Modo TV ativo ────────────────────────────────────────── */
+/* ── Fonte base maior para tela 1080p ─────────────────────── */
 html.tv-mode {
-  /* Aumenta tamanho base pra TV 1080p */
   font-size: 18px;
-  cursor: none; /* esconde o cursor do mouse em TV */
+  cursor: none;
 }
 
-/* ── Foco visual (D-Pad) ──────────────────────────────────── */
+/* ── Foco D-Pad ───────────────────────────────────────────── */
 .tv-focused {
   outline: 3px solid #00e5ff !important;
   outline-offset: 3px !important;
-  box-shadow: 0 0 0 6px rgba(0, 229, 255, 0.25), 0 0 20px rgba(0, 229, 255, 0.4) !important;
+  box-shadow: 0 0 0 6px rgba(0, 229, 255, 0.2), 0 0 20px rgba(0, 229, 255, 0.35) !important;
   transform: scale(1.06) !important;
   z-index: 10 !important;
-  transition: outline 0.1s, box-shadow 0.1s, transform 0.12s !important;
   position: relative;
+  transition: outline 0.1s, box-shadow 0.1s, transform 0.12s !important;
 }
 
-/* Cards de filme — foco mais proeminente */
+/* Remove outline padrão do browser em tv-mode */
+html.tv-mode *:focus {
+  outline: none;
+}
+
+/* Cards de filme */
 html.tv-mode .card-movie.tv-focused {
   transform: scale(1.10) !important;
-  outline: 3px solid #00e5ff !important;
   box-shadow: 0 0 0 4px rgba(0, 229, 255, 0.3), 0 8px 30px rgba(0, 0, 0, 0.8) !important;
 }
 
-/* Botões de ação */
+/* Botões, nav, server, sheet */
 html.tv-mode button.tv-focused,
 html.tv-mode .server-btn.tv-focused,
 html.tv-mode .nav-item.tv-focused,
 html.tv-mode .sheet-btn.tv-focused {
-  outline: 3px solid #00e5ff !important;
   box-shadow: 0 0 20px rgba(0, 229, 255, 0.5) !important;
   transform: scale(1.05) !important;
 }
 
-/* Chips de streaming e gênero */
+/* Chips / pills */
 html.tv-mode .streaming-chip.tv-focused,
 html.tv-mode .genre-chip.tv-focused,
 html.tv-mode .tv-cat-pill.tv-focused,
@@ -48,37 +52,28 @@ html.tv-mode .iptv-tab.tv-focused {
   box-shadow: 0 0 12px rgba(0, 229, 255, 0.4) !important;
 }
 
-/* Remove outline padrão do browser (substituído pelo tv-focused) */
-html.tv-mode *:focus {
-  outline: none;
-}
-
-/* ── Layout TV — Bottom Nav maior ─────────────────────────── */
+/* ── Bottom Nav ───────────────────────────────────────────── */
 html.tv-mode .bottom-nav {
   height: 70px;
   padding: 0 20px;
 }
-
 html.tv-mode .nav-item {
   font-size: 13px;
   padding: 10px 18px;
   border-radius: 12px;
-  transition: background 0.15s, transform 0.12s;
 }
-
 html.tv-mode .nav-item i {
   font-size: 22px;
   margin-bottom: 4px;
 }
 
-/* ── Cards maiores em TV ──────────────────────────────────── */
+/* ── Cards maiores ────────────────────────────────────────── */
 html.tv-mode .card-movie {
   min-width: 140px;
   border-radius: 10px;
-  transition: transform 0.15s;
 }
 
-/* ── Carrosséis com scroll suave ─────────────────────────── */
+/* ── Carrosséis ───────────────────────────────────────────── */
 html.tv-mode .carousel,
 html.tv-mode .streaming-chips,
 html.tv-mode .genre-chips,
@@ -89,63 +84,61 @@ html.tv-mode .streaming-genre-chips {
   -ms-overflow-style: none;
   scrollbar-width: none;
 }
-
 html.tv-mode .carousel::-webkit-scrollbar,
 html.tv-mode .streaming-chips::-webkit-scrollbar {
   display: none;
 }
 
-/* ── Hero banner — botões maiores ─────────────────────────── */
+/* ── Hero banner ──────────────────────────────────────────── */
 html.tv-mode .hero-info-btn,
 html.tv-mode .hero-trailer-btn {
   padding: 14px 28px;
   font-size: 15px;
 }
 
-/* ── Server modal — itens mais altos ─────────────────────── */
+/* ── Server modal ─────────────────────────────────────────── */
 html.tv-mode .server-btn {
   padding: 18px 20px;
   font-size: 15px;
   margin-bottom: 8px;
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.15s, transform 0.12s;
 }
 
-/* ── Detalhes — botão Assistir ────────────────────────────── */
+/* ── Detalhes ─────────────────────────────────────────────── */
 html.tv-mode .dp-play-btn {
   padding: 18px 40px;
   font-size: 16px;
 }
 
-/* ── Canais TV ao vivo ────────────────────────────────────── */
+/* ── Canais TV ────────────────────────────────────────────── */
 html.tv-mode .tv-canal-item {
   padding: 14px 16px;
   border-radius: 10px;
   cursor: pointer;
-  transition: background 0.12s, transform 0.12s;
 }
 
-/* ── Input de busca — cursor visível em TV ────────────────── */
+/* ── Input ────────────────────────────────────────────────── */
 html.tv-mode input {
   cursor: text;
   font-size: 16px !important;
 }
 
-/* ── Hint visual no canto quando TV mode ativo ────────────── */
-html.tv-mode::before {
-  content: '📺 TV';
+/* ── Indicador de modo TV (sem emoji, sem poluição no mobile) */
+/* Só aparece em TV real (html.tv-mode). Discreto, canto inferior. */
+html.tv-mode::after {
+  content: 'TV';
   position: fixed;
-  top: 8px;
-  right: 8px;
-  background: rgba(0, 229, 255, 0.15);
-  color: #00e5ff;
-  font-size: 10px;
+  bottom: 90px;          /* acima da bottom nav */
+  right: 10px;
+  background: rgba(0, 229, 255, 0.12);
+  color: rgba(0, 229, 255, 0.5);
+  font-size: 9px;
   font-weight: 700;
-  padding: 3px 8px;
-  border-radius: 20px;
-  border: 1px solid rgba(0, 229, 255, 0.3);
+  letter-spacing: 1px;
+  padding: 2px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(0, 229, 255, 0.2);
   z-index: 9999;
   pointer-events: none;
-  letter-spacing: 0.5px;
 }
